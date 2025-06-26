@@ -671,6 +671,283 @@ async function updateFlowSettings(
   }
 }
 
+// Analytics Implementation Functions
+async function getTaskAnalytics(dateRange: string, context: Context) {
+  try {
+    // Mock analytics - in production, calculate from your database
+    const analytics: TaskAnalytics = {
+      totalTasks: 45,
+      completedTasks: 38,
+      completionRate: 84,
+      avgTasksPerDay: 3.2,
+      productivityScore: 87,
+      typeBreakdown: { brain: 28, admin: 17 },
+      periodBreakdown: { morning: 22, afternoon: 23 },
+      tagAnalytics: [
+        { tag: "coding", count: 12, completionRate: 92 },
+        { tag: "planning", count: 8, completionRate: 75 },
+        { tag: "admin", count: 15, completionRate: 80 },
+        { tag: "research", count: 6, completionRate: 67 },
+      ],
+      timeSpentByType: { brain: 850, admin: 420 },
+      pomodoroEfficiency: 78,
+    };
+
+    return jsonResponse({ analytics, dateRange });
+  } catch (error) {
+    return errorResponse("Failed to fetch task analytics", 500);
+  }
+}
+
+async function getProductivityInsights(dateRange: string, context: Context) {
+  try {
+    const insights = {
+      overallScore: 85,
+      trends: {
+        tasksCompleted: { current: 38, previous: 32, change: 18.8 },
+        focusTime: { current: 850, previous: 720, change: 18.1 },
+        flowScore: { current: 4.2, previous: 3.8, change: 10.5 },
+      },
+      recommendations: [
+        "Your productivity has increased 18% this period - great work!",
+        "Consider scheduling more brain tasks in the morning when your flow is highest",
+        "You're completing admin tasks efficiently - maintain this rhythm",
+      ],
+      bestPerformingDays: ["Tuesday", "Wednesday"],
+      improvementAreas: ["Friday afternoon energy management"],
+    };
+
+    return jsonResponse({ insights, dateRange });
+  } catch (error) {
+    return errorResponse("Failed to fetch productivity insights", 500);
+  }
+}
+
+async function getActivityPatterns(dateRange: string, context: Context) {
+  try {
+    const patterns = {
+      hourlyFlow: [
+        { hour: 8, avgFlow: 3.2, taskCount: 5 },
+        { hour: 9, avgFlow: 4.5, taskCount: 8 },
+        { hour: 10, avgFlow: 4.3, taskCount: 7 },
+        { hour: 11, avgFlow: 3.8, taskCount: 6 },
+        { hour: 14, avgFlow: 4.1, taskCount: 7 },
+        { hour: 15, avgFlow: 3.9, taskCount: 5 },
+        { hour: 16, avgFlow: 3.2, taskCount: 4 },
+      ],
+      dailyPatterns: {
+        Monday: { avgProductivity: 82, bestActivity: "Planning" },
+        Tuesday: { avgProductivity: 89, bestActivity: "Deep work" },
+        Wednesday: { avgProductivity: 85, bestActivity: "Coding" },
+        Thursday: { avgProductivity: 78, bestActivity: "Meetings" },
+        Friday: { avgProductivity: 71, bestActivity: "Admin tasks" },
+      },
+      activityCorrelations: [
+        { activity: "Deep work", bestTime: "9-11 AM", avgFlow: 4.4 },
+        { activity: "Admin tasks", bestTime: "2-4 PM", avgFlow: 3.1 },
+        { activity: "Planning", bestTime: "8-9 AM", avgFlow: 3.8 },
+      ],
+    };
+
+    return jsonResponse({ patterns, dateRange });
+  } catch (error) {
+    return errorResponse("Failed to fetch activity patterns", 500);
+  }
+}
+
+async function getTrendAnalysis(dateRange: string, context: Context) {
+  try {
+    const trends = {
+      productivityTrend: "increasing", // increasing, decreasing, stable
+      weeklyAverage: 87,
+      monthlyGrowth: 12.5,
+      streakAnalysis: {
+        currentStreak: 7,
+        avgStreakLength: 5.2,
+        longestStreak: 14,
+      },
+      seasonalPatterns: [
+        { period: "Morning", productivity: 89, trend: "stable" },
+        { period: "Afternoon", productivity: 76, trend: "improving" },
+        { period: "Evening", productivity: 45, trend: "declining" },
+      ],
+      forecastedProductivity: 89, // next week prediction
+    };
+
+    return jsonResponse({ trends, dateRange });
+  } catch (error) {
+    return errorResponse("Failed to fetch trend analysis", 500);
+  }
+}
+
+// User Settings Implementation Functions
+async function getUserSettings(context: Context) {
+  try {
+    // Mock settings - in production, query from your database
+    const settings: UserSettings = {
+      theme: "dark",
+      colorTheme: "vibrant",
+      focusDuration: 25,
+      shortBreakDuration: 5,
+      longBreakDuration: 15,
+      sessionsBeforeLongBreak: 4,
+      autoStartBreaks: false,
+      autoStartPomodoros: false,
+      notificationsEnabled: true,
+      soundEnabled: true,
+      dailyGoal: 5,
+    };
+
+    return jsonResponse({ settings });
+  } catch (error) {
+    return errorResponse("Failed to fetch user settings", 500);
+  }
+}
+
+async function updateUserSettings(
+  settingsData: Partial<UserSettings>,
+  context: Context,
+) {
+  try {
+    // In production, update in your database
+    const updatedSettings: UserSettings = {
+      theme: settingsData.theme || "dark",
+      colorTheme: settingsData.colorTheme || "vibrant",
+      focusDuration: settingsData.focusDuration || 25,
+      shortBreakDuration: settingsData.shortBreakDuration || 5,
+      longBreakDuration: settingsData.longBreakDuration || 15,
+      sessionsBeforeLongBreak: settingsData.sessionsBeforeLongBreak || 4,
+      autoStartBreaks: settingsData.autoStartBreaks || false,
+      autoStartPomodoros: settingsData.autoStartPomodoros || false,
+      notificationsEnabled: settingsData.notificationsEnabled ?? true,
+      soundEnabled: settingsData.soundEnabled ?? true,
+      dailyGoal: settingsData.dailyGoal || 5,
+    };
+
+    return jsonResponse({
+      settings: updatedSettings,
+      message: "Settings updated successfully",
+    });
+  } catch (error) {
+    return errorResponse("Failed to update settings", 500);
+  }
+}
+
+// Achievements Implementation Functions
+async function getUserAchievements(context: Context) {
+  try {
+    // Mock achievements - in production, query from your database
+    const achievements: Achievement[] = [
+      {
+        id: crypto.randomUUID(),
+        type: "streak",
+        title: "Week Warrior",
+        description: "Completed tasks for 7 days in a row",
+        icon: "🔥",
+        earnedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        metadata: { streakLength: 7 },
+      },
+      {
+        id: crypto.randomUUID(),
+        type: "completion",
+        title: "Century Club",
+        description: "Completed 100 tasks",
+        icon: "💯",
+        earnedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+        metadata: { taskCount: 100 },
+      },
+      {
+        id: crypto.randomUUID(),
+        type: "focus",
+        title: "Flow Master",
+        description: "Achieved 10 high-flow sessions",
+        icon: "🌊",
+        earnedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+        metadata: { flowSessions: 10 },
+      },
+    ];
+
+    return jsonResponse({ achievements, count: achievements.length });
+  } catch (error) {
+    return errorResponse("Failed to fetch achievements", 500);
+  }
+}
+
+async function createAchievement(
+  achievementData: Partial<Achievement>,
+  context: Context,
+) {
+  try {
+    if (
+      !achievementData.type ||
+      !achievementData.title ||
+      !achievementData.description
+    ) {
+      return errorResponse("Missing required fields: type, title, description");
+    }
+
+    const newAchievement: Achievement = {
+      id: crypto.randomUUID(),
+      type: achievementData.type,
+      title: achievementData.title,
+      description: achievementData.description,
+      icon: achievementData.icon || "🏆",
+      earnedAt: new Date().toISOString(),
+      metadata: achievementData.metadata || {},
+    };
+
+    // In production, save to your database here
+
+    return jsonResponse(
+      {
+        achievement: newAchievement,
+        message: "Achievement unlocked!",
+      },
+      201,
+    );
+  } catch (error) {
+    return errorResponse("Failed to create achievement", 500);
+  }
+}
+
+// Streaks Implementation Functions
+async function getUserStreaks(context: Context) {
+  try {
+    // Mock streak data - in production, query from your database
+    const streaks: UserStreak = {
+      currentStreak: 7,
+      longestStreak: 14,
+      lastActivityDate: new Date().toISOString().split("T")[0],
+    };
+
+    return jsonResponse({ streaks });
+  } catch (error) {
+    return errorResponse("Failed to fetch user streaks", 500);
+  }
+}
+
+async function updateUserStreaks(
+  streakData: Partial<UserStreak>,
+  context: Context,
+) {
+  try {
+    // In production, update in your database
+    const updatedStreaks: UserStreak = {
+      currentStreak: streakData.currentStreak || 0,
+      longestStreak: streakData.longestStreak || 0,
+      lastActivityDate:
+        streakData.lastActivityDate || new Date().toISOString().split("T")[0],
+    };
+
+    return jsonResponse({
+      streaks: updatedStreaks,
+      message: "Streaks updated successfully",
+    });
+  } catch (error) {
+    return errorResponse("Failed to update streaks", 500);
+  }
+}
+
 async function handleFlow(request: Request, context: Context) {
   const url = new URL(request.url);
   const method = request.method;
