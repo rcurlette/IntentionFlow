@@ -87,7 +87,7 @@ export function Navigation() {
               )}
               title={
                 isTrackingEnabled
-                  ? "Open Flow Tracker"
+                  ? "Open Flow Tracker (Ctrl+F)"
                   : "Enable flow tracking in Settings first"
               }
             >
