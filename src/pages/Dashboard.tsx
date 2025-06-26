@@ -50,6 +50,7 @@ export default function Dashboard() {
   const [dayPlan, setDayPlan] = useState<DayPlan | null>(null);
   const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const { isTrackingEnabled, triggerManualPrompt } = useFlowTracking();
   const [newTask, setNewTask] = useState({
     title: "",
     description: "",
@@ -226,8 +227,34 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          {/* Stats Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            {/* Flow Tracking Card */}
+            <Card className="bg-gradient-to-br from-energy/10 to-energy/5 border-energy/20">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground">
+                      Flow Tracking
+                    </p>
+                    <p className="text-2xl font-bold text-energy">
+                      {isTrackingEnabled ? "ON" : "OFF"}
+                    </p>
+                  </div>
+                  <Heart className="h-6 w-6 text-energy" />
+                </div>
+                {isTrackingEnabled && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={triggerManualPrompt}
+                    className="w-full mt-2 text-energy hover:text-energy hover:bg-energy/10"
+                  >
+                    Test Now
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
             <Card className="bg-gradient-to-br from-morning/20 to-morning/10 border-morning/20">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
