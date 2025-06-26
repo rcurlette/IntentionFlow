@@ -501,6 +501,176 @@ async function getPomodoroStats(date: string, context: Context) {
   }
 }
 
+// Flow Tracking Implementation Functions
+async function getFlowEntries(
+  days: number,
+  date: string | null,
+  context: Context,
+) {
+  try {
+    // Mock flow entries - in production, query your database
+    const mockEntries: FlowEntry[] = [
+      {
+        id: crypto.randomUUID(),
+        timestamp: new Date().toISOString(),
+        activity: "Deep work on project",
+        activityType: "brain",
+        flowRating: 4,
+        mood: 4,
+        energyLevel: 3,
+        location: "Office",
+        notes: "Great focus session",
+        tags: ["coding", "focused"],
+        duration: 60,
+        createdAt: new Date().toISOString(),
+      },
+      {
+        id: crypto.randomUUID(),
+        timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+        activity: "Email processing",
+        activityType: "admin",
+        flowRating: 2,
+        mood: 3,
+        energyLevel: 2,
+        location: "Office",
+        notes: "Too many interruptions",
+        tags: ["email", "admin"],
+        duration: 30,
+        createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+      },
+    ];
+
+    return jsonResponse({
+      entries: mockEntries,
+      count: mockEntries.length,
+      dateRange: { days, date },
+    });
+  } catch (error) {
+    return errorResponse("Failed to fetch flow entries", 500);
+  }
+}
+
+async function createFlowEntry(
+  entryData: Partial<FlowEntry>,
+  context: Context,
+) {
+  try {
+    if (
+      !entryData.activity ||
+      !entryData.flowRating ||
+      !entryData.mood ||
+      !entryData.energyLevel
+    ) {
+      return errorResponse(
+        "Missing required fields: activity, flowRating, mood, energyLevel",
+      );
+    }
+
+    const newEntry: FlowEntry = {
+      id: crypto.randomUUID(),
+      timestamp: entryData.timestamp || new Date().toISOString(),
+      activity: entryData.activity,
+      activityType: entryData.activityType || "other",
+      flowRating: entryData.flowRating,
+      mood: entryData.mood,
+      energyLevel: entryData.energyLevel,
+      location: entryData.location,
+      notes: entryData.notes,
+      tags: entryData.tags || [],
+      duration: entryData.duration,
+      createdAt: new Date().toISOString(),
+    };
+
+    // In production, save to your database here
+
+    return jsonResponse(
+      {
+        entry: newEntry,
+        message: "Flow entry created successfully",
+      },
+      201,
+    );
+  } catch (error) {
+    return errorResponse("Failed to create flow entry", 500);
+  }
+}
+
+async function getFlowAnalytics(days: number, context: Context) {
+  try {
+    // Mock analytics - in production, calculate from your database
+    const analytics: FlowAnalytics = {
+      peakFlowHours: [9, 10, 14, 15],
+      lowFlowHours: [12, 16, 17],
+      bestActivitiesForMorning: ["Deep work", "Coding", "Writing"],
+      bestActivitiesForAfternoon: ["Meetings", "Planning", "Admin tasks"],
+      activitiesToAvoid: ["Social media", "Unnecessary meetings"],
+      weeklyTrends: {
+        Monday: { day: "Monday", avgFlow: 3.8, bestActivity: "Deep work" },
+        Tuesday: { day: "Tuesday", avgFlow: 4.1, bestActivity: "Coding" },
+        Wednesday: { day: "Wednesday", avgFlow: 3.6, bestActivity: "Planning" },
+        Thursday: { day: "Thursday", avgFlow: 3.9, bestActivity: "Writing" },
+        Friday: { day: "Friday", avgFlow: 3.2, bestActivity: "Admin tasks" },
+      },
+      improvementSuggestions: [
+        "Schedule your most important work between 9-10 AM when your flow is highest",
+        "Avoid demanding tasks during 12-1 PM when energy typically dips",
+        "Mornings are great for deep work and coding",
+        "Consider batching admin tasks for Friday afternoons",
+      ],
+    };
+
+    return jsonResponse({ analytics, dateRange: { days } });
+  } catch (error) {
+    return errorResponse("Failed to fetch flow analytics", 500);
+  }
+}
+
+async function getFlowSettings(context: Context) {
+  try {
+    // Mock settings - in production, query from your database
+    const settings: FlowTrackingSettings = {
+      isEnabled: true,
+      interval: 60,
+      quietHours: { start: "22:00", end: "08:00" },
+      trackingDays: [1, 2, 3, 4, 5],
+      autoDetectActivity: false,
+      showFlowInsights: true,
+      minimumEntriesForInsights: 10,
+      promptStyle: "gentle",
+    };
+
+    return jsonResponse({ settings });
+  } catch (error) {
+    return errorResponse("Failed to fetch flow settings", 500);
+  }
+}
+
+async function updateFlowSettings(
+  settingsData: Partial<FlowTrackingSettings>,
+  context: Context,
+) {
+  try {
+    // In production, update in your database
+    const updatedSettings: FlowTrackingSettings = {
+      isEnabled: settingsData.isEnabled ?? true,
+      interval: settingsData.interval ?? 60,
+      quietHours: settingsData.quietHours ?? { start: "22:00", end: "08:00" },
+      trackingDays: settingsData.trackingDays ?? [1, 2, 3, 4, 5],
+      autoDetectActivity: settingsData.autoDetectActivity ?? false,
+      showFlowInsights: settingsData.showFlowInsights ?? true,
+      minimumEntriesForInsights: settingsData.minimumEntriesForInsights ?? 10,
+      promptStyle: settingsData.promptStyle ?? "gentle",
+    };
+
+    return jsonResponse({
+      settings: updatedSettings,
+      message: "Flow settings updated successfully",
+    });
+  } catch (error) {
+    return errorResponse("Failed to update flow settings", 500);
+  }
+}
+
 async function handleFlow(request: Request, context: Context) {
   const url = new URL(request.url);
   const method = request.method;
