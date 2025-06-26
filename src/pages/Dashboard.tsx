@@ -66,6 +66,11 @@ export default function Dashboard() {
     const loadDayPlan = async () => {
       try {
         const plan = await getTodayPlan();
+        console.log("Dashboard: Loaded day plan", {
+          morningTasks: plan.morningTasks?.length || 0,
+          afternoonTasks: plan.afternoonTasks?.length || 0,
+          plan: plan,
+        });
         setDayPlan(plan);
       } catch (error) {
         console.error("Error loading day plan:", error);
