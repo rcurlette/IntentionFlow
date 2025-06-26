@@ -48,10 +48,16 @@ interface EnhancedTaskItemProps {
 
 export function EnhancedTaskItem({
   task,
+  subtasks = [],
   onToggleComplete,
   onEdit,
   onDelete,
   onStartPomodoro,
+  onCreateSubtask,
+  onUpdateSubtask,
+  onDeleteSubtask,
+  onToggleSubtask,
+  onReorderSubtasks,
   className,
 }: EnhancedTaskItemProps) {
   const [isHovered, setIsHovered] = useState(false);
