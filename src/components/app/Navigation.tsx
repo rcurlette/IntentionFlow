@@ -1,6 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { ThemeSwitcher } from "./ThemeSwitcher";
 import {
   Home,
   Target,
@@ -64,6 +65,7 @@ export function Navigation() {
           </div>
 
           <div className="flex items-center space-x-1">
+            <ThemeSwitcher />
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.href;
