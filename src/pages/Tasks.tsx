@@ -93,6 +93,7 @@ export default function Tasks() {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [smartSuggestions, setSmartSuggestions] = useState<any>(null);
   const [recentTags, setRecentTags] = useState<string[]>([]);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
   const navigate = useNavigate();
 
