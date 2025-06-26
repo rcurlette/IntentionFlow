@@ -126,6 +126,7 @@ export default function Dashboard() {
           type: newTask.type,
           period: newTask.period,
           priority: newTask.priority,
+          timeEstimate: newTask.timeBlock,
           timeBlock: newTask.timeBlock,
         });
       } else {
@@ -135,8 +136,10 @@ export default function Dashboard() {
           type: newTask.type,
           period: newTask.period,
           priority: newTask.priority,
+          status: "todo",
+          timeEstimate: newTask.timeBlock,
           timeBlock: newTask.timeBlock,
-          completed: false,
+          tags: [],
         });
       }
 
@@ -154,6 +157,8 @@ export default function Dashboard() {
       });
     } catch (error) {
       console.error("Error saving task:", error);
+      // Show user-friendly error message
+      alert("Failed to save task. Please try again.");
     }
   };
 
