@@ -43,7 +43,8 @@ export function calculateTaskAnalytics(
     to: new Date(),
   },
 ): TaskAnalytics {
-  const dayPlans = getDayPlans();
+  const dayPlansRecord = getDayPlans();
+  const dayPlans = Object.values(dayPlansRecord);
   const filteredPlans = dayPlans.filter((plan) => {
     const planDate = new Date(plan.date);
     return planDate >= dateRange.from && planDate <= dateRange.to;
