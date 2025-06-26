@@ -173,6 +173,9 @@ export default function Tasks() {
         priority: newTask.priority,
         timeBlock: newTask.timeBlock,
         tags: newTask.tags,
+        scheduledFor: newTask.scheduledFor || undefined,
+        dueDate: newTask.dueDate || undefined,
+        dueTime: newTask.dueTime || undefined,
         completed: false,
       };
 
