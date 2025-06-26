@@ -135,17 +135,20 @@ export default function Dashboard() {
           timeBlock: newTask.timeBlock,
         });
       } else {
-        await addTask({
+        const taskToAdd = {
           title: newTask.title,
           description: newTask.description,
           type: newTask.type,
           period: newTask.period,
           priority: newTask.priority,
-          status: "todo",
+          status: "todo" as const,
           timeEstimate: newTask.timeBlock,
           timeBlock: newTask.timeBlock,
           tags: [],
-        });
+        };
+        console.log("Dashboard: Adding new task", taskToAdd);
+        await addTask(taskToAdd);
+        console.log("Dashboard: Task added successfully");
       }
 
       const updatedPlan = await getTodayPlan();
