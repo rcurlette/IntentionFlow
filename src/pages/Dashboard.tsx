@@ -547,7 +547,7 @@ export default function Dashboard() {
                     }));
                     setIsAddTaskOpen(true);
                   }}
-                  className="bg-gradient-to-r from-energy to-energy/80 text-white border-2 border-energy/30 shadow-lg hover:shadow-energy/20 hover:scale-105 transition-all duration-200 animate-pulse-soft"
+                  className="bg-gradient-to-r from-energy to-energy/80 text-white border-2 border-energy/30 shadow-lg hover:shadow-energy/20 hover:scale-105 transition-all duration-200"
                 >
                   <Plus className="h-4 w-4 mr-1" />
                   Add Admin Task
