@@ -136,50 +136,46 @@ export default function Tasks() {
   const { filters, filteredTasks, updateFilter, resetFilters, getFilterCount } =
     useTaskFilters(allTasks);
 
-  const handleCreateTask = () => {
+  const handleCreateTask = async () => {
     if (!newTask.title.trim()) return;
 
-    const taskData = {
-      title: newTask.title,
-      description: newTask.description,
-      type: newTask.type,
-      period: newTask.period,
-      priority: newTask.priority,
-      timeBlock: newTask.timeBlock,
-      tags: newTask.tags,
-      completed: false,
-    };
+    try {
+      const taskData = {
+        title: newTask.title,
+        description: newTask.description,
+        type: newTask.type,
+        period: newTask.period,
+        priority: newTask.priority,
+        timeBlock: newTask.timeBlock,
+        tags: newTask.tags,
+        completed: false,
+      };
 
-    if (editingTask) {
-      updateTask(editingTask.id, taskData);
-    } else {
-      addTask(taskData);
+      if (editingTask) {
+        await updateTask(editingTask.id, taskData);
+      } else {
+        await addTask(taskData);
+      }
+
+      // Reload tasks
+      const tasks = await getAllTasks();
+      setAllTasks(tasks);
+
+      // Reset form
+      setNewTask({
+        title: "",
+        description: "",
+        type: "brain",
+        period: "morning",
+        priority: "medium",
+        timeBlock: 25,
+        tags: [],
+      });
+      setIsCreateTaskOpen(false);
+      setEditingTask(null);
+    } catch (error) {
+      console.error("Error creating/updating task:", error);
     }
-
-    // Reload tasks
-    const dayPlans = getDayPlans();
-    const tasks: Task[] = [];
-    dayPlans.forEach((plan) => {
-      tasks.push(
-        ...plan.morningTasks,
-        ...plan.afternoonTasks,
-        ...plan.laterBird,
-      );
-    });
-    setAllTasks(tasks);
-
-    // Reset form
-    setNewTask({
-      title: "",
-      description: "",
-      type: "brain",
-      period: "morning",
-      priority: "medium",
-      timeBlock: 25,
-      tags: [],
-    });
-    setIsCreateTaskOpen(false);
-    setEditingTask(null);
   };
 
   const handleEditTask = (task: Task) => {
