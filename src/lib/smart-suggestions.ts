@@ -185,10 +185,10 @@ function getSuggestedTimeBlock(text: string, type: "brain" | "admin"): number {
   return Math.round(baseTime / 5) * 5;
 }
 
-export function getRecentTags(
+export async function getRecentTags(
   limit: number = 10,
-): Array<{ tag: string; count: number; lastUsed: Date }> {
-  const dayPlans = getDayPlans();
+): Promise<Array<{ tag: string; count: number; lastUsed: Date }>> {
+  const dayPlans = await getDayPlans();
   const tagUsage: Record<string, { count: number; lastUsed: Date }> = {};
 
   Object.values(dayPlans).forEach((plan) => {
@@ -225,11 +225,11 @@ export function getRecentTags(
     .slice(0, limit);
 }
 
-export function getSimilarTasks(
+export async function getSimilarTasks(
   title: string,
   description: string = "",
-): Task[] {
-  const dayPlans = getDayPlans();
+): Promise<Task[]> {
+  const dayPlans = await getDayPlans();
   const allTasks: Task[] = [];
 
   Object.values(dayPlans).forEach((plan) => {
