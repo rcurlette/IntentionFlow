@@ -37,13 +37,13 @@ export interface TaskAnalytics {
   };
 }
 
-export function calculateTaskAnalytics(
+export async function calculateTaskAnalytics(
   dateRange: { from: Date; to: Date } = {
     from: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
     to: new Date(),
   },
-): TaskAnalytics {
-  const dayPlansRecord = getDayPlans();
+): Promise<TaskAnalytics> {
+  const dayPlansRecord = await getDayPlans();
   const dayPlans = Object.values(dayPlansRecord);
   const filteredPlans = dayPlans.filter((plan) => {
     const planDate = new Date(plan.date);
