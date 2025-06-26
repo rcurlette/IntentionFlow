@@ -8,9 +8,12 @@ export interface ParsedTask {
   period: Task["period"];
   priority: Task["priority"];
   tags: string[];
+  contextTags: string[];
   dueDate?: Date;
   dueTime?: string;
   timeBlock?: number;
+  energy?: "low" | "medium" | "high";
+  focus?: "shallow" | "deep";
   recurrence?: {
     pattern: "daily" | "weekly" | "monthly";
     interval: number;
