@@ -388,8 +388,8 @@ export default function FlowDashboard() {
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-4 gap-6">
-          {/* Flow Coaching */}
+        {/* Flow Coaching */}
+        <div className="mb-6">
           <FlowCoaching
             currentDay={flowIdentity.daysLiving}
             currentPhase={flowIdentity.currentPhase}
@@ -397,7 +397,9 @@ export default function FlowDashboard() {
             totalRituals={totalRituals}
             streak={flowIdentity.streak}
           />
+        </div>
 
+        <div className="grid lg:grid-cols-3 gap-6">
           {/* Flow State Assessment */}
           <Card className="bg-slate-800/50 border-slate-700">
             <CardHeader>
