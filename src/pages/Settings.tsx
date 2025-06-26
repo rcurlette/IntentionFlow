@@ -1,10 +1,12 @@
 import { Navigation } from "@/components/app/Navigation";
 import { ThemeSwitcher } from "@/components/app/ThemeSwitcher";
+import { FlowTrackingSettings } from "@/components/app/FlowTrackingSettings";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useFlowTracking } from "@/hooks/use-flow-tracking";
 import {
   Settings as SettingsIcon,
   Clock,
@@ -16,6 +18,7 @@ import {
   Trash2,
   Shield,
   Eye,
+  Brain,
 } from "lucide-react";
 
 export default function Settings() {
