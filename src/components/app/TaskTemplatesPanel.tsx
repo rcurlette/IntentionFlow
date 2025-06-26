@@ -20,14 +20,14 @@ import {
 import { cn } from "@/lib/utils";
 import {
   Plus,
-  FileTemplate,
+  FileText,
   Clock,
   Target,
   Brain,
-  FileText,
   Zap,
   Settings,
   Eye,
+  Layers,
 } from "lucide-react";
 
 interface TaskTemplatesPanelProps {
@@ -111,7 +111,7 @@ export function TaskTemplatesPanel({
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogTrigger asChild>
           <Button size="sm" className="bg-primary text-primary-foreground">
-            <FileTemplate className="h-4 w-4 mr-2" />
+            <Layers className="h-4 w-4 mr-2" />
             Use Template
           </Button>
         </DialogTrigger>
@@ -119,7 +119,7 @@ export function TaskTemplatesPanel({
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center space-x-2">
-              <FileTemplate className="h-5 w-5" />
+              <Layers className="h-5 w-5" />
               <span>Task Templates</span>
               <Badge variant="outline" className="ml-auto">
                 {templates.length} templates

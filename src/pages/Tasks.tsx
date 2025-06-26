@@ -44,7 +44,7 @@ import {
 
 import {
   Plus,
-  FileTemplate,
+  Layers,
   BarChart3,
   Download,
   Upload,
