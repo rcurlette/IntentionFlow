@@ -306,6 +306,32 @@ export default function FlowDashboard() {
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
+  const handleVisionBoardUpload = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+    if (file && file.type.startsWith("image/")) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const imageData = e.target?.result as string;
+        setVisionBoard(imageData);
+        localStorage.setItem("flow-vision-board", imageData);
+        toggleRitual("vision");
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeVisionBoard = () => {
+    setVisionBoard(null);
+    localStorage.removeItem("flow-vision-board");
+    setRituals((prev) =>
+      prev.map((ritual) =>
+        ritual.id === "vision" ? { ...ritual, completed: false } : ritual,
+      ),
+    );
+  };
+
   const phaseInfo = getPhaseMessage();
 
   return (
