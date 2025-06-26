@@ -51,16 +51,6 @@ interface FlowState {
   environment: "chaotic" | "okay" | "optimal";
 }
 
-interface FlowRitual {
-  id: string;
-  name: string;
-  icon: React.ComponentType<{ className?: string }>;
-  duration: number;
-  description: string;
-  completed: boolean;
-  isCore: boolean;
-}
-
 interface FlowIdentity {
   archetype: string;
   daysLiving: number;
