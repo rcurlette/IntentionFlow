@@ -213,6 +213,9 @@ export default function Tasks() {
       priority: task.priority,
       timeBlock: task.timeBlock || 25,
       tags: task.tags || [],
+      scheduledFor: task.scheduledFor || "",
+      dueDate: task.dueDate ? new Date(task.dueDate) : null,
+      dueTime: task.dueTime || "",
     });
     setIsCreateTaskOpen(true);
   };
