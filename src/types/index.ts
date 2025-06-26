@@ -4,13 +4,18 @@ export interface Task {
   description?: string;
   type: "brain" | "admin";
   period: "morning" | "afternoon";
-  completed: boolean;
+  status: "todo" | "in-progress" | "completed";
+  completed: boolean; // Computed from status for backward compatibility
   timeBlock?: number; // in minutes
+  timeEstimate?: number; // in minutes
+  timeSpent?: number; // in minutes
+  pomodoroCount?: number;
   priority: "low" | "medium" | "high";
-  createdAt: Date;
-  completedAt?: Date;
-  pomodoroSessions?: number;
   tags?: string[];
+  scheduledFor?: string; // YYYY-MM-DD
+  createdAt: Date;
+  updatedAt: Date;
+  completedAt?: Date;
 }
 
 export interface DayPlan {
