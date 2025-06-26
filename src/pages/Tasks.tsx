@@ -999,49 +999,51 @@ export default function Tasks() {
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {filteredTasks.map((task) => {
-                      if (!task.id) {
-                        console.warn("Task missing ID:", task);
-                        return null;
-                      }
-                      const isSelected = selectedTasks.some(
-                        (selectedTask) => selectedTask.id === task.id,
-                      );
-                      return (
-                        <div
-                          key={task.id}
-                          className={cn(
-                            "relative",
-                            isSelected && "ring-2 ring-primary/20 rounded-lg",
-                          )}
-                        >
-                          <div className="absolute left-2 top-2 z-10">
-                            <Checkbox
-                              checked={isSelected}
-                              onCheckedChange={(checked) =>
-                                handleTaskSelection(task, !!checked)
-                              }
-                              className="bg-background"
-                            />
+                    {filteredTasks
+                      .filter((task) => !task.isSubtask)
+                      .map((task) => {
+                        if (!task.id) {
+                          console.warn("Task missing ID:", task);
+                          return null;
+                        }
+                        const isSelected = selectedTasks.some(
+                          (selectedTask) => selectedTask.id === task.id,
+                        );
+                        return (
+                          <div
+                            key={task.id}
+                            className={cn(
+                              "relative",
+                              isSelected && "ring-2 ring-primary/20 rounded-lg",
+                            )}
+                          >
+                            <div className="absolute left-2 top-2 z-10">
+                              <Checkbox
+                                checked={isSelected}
+                                onCheckedChange={(checked) =>
+                                  handleTaskSelection(task, !!checked)
+                                }
+                                className="bg-background"
+                              />
+                            </div>
+                            <div className="pl-8">
+                              <EnhancedTaskItem
+                                task={task}
+                                subtasks={getSubtasks(task.id)}
+                                onToggleComplete={handleToggleComplete}
+                                onEdit={handleEditTask}
+                                onDelete={handleDeleteTask}
+                                onStartPomodoro={handleStartPomodoro}
+                                onCreateSubtask={handleCreateSubtask}
+                                onUpdateSubtask={handleUpdateSubtask}
+                                onDeleteSubtask={handleDeleteSubtask}
+                                onToggleSubtask={handleToggleSubtask}
+                                onReorderSubtasks={handleReorderSubtasks}
+                              />
+                            </div>
                           </div>
-                          <div className="pl-8">
-                            <EnhancedTaskItem
-                              task={task}
-                              subtasks={getSubtasks(task.id)}
-                              onToggleComplete={handleToggleComplete}
-                              onEdit={handleEditTask}
-                              onDelete={handleDeleteTask}
-                              onStartPomodoro={handleStartPomodoro}
-                              onCreateSubtask={handleCreateSubtask}
-                              onUpdateSubtask={handleUpdateSubtask}
-                              onDeleteSubtask={handleDeleteSubtask}
-                              onToggleSubtask={handleToggleSubtask}
-                              onReorderSubtasks={handleReorderSubtasks}
-                            />
-                          </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
                   </div>
                 )}
               </CardContent>
