@@ -118,6 +118,7 @@ export default function FlowDashboard() {
   const [meditationTimer, setMeditationTimer] = useState(0);
   const [isTimerActive, setIsTimerActive] = useState(false);
   const [isFirstTime, setIsFirstTime] = useState(false);
+  const [visionBoard, setVisionBoard] = useState<string | null>(null);
 
   // Load flow data on mount
   useEffect(() => {
