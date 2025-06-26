@@ -934,7 +934,8 @@ export default function Tasks() {
                             <p className="text-xs text-muted-foreground mt-1">
                               Current scheduled: {newTask.scheduledFor || "None"}
                             </p>
-                      </div>
+                          </div>
+                        </div>
 
                       <div>
                         <Label>Hard Deadline (Due Date)</Label>
