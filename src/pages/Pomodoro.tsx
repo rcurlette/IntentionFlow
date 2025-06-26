@@ -236,7 +236,7 @@ export default function Pomodoro() {
                   size="sm"
                   className="w-full justify-start"
                   disabled={state !== "idle"}
-                  onClick={() => startTimer()}
+                  onClick={() => handleStartWithoutTask()}
                 >
                   <Brain className="h-4 w-4 mr-2" />
                   Quick Focus Session
