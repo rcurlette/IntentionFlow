@@ -821,9 +821,7 @@ export default function Tasks() {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="morning">
-                              ���� Morning
-                            </SelectItem>
+                            <SelectItem value="morning">🌅 Morning</SelectItem>
                             <SelectItem value="afternoon">
                               🌆 Afternoon
                             </SelectItem>
@@ -870,13 +868,18 @@ export default function Tasks() {
                         />
                       </div>
                     </div>
+
                     {/* Scheduling Section */}
                     <div className="space-y-4">
+                      <Label className="text-base font-medium">
+                        Scheduling
+                      </Label>
+
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <Label>Scheduled Date</Label>
-                          <div className="mt-1">
-                            <div className="flex flex-wrap gap-2 mb-2">
+                          <div className="space-y-2 mt-1">
+                            <div className="flex flex-wrap gap-2">
                               {[
                                 {
                                   label: "Today",
@@ -922,54 +925,60 @@ export default function Tasks() {
                               type="date"
                               value={newTask.scheduledFor}
                               onChange={(e) => {
-                                console.log("Scheduled date changed:", e.target.value);
                                 setNewTask((prev) => ({
                                   ...prev,
                                   scheduledFor: e.target.value,
                                 }));
                               }}
                               className="w-full"
-                              placeholder="Select scheduled date..."
                             />
-                            <p className="text-xs text-muted-foreground mt-1">
-                              Current scheduled: {newTask.scheduledFor || "None"}
-                            </p>
                           </div>
                         </div>
 
+                        <div>
+                          <Label>Due Time</Label>
+                          <Input
+                            type="time"
+                            value={newTask.dueTime}
+                            onChange={(e) =>
+                              setNewTask((prev) => ({
+                                ...prev,
+                                dueTime: e.target.value,
+                              }))
+                            }
+                            className="mt-1"
+                          />
+                        </div>
+                      </div>
+
                       <div>
                         <Label>Hard Deadline (Due Date)</Label>
-                        <div className="mt-1">
-                          <Input
-                            type="date"
-                            value={newTask.dueDate ? format(newTask.dueDate, "yyyy-MM-dd") : ""}
-                            onChange={(e) => {
-                              console.log("Date input changed:", e.target.value);
-                              if (e.target.value) {
-                                const selectedDate = new Date(e.target.value + "T00:00:00");
-                                console.log("Parsed date:", selectedDate);
-                                setNewTask((prev) => {
-                                  const updated = {
-                                    ...prev,
-                                    dueDate: selectedDate,
-                                  };
-                                  console.log("Updated newTask:", updated);
-                                  return updated;
-                                });
-                              } else {
-                                setNewTask((prev) => ({
-                                  ...prev,
-                                  dueDate: null,
-                                }));
-                              }
-                            }}
-                            className="w-full"
-                            placeholder="Select deadline..."
-                          />
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Current due date: {newTask.dueDate ? newTask.dueDate.toString() : "None"}
-                          </p>
-                        </div>
+                        <Input
+                          type="date"
+                          value={
+                            newTask.dueDate
+                              ? format(newTask.dueDate, "yyyy-MM-dd")
+                              : ""
+                          }
+                          onChange={(e) => {
+                            if (e.target.value) {
+                              const selectedDate = new Date(
+                                e.target.value + "T00:00:00",
+                              );
+                              setNewTask((prev) => ({
+                                ...prev,
+                                dueDate: selectedDate,
+                              }));
+                            } else {
+                              setNewTask((prev) => ({
+                                ...prev,
+                                dueDate: null,
+                              }));
+                            }
+                          }}
+                          className="w-full mt-1"
+                          placeholder="Select deadline..."
+                        />
                       </div>
                     </div>
 
@@ -980,6 +989,7 @@ export default function Tasks() {
                         value={newTask.tags.join(", ")}
                         onChange={(e) => handleTagInput(e.target.value)}
                         placeholder="coding, urgent, research..."
+                        className="mt-1"
                       />
                       {recentTags.length > 0 && (
                         <div className="mt-2">
@@ -1009,6 +1019,7 @@ export default function Tasks() {
                         </div>
                       )}
                     </div>
+
                     <Button onClick={handleCreateTask} className="w-full">
                       <Sparkles className="h-4 w-4 mr-2" />
                       {editingTask ? "Update Task" : "Create Task"}
