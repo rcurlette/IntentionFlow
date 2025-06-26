@@ -16,6 +16,13 @@ import type {
   DayPlan,
 } from "../types";
 
+// Helper function to check if Supabase is configured
+const requireSupabase = () => {
+  if (!isSupabaseConfigured) {
+    throw new Error("Supabase not configured, falling back to localStorage");
+  }
+};
+
 // Helper function to convert database task to app task
 const dbTaskToTask = (dbTask: DatabaseTask): Task => ({
   id: dbTask.id,
