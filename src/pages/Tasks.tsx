@@ -104,24 +104,22 @@ export default function Tasks() {
     },
   });
 
-  // Load all tasks from all day plans
+  // Load all tasks from database
   useEffect(() => {
-    const dayPlans = getDayPlans();
-    const tasks: Task[] = [];
+    const loadTasks = async () => {
+      try {
+        const tasks = await getAllTasks();
+        setAllTasks(tasks);
 
-    dayPlans.forEach((plan) => {
-      tasks.push(
-        ...plan.morningTasks,
-        ...plan.afternoonTasks,
-        ...plan.laterBird,
-      );
-    });
+        // Load recent tags
+        const recent = getRecentTags(8);
+        setRecentTags(recent.map((r) => r.tag));
+      } catch (error) {
+        console.error("Error loading tasks:", error);
+      }
+    };
 
-    setAllTasks(tasks);
-
-    // Load recent tags
-    const recent = getRecentTags(8);
-    setRecentTags(recent.map((r) => r.tag));
+    loadTasks();
   }, []);
 
   // Get available tags from all tasks
