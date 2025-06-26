@@ -1,12 +1,6 @@
 import { useEffect, useState } from "react";
 import { DayPlan, Task } from "@/types";
-import {
-  getTodayPlan,
-  updateTask,
-  deleteTask,
-  addTask,
-  addLaterBirdTask,
-} from "@/lib/storage";
+import { getTodayPlan, updateTask, deleteTask, addTask } from "@/lib/storage";
 import {
   getMotivationalMessage,
   getStreakMessage,
