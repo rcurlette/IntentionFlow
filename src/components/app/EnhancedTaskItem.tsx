@@ -38,7 +38,6 @@ export function EnhancedTaskItem({
   className,
 }: EnhancedTaskItemProps) {
   const [isHovered, setIsHovered] = useState(false);
-  const [isCompleting, setIsCompleting] = useState(false);
 
   const handleToggleComplete = async () => {
     onToggleComplete(task.id);
