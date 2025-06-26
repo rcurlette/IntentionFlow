@@ -553,9 +553,53 @@ export async function bulkDeleteTasks(taskIds: string[]): Promise<void> {
   }
 }
 
-// Legacy function aliases for backward compatibility
-export const addTask = saveTask;
-export const updateTask = saveTask;
+// Task creation function with proper defaults
+export async function addTask(
+  taskData: Omit<Task, "id" | "createdAt" | "updatedAt" | "completed">,
+): Promise<void> {
+  const newTask: Task = {
+    ...taskData,
+    id: crypto.randomUUID(),
+    status: taskData.status || "todo",
+    completed: (taskData.status || "todo") === "completed",
+    timeSpent: taskData.timeSpent || 0,
+    pomodoroCount: taskData.pomodoroCount || 0,
+    tags: taskData.tags || [],
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+  await saveTask(newTask);
+}
+
+// Task update function that handles status/completed sync
+export async function updateTask(
+  taskId: string,
+  updates: Partial<Task>,
+): Promise<void> {
+  const existingTask = await getTaskById(taskId);
+  if (!existingTask) return;
+
+  const updatedTask: Task = {
+    ...existingTask,
+    ...updates,
+    updatedAt: new Date(),
+  };
+
+  // Sync status and completed fields
+  if (updates.status) {
+    updatedTask.completed = updates.status === "completed";
+    if (updates.status === "completed" && !updatedTask.completedAt) {
+      updatedTask.completedAt = new Date();
+    }
+  } else if (updates.completed !== undefined) {
+    updatedTask.status = updates.completed ? "completed" : "todo";
+    if (updates.completed && !updatedTask.completedAt) {
+      updatedTask.completedAt = new Date();
+    }
+  }
+
+  await saveTask(updatedTask);
+}
 
 // Add missing functions
 export async function addLaterBirdTask(
