@@ -46,6 +46,88 @@ interface PomodoroSession {
   distractions?: number;
 }
 
+interface FlowEntry {
+  id: string;
+  userId?: string;
+  timestamp: string;
+  activity: string;
+  activityType: "brain" | "admin" | "break" | "other";
+  flowRating: number; // 1-5 scale
+  mood: number; // 1-5 scale
+  energyLevel: number; // 1-5 scale
+  location?: string;
+  notes?: string;
+  tags?: string[];
+  duration?: number; // in minutes
+  createdAt: string;
+}
+
+interface FlowAnalytics {
+  peakFlowHours: number[];
+  lowFlowHours: number[];
+  bestActivitiesForMorning: string[];
+  bestActivitiesForAfternoon: string[];
+  activitiesToAvoid: string[];
+  weeklyTrends: {
+    [key: string]: { day: string; avgFlow: number; bestActivity: string };
+  };
+  improvementSuggestions: string[];
+}
+
+interface FlowTrackingSettings {
+  isEnabled: boolean;
+  interval: number; // minutes between prompts
+  quietHours: { start: string; end: string };
+  trackingDays: number[]; // 0-6, days of week
+  autoDetectActivity: boolean;
+  showFlowInsights: boolean;
+  minimumEntriesForInsights: number;
+  promptStyle: "gentle" | "persistent" | "minimal";
+}
+
+interface UserSettings {
+  theme: "light" | "dark";
+  colorTheme: "vibrant" | "accessible";
+  focusDuration: number;
+  shortBreakDuration: number;
+  longBreakDuration: number;
+  sessionsBeforeLongBreak: number;
+  autoStartBreaks: boolean;
+  autoStartPomodoros: boolean;
+  notificationsEnabled: boolean;
+  soundEnabled: boolean;
+  dailyGoal: number;
+}
+
+interface Achievement {
+  id: string;
+  type: "streak" | "completion" | "focus" | "milestone";
+  title: string;
+  description: string;
+  icon: string;
+  earnedAt: string;
+  metadata?: any;
+}
+
+interface UserStreak {
+  currentStreak: number;
+  longestStreak: number;
+  lastActivityDate?: string;
+}
+
+interface TaskAnalytics {
+  totalTasks: number;
+  completedTasks: number;
+  completionRate: number;
+  avgTasksPerDay: number;
+  productivityScore: number;
+  typeBreakdown: { brain: number; admin: number };
+  periodBreakdown: { morning: number; afternoon: number };
+  tagAnalytics: { tag: string; count: number; completionRate: number }[];
+  timeSpentByType: { brain: number; admin: number };
+  pomodoroEfficiency: number;
+}
+
 // Helper functions
 function corsHeaders() {
   return {
