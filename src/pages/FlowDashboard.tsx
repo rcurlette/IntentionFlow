@@ -112,6 +112,15 @@ export default function FlowDashboard() {
       completed: false,
       isCore: false,
     },
+    {
+      id: "vision",
+      name: "Vision Alignment",
+      icon: Heart,
+      duration: 2,
+      description: "Connect with your deeper purpose",
+      completed: false,
+      isCore: false,
+    },
   ]);
 
   const [morningIntention, setMorningIntention] = useState("");
