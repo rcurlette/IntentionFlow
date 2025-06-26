@@ -456,6 +456,195 @@ async function deleteTask(taskId: string, context: Context) {
   }
 }
 
+// Bulk Operations Implementation Functions
+async function createBulkTasks(
+  bulkData: { tasks: Partial<Task>[] },
+  context: Context,
+) {
+  try {
+    const { tasks } = bulkData;
+
+    if (!tasks || !Array.isArray(tasks)) {
+      return errorResponse("Invalid bulk data: tasks array is required");
+    }
+
+    const createdTasks: Task[] = [];
+
+    for (const taskData of tasks) {
+      if (!taskData.title || !taskData.type || !taskData.period) {
+        continue; // Skip invalid tasks
+      }
+
+      const newTask: Task = {
+        id: crypto.randomUUID(),
+        title: taskData.title,
+        description: taskData.description || "",
+        type: taskData.type,
+        period: taskData.period,
+        status: taskData.status || "todo",
+        completed: (taskData.status || "todo") === "completed",
+        priority: taskData.priority || "medium",
+        tags: taskData.tags || [],
+        timeSpent: taskData.timeSpent || 0,
+        pomodoroCount: taskData.pomodoroCount || 0,
+        timeBlock: taskData.timeBlock,
+        timeEstimate: taskData.timeEstimate,
+        scheduledFor:
+          taskData.scheduledFor || new Date().toISOString().split("T")[0],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      createdTasks.push(newTask);
+    }
+
+    return jsonResponse(
+      {
+        tasks: createdTasks,
+        count: createdTasks.length,
+        message: `${createdTasks.length} tasks created successfully`,
+      },
+      201,
+    );
+  } catch (error) {
+    return errorResponse("Failed to create bulk tasks", 500);
+  }
+}
+
+async function updateBulkTasks(
+  bulkUpdate: { taskIds: string[]; updates: Partial<Task> },
+  context: Context,
+) {
+  try {
+    const { taskIds, updates } = bulkUpdate;
+
+    if (!taskIds || !Array.isArray(taskIds) || taskIds.length === 0) {
+      return errorResponse("Invalid bulk update: taskIds array is required");
+    }
+
+    // In production, update multiple tasks in your database
+    const updatedTasks = taskIds.map((id) => ({
+      id,
+      ...updates,
+      updatedAt: new Date().toISOString(),
+    }));
+
+    return jsonResponse({
+      updatedTaskIds: taskIds,
+      updates,
+      count: taskIds.length,
+      message: `${taskIds.length} tasks updated successfully`,
+    });
+  } catch (error) {
+    return errorResponse("Failed to update bulk tasks", 500);
+  }
+}
+
+async function deleteBulkTasks(
+  bulkDelete: { taskIds: string[] },
+  context: Context,
+) {
+  try {
+    const { taskIds } = bulkDelete;
+
+    if (!taskIds || !Array.isArray(taskIds) || taskIds.length === 0) {
+      return errorResponse("Invalid bulk delete: taskIds array is required");
+    }
+
+    // In production, delete multiple tasks from your database
+
+    return jsonResponse({
+      deletedTaskIds: taskIds,
+      count: taskIds.length,
+      message: `${taskIds.length} tasks deleted successfully`,
+    });
+  } catch (error) {
+    return errorResponse("Failed to delete bulk tasks", 500);
+  }
+}
+
+// Task Templates Implementation Functions
+async function getTaskTemplates(context: Context) {
+  try {
+    // Mock templates - in production, query from your database
+    const templates = [
+      {
+        id: crypto.randomUUID(),
+        name: "Daily Planning",
+        description: "Standard morning planning routine",
+        type: "brain",
+        period: "morning",
+        priority: "high",
+        tags: ["planning", "daily"],
+        timeEstimate: 30,
+        category: "Planning",
+      },
+      {
+        id: crypto.randomUUID(),
+        name: "Email Processing",
+        description: "Process and respond to emails",
+        type: "admin",
+        period: "afternoon",
+        priority: "medium",
+        tags: ["email", "communication"],
+        timeEstimate: 45,
+        category: "Communication",
+      },
+      {
+        id: crypto.randomUUID(),
+        name: "Deep Work Session",
+        description: "Focused work on important projects",
+        type: "brain",
+        period: "morning",
+        priority: "high",
+        tags: ["deep-work", "focus"],
+        timeEstimate: 120,
+        category: "Focus Work",
+      },
+    ];
+
+    return jsonResponse({
+      templates,
+      count: templates.length,
+    });
+  } catch (error) {
+    return errorResponse("Failed to fetch task templates", 500);
+  }
+}
+
+async function createTaskTemplate(templateData: any, context: Context) {
+  try {
+    if (!templateData.name || !templateData.type || !templateData.period) {
+      return errorResponse("Missing required fields: name, type, period");
+    }
+
+    const newTemplate = {
+      id: crypto.randomUUID(),
+      name: templateData.name,
+      description: templateData.description || "",
+      type: templateData.type,
+      period: templateData.period,
+      priority: templateData.priority || "medium",
+      tags: templateData.tags || [],
+      timeEstimate: templateData.timeEstimate,
+      category: templateData.category || "General",
+      createdAt: new Date().toISOString(),
+    };
+
+    // In production, save to your database
+
+    return jsonResponse(
+      {
+        template: newTemplate,
+        message: "Task template created successfully",
+      },
+      201,
+    );
+  } catch (error) {
+    return errorResponse("Failed to create task template", 500);
+  }
+}
+
 async function getDayPlan(date: string, context: Context) {
   try {
     // Mock day plan - in production, aggregate from your database
