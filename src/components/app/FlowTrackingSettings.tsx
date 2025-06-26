@@ -425,6 +425,13 @@ export function FlowTrackingSettings({
               <li>
                 • Research shows 20% productivity gains when aligned with flow
               </li>
+              <li>
+                • <strong>Quick access:</strong> Click "Track Flow" in
+                navigation or press{" "}
+                <kbd className="px-1 py-0.5 bg-muted rounded text-xs">
+                  Ctrl+F
+                </kbd>
+              </li>
             </ul>
           </div>
         </CardContent>
