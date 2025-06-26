@@ -16,6 +16,7 @@ import Settings from "./pages/Settings";
 import About from "./pages/About";
 import ApiDemo from "./pages/ApiDemo";
 import AIFeatures from "./pages/AIFeatures";
+import Calendar from "./pages/Calendar";
 import FlowTrackerPopupPage from "./pages/FlowTrackerPopupPage";
 import NotFound from "./pages/NotFound";
 
