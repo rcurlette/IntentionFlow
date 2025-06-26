@@ -193,6 +193,7 @@ export default function Pomodoro() {
               state={state}
               timeRemaining={timeRemaining}
               totalDuration={getCurrentDuration()}
+              linkedTask={linkedTask}
               onStart={handleStartWithoutTask}
               onPause={pauseTimer}
               onResume={resumeTimer}
