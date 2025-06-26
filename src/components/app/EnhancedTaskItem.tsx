@@ -60,9 +60,8 @@ export function EnhancedTaskItem({
   return (
     <div
       className={cn(
-        "flex items-start space-x-3 p-3 bg-background rounded-lg border hover:shadow-md transition-all duration-200 group",
-        task.completed && "opacity-75",
-        isCompleting && "animate-celebration",
+        "flex items-start space-x-3 p-3 bg-background rounded-lg border hover:shadow-md transition-all duration-200 group focus-within:ring-2 focus-within:ring-primary/20",
+        task.completed && "bg-success/10 border-success/20",
         className,
       )}
       onMouseEnter={() => setIsHovered(true)}
