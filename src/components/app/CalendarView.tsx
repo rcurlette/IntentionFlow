@@ -407,9 +407,9 @@ export function CalendarView({
 
                   {/* Tasks */}
                   <div className="space-y-2">
-                    {dayTasks.map((task) => (
+                    {dayTasks.map((task, taskIndex) => (
                       <TaskCard
-                        key={task.id}
+                        key={`task-${task.id}-${dateStr}-${taskIndex}`}
                         task={task}
                         onEdit={onEditTask}
                         onDelete={onDeleteTask}
