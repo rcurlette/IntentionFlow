@@ -32,7 +32,6 @@ export interface DayPlan {
       type: "doc" | "site" | "video" | "other";
     }>;
   };
-  laterBird: Task[];
   pomodoroCompleted: number;
   streakCount: number;
 }
