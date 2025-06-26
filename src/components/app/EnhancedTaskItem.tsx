@@ -61,6 +61,15 @@ export function EnhancedTaskItem({
   className,
 }: EnhancedTaskItemProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const [showSubtasks, setShowSubtasks] = useState(true);
+
+  // Calculate subtask progress
+  const completedSubtasks = subtasks.filter(
+    (subtask) => subtask.completed,
+  ).length;
+  const totalSubtasks = subtasks.length;
+  const subtaskProgress =
+    totalSubtasks > 0 ? (completedSubtasks / totalSubtasks) * 100 : 0;
 
   const handleToggleComplete = async () => {
     onToggleComplete(task.id);
