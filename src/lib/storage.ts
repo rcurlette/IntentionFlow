@@ -602,7 +602,10 @@ export async function updateTask(
   updates: Partial<Task>,
 ): Promise<void> {
   const existingTask = await getTaskById(taskId);
-  if (!existingTask) return;
+  if (!existingTask) {
+    console.warn(`Task with ID ${taskId} not found for update`);
+    return;
+  }
 
   const updatedTask: Task = {
     ...existingTask,
