@@ -866,6 +866,153 @@ export default function Tasks() {
                         />
                       </div>
                     </div>
+                    {/* Scheduling Section */}
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label>Scheduled Date</Label>
+                          <div className="mt-1">
+                            <div className="flex flex-wrap gap-2 mb-2">
+                              {[
+                                {
+                                  label: "Today",
+                                  value: format(new Date(), "yyyy-MM-dd"),
+                                },
+                                {
+                                  label: "Tomorrow",
+                                  value: format(
+                                    addDays(new Date(), 1),
+                                    "yyyy-MM-dd",
+                                  ),
+                                },
+                                {
+                                  label: "Next Week",
+                                  value: format(
+                                    addDays(new Date(), 7),
+                                    "yyyy-MM-dd",
+                                  ),
+                                },
+                              ].map((option) => (
+                                <Button
+                                  key={option.value}
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() =>
+                                    setNewTask((prev) => ({
+                                      ...prev,
+                                      scheduledFor: option.value,
+                                    }))
+                                  }
+                                  className={cn(
+                                    "h-7 text-xs",
+                                    newTask.scheduledFor === option.value &&
+                                      "border-primary bg-primary/10",
+                                  )}
+                                >
+                                  {option.label}
+                                </Button>
+                              ))}
+                            </div>
+                            <Popover
+                              open={isCalendarOpen}
+                              onOpenChange={setIsCalendarOpen}
+                            >
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  className={cn(
+                                    "w-full justify-start text-left font-normal",
+                                    !newTask.scheduledFor &&
+                                      "text-muted-foreground",
+                                  )}
+                                >
+                                  <CalendarIcon className="mr-2 h-4 w-4" />
+                                  {newTask.scheduledFor
+                                    ? format(
+                                        new Date(newTask.scheduledFor),
+                                        "PPP",
+                                      )
+                                    : "Pick a date"}
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0">
+                                <Calendar
+                                  mode="single"
+                                  selected={
+                                    newTask.scheduledFor
+                                      ? new Date(newTask.scheduledFor)
+                                      : undefined
+                                  }
+                                  onSelect={(date) => {
+                                    if (date) {
+                                      setNewTask((prev) => ({
+                                        ...prev,
+                                        scheduledFor: format(
+                                          date,
+                                          "yyyy-MM-dd",
+                                        ),
+                                      }));
+                                    }
+                                    setIsCalendarOpen(false);
+                                  }}
+                                  initialFocus
+                                />
+                              </PopoverContent>
+                            </Popover>
+                          </div>
+                        </div>
+
+                        <div>
+                          <Label>Due Time</Label>
+                          <Input
+                            type="time"
+                            value={newTask.dueTime}
+                            onChange={(e) =>
+                              setNewTask((prev) => ({
+                                ...prev,
+                                dueTime: e.target.value,
+                              }))
+                            }
+                            className="mt-1"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label>Hard Deadline (Due Date)</Label>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                "w-full justify-start text-left font-normal mt-1",
+                                !newTask.dueDate && "text-muted-foreground",
+                              )}
+                            >
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              {newTask.dueDate
+                                ? format(newTask.dueDate, "PPP")
+                                : "Set deadline (optional)"}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0">
+                            <Calendar
+                              mode="single"
+                              selected={newTask.dueDate || undefined}
+                              onSelect={(date) => {
+                                setNewTask((prev) => ({
+                                  ...prev,
+                                  dueDate: date || null,
+                                }));
+                              }}
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                    </div>
+
                     <div>
                       <Label htmlFor="tags">Tags (comma-separated)</Label>
                       <Input
