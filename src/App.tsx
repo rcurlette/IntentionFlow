@@ -61,6 +61,7 @@ const App = () => (
               <Route path="/analytics" element={<Analytics />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/about" element={<About />} />
+              <Route path="/ai-features" element={<AIFeatures />} />
               <Route path="/api-demo" element={<ApiDemo />} />
               <Route
                 path="/flow-tracker-popup"
