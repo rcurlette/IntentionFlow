@@ -212,6 +212,8 @@ export default function Pomodoro() {
           <div className="space-y-6">
             <FocusMusicSelector isTimerRunning={state === "running"} />
 
+            <YouTubeMusicPlayer autoPlay={state === "running"} />
+
             <FlowStateMonitor
               flowScore={flowScore}
               distractionCount={distractionCount}
