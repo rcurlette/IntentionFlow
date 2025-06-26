@@ -1,108 +1,637 @@
+import { useState, useEffect, useMemo } from "react";
+import { Task } from "@/types";
+import {
+  getDayPlans,
+  saveDayPlan,
+  addTask,
+  updateTask,
+  deleteTask,
+  getTodayPlan,
+} from "@/lib/storage";
+import { getTemplates, createTasksFromTemplate } from "@/lib/task-templates";
+import { useTaskFilters } from "@/hooks/use-task-filters";
+import { generateId } from "@/lib/productivity-utils";
+
 import { Navigation } from "@/components/app/Navigation";
+import { TaskCard } from "@/components/app/TaskCard";
+import { TaskFilterPanel } from "@/components/app/TaskFilterPanel";
+import { TaskTemplatesPanel } from "@/components/app/TaskTemplatesPanel";
+import { TaskBulkOperations } from "@/components/app/TaskBulkOperations";
+import { TaskAnalyticsDashboard } from "@/components/app/TaskAnalyticsDashboard";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Target, Brain, FileText, Plus, Filter } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+import {
+  Plus,
+  FileTemplate,
+  BarChart3,
+  Download,
+  Upload,
+  Search,
+  Grid3X3,
+  List,
+  Target,
+  Brain,
+  FileText,
+  Clock,
+  Sparkles,
+} from "lucide-react";
 
 export default function Tasks() {
+  const [allTasks, setAllTasks] = useState<Task[]>([]);
+  const [selectedTasks, setSelectedTasks] = useState<Task[]>([]);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+
+  const [newTask, setNewTask] = useState({
+    title: "",
+    description: "",
+    type: "brain" as Task["type"],
+    period: "morning" as Task["period"],
+    priority: "medium" as Task["priority"],
+    timeBlock: 25,
+    tags: [] as string[],
+  });
+
+  const templates = getTemplates();
+
+  // Load all tasks from all day plans
+  useEffect(() => {
+    const dayPlans = getDayPlans();
+    const tasks: Task[] = [];
+
+    dayPlans.forEach((plan) => {
+      tasks.push(
+        ...plan.morningTasks,
+        ...plan.afternoonTasks,
+        ...plan.laterBird,
+      );
+    });
+
+    setAllTasks(tasks);
+  }, []);
+
+  // Get available tags from all tasks
+  const availableTags = useMemo(() => {
+    const tagSet = new Set<string>();
+    allTasks.forEach((task) => {
+      task.tags?.forEach((tag) => tagSet.add(tag));
+    });
+    return Array.from(tagSet);
+  }, [allTasks]);
+
+  // Use filtering hook
+  const { filters, filteredTasks, updateFilter, resetFilters, getFilterCount } =
+    useTaskFilters(allTasks);
+
+  const handleCreateTask = () => {
+    if (!newTask.title.trim()) return;
+
+    const taskData = {
+      title: newTask.title,
+      description: newTask.description,
+      type: newTask.type,
+      period: newTask.period,
+      priority: newTask.priority,
+      timeBlock: newTask.timeBlock,
+      tags: newTask.tags,
+      completed: false,
+    };
+
+    if (editingTask) {
+      updateTask(editingTask.id, taskData);
+    } else {
+      addTask(taskData);
+    }
+
+    // Reload tasks
+    const dayPlans = getDayPlans();
+    const tasks: Task[] = [];
+    dayPlans.forEach((plan) => {
+      tasks.push(
+        ...plan.morningTasks,
+        ...plan.afternoonTasks,
+        ...plan.laterBird,
+      );
+    });
+    setAllTasks(tasks);
+
+    // Reset form
+    setNewTask({
+      title: "",
+      description: "",
+      type: "brain",
+      period: "morning",
+      priority: "medium",
+      timeBlock: 25,
+      tags: [],
+    });
+    setIsCreateTaskOpen(false);
+    setEditingTask(null);
+  };
+
+  const handleEditTask = (task: Task) => {
+    setEditingTask(task);
+    setNewTask({
+      title: task.title,
+      description: task.description || "",
+      type: task.type,
+      period: task.period,
+      priority: task.priority,
+      timeBlock: task.timeBlock || 25,
+      tags: task.tags || [],
+    });
+    setIsCreateTaskOpen(true);
+  };
+
+  const handleDeleteTask = (taskId: string) => {
+    deleteTask(taskId);
+    setAllTasks((prev) => prev.filter((task) => task.id !== taskId));
+    setSelectedTasks((prev) => prev.filter((task) => task.id !== taskId));
+  };
+
+  const handleToggleComplete = (taskId: string) => {
+    const task = allTasks.find((t) => t.id === taskId);
+    if (task) {
+      updateTask(taskId, { completed: !task.completed });
+      setAllTasks((prev) =>
+        prev.map((t) =>
+          t.id === taskId ? { ...t, completed: !t.completed } : t,
+        ),
+      );
+    }
+  };
+
+  const handleUseTemplate = (
+    template: any,
+    period: "morning" | "afternoon",
+  ) => {
+    const tasksFromTemplate = createTasksFromTemplate(template, period);
+    tasksFromTemplate.forEach((taskData) => {
+      addTask(taskData);
+    });
+
+    // Reload tasks
+    const dayPlans = getDayPlans();
+    const tasks: Task[] = [];
+    dayPlans.forEach((plan) => {
+      tasks.push(
+        ...plan.morningTasks,
+        ...plan.afternoonTasks,
+        ...plan.laterBird,
+      );
+    });
+    setAllTasks(tasks);
+  };
+
+  const handleTaskSelection = (task: Task, selected: boolean) => {
+    setSelectedTasks((prev) =>
+      selected
+        ? [...prev, task]
+        : prev.filter((selectedTask) => selectedTask.id !== task.id),
+    );
+  };
+
+  const handleSelectAll = () => {
+    setSelectedTasks([...filteredTasks]);
+  };
+
+  const handleDeselectAll = () => {
+    setSelectedTasks([]);
+  };
+
+  // Bulk operations
+  const handleBulkComplete = (taskIds: string[]) => {
+    taskIds.forEach((id) => {
+      updateTask(id, { completed: true });
+    });
+    setAllTasks((prev) =>
+      prev.map((task) =>
+        taskIds.includes(task.id) ? { ...task, completed: true } : task,
+      ),
+    );
+    setSelectedTasks([]);
+  };
+
+  const handleBulkDelete = (taskIds: string[]) => {
+    taskIds.forEach((id) => {
+      deleteTask(id);
+    });
+    setAllTasks((prev) => prev.filter((task) => !taskIds.includes(task.id)));
+    setSelectedTasks([]);
+  };
+
+  const handleBulkUpdatePeriod = (
+    taskIds: string[],
+    period: "morning" | "afternoon",
+  ) => {
+    taskIds.forEach((id) => {
+      updateTask(id, { period });
+    });
+    setAllTasks((prev) =>
+      prev.map((task) =>
+        taskIds.includes(task.id) ? { ...task, period } : task,
+      ),
+    );
+  };
+
+  const handleBulkUpdatePriority = (
+    taskIds: string[],
+    priority: Task["priority"],
+  ) => {
+    taskIds.forEach((id) => {
+      updateTask(id, { priority });
+    });
+    setAllTasks((prev) =>
+      prev.map((task) =>
+        taskIds.includes(task.id) ? { ...task, priority } : task,
+      ),
+    );
+  };
+
+  const handleBulkAddTags = (taskIds: string[], tags: string[]) => {
+    taskIds.forEach((id) => {
+      const task = allTasks.find((t) => t.id === id);
+      if (task) {
+        const existingTags = task.tags || [];
+        const newTags = [...new Set([...existingTags, ...tags])];
+        updateTask(id, { tags: newTags });
+      }
+    });
+    // Reload tasks to get updated tags
+    const dayPlans = getDayPlans();
+    const tasks: Task[] = [];
+    dayPlans.forEach((plan) => {
+      tasks.push(
+        ...plan.morningTasks,
+        ...plan.afternoonTasks,
+        ...plan.laterBird,
+      );
+    });
+    setAllTasks(tasks);
+  };
+
+  const handleBulkDuplicate = (taskIds: string[]) => {
+    taskIds.forEach((id) => {
+      const task = allTasks.find((t) => t.id === id);
+      if (task) {
+        addTask({
+          title: `${task.title} (Copy)`,
+          description: task.description,
+          type: task.type,
+          period: task.period,
+          priority: task.priority,
+          timeBlock: task.timeBlock,
+          tags: task.tags,
+          completed: false,
+        });
+      }
+    });
+    // Reload tasks
+    const dayPlans = getDayPlans();
+    const tasks: Task[] = [];
+    dayPlans.forEach((plan) => {
+      tasks.push(
+        ...plan.morningTasks,
+        ...plan.afternoonTasks,
+        ...plan.laterBird,
+      );
+    });
+    setAllTasks(tasks);
+  };
+
+  const handleTagInput = (value: string) => {
+    const tags = value
+      .split(",")
+      .map((tag) => tag.trim())
+      .filter((tag) => tag.length > 0);
+    setNewTask((prev) => ({ ...prev, tags }));
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
 
       <main className="pt-20 pb-8 px-4 container mx-auto">
+        {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-primary via-focus to-energy bg-clip-text text-transparent mb-2">
-            Task Management
-          </h1>
-          <p className="text-muted-foreground">
-            Organize your brain and admin tasks for optimal flow
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <Card className="bg-gradient-to-br from-focus/20 to-focus/10 border-focus/20">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2 text-focus">
-                <Brain className="h-5 w-5" />
-                <span>Brain Tasks</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground mb-4">
-                Deep work, creative thinking, and complex problem-solving tasks
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-primary via-focus to-energy bg-clip-text text-transparent">
+                Advanced Task Management
+              </h1>
+              <p className="text-muted-foreground">
+                Organize, filter, and analyze your productivity
               </p>
-              <Button className="w-full bg-focus text-focus-foreground">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Brain Task
-              </Button>
-            </CardContent>
-          </Card>
+            </div>
 
-          <Card className="bg-gradient-to-br from-admin/20 to-admin/10 border-admin/20">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2 text-admin">
-                <FileText className="h-5 w-5" />
-                <span>Admin Tasks</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground mb-4">
-                Emails, meetings, routine tasks, and administrative work
-              </p>
-              <Button className="w-full bg-admin text-admin-foreground">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Admin Task
-              </Button>
-            </CardContent>
-          </Card>
+            <div className="flex items-center space-x-3">
+              <TaskTemplatesPanel
+                templates={templates}
+                onUseTemplate={handleUseTemplate}
+              />
 
-          <Card className="bg-gradient-to-br from-primary/20 to-primary/10 border-primary/20">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Filter className="h-5 w-5" />
-                <span>Quick Filters</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full justify-start"
-                >
-                  🔥 High Priority
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full justify-start"
-                >
-                  ⏰ Today's Tasks
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full justify-start"
-                >
-                  ✅ Completed
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+              <Dialog
+                open={isCreateTaskOpen}
+                onOpenChange={(open) => {
+                  setIsCreateTaskOpen(open);
+                  if (!open) {
+                    setEditingTask(null);
+                    setNewTask({
+                      title: "",
+                      description: "",
+                      type: "brain",
+                      period: "morning",
+                      priority: "medium",
+                      timeBlock: 25,
+                      tags: [],
+                    });
+                  }
+                }}
+              >
+                <DialogTrigger asChild>
+                  <Button>
+                    <Plus className="h-4 w-4 mr-2" />
+                    New Task
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>
+                      {editingTask ? "Edit Task" : "Create New Task"}
+                    </DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="title">Title</Label>
+                      <Input
+                        id="title"
+                        value={newTask.title}
+                        onChange={(e) =>
+                          setNewTask((prev) => ({
+                            ...prev,
+                            title: e.target.value,
+                          }))
+                        }
+                        placeholder="What needs to be done?"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="description">Description</Label>
+                      <Textarea
+                        id="description"
+                        value={newTask.description}
+                        onChange={(e) =>
+                          setNewTask((prev) => ({
+                            ...prev,
+                            description: e.target.value,
+                          }))
+                        }
+                        placeholder="Additional details..."
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="type">Type</Label>
+                        <Select
+                          value={newTask.type}
+                          onValueChange={(value: Task["type"]) =>
+                            setNewTask((prev) => ({ ...prev, type: value }))
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="brain">
+                              🧠 Brain (Focus work)
+                            </SelectItem>
+                            <SelectItem value="admin">
+                              📋 Admin (Routine tasks)
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="period">Period</Label>
+                        <Select
+                          value={newTask.period}
+                          onValueChange={(value: Task["period"]) =>
+                            setNewTask((prev) => ({ ...prev, period: value }))
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="morning">🌅 Morning</SelectItem>
+                            <SelectItem value="afternoon">
+                              🌆 Afternoon
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="priority">Priority</Label>
+                        <Select
+                          value={newTask.priority}
+                          onValueChange={(value: Task["priority"]) =>
+                            setNewTask((prev) => ({
+                              ...prev,
+                              priority: value,
+                            }))
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="low">🌱 Low</SelectItem>
+                            <SelectItem value="medium">⚡ Medium</SelectItem>
+                            <SelectItem value="high">🔥 High</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="timeBlock">Time Block (min)</Label>
+                        <Input
+                          id="timeBlock"
+                          type="number"
+                          value={newTask.timeBlock}
+                          onChange={(e) =>
+                            setNewTask((prev) => ({
+                              ...prev,
+                              timeBlock: parseInt(e.target.value) || 25,
+                            }))
+                          }
+                          min="5"
+                          max="120"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="tags">Tags (comma-separated)</Label>
+                      <Input
+                        id="tags"
+                        value={newTask.tags.join(", ")}
+                        onChange={(e) => handleTagInput(e.target.value)}
+                        placeholder="coding, urgent, research..."
+                      />
+                    </div>
+                    <Button onClick={handleCreateTask} className="w-full">
+                      <Sparkles className="h-4 w-4 mr-2" />
+                      {editingTask ? "Update Task" : "Create Task"}
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </div>
         </div>
 
-        <div className="mt-8 text-center py-12 text-muted-foreground">
-          <Target className="h-16 w-16 mx-auto mb-4 opacity-50" />
-          <h3 className="text-lg font-medium mb-2">
-            Advanced Task Management Coming Soon!
-          </h3>
-          <p>
-            This page will include task templates, bulk operations, advanced
-            filtering, and task analytics.
-          </p>
-          <p className="text-sm mt-2">
-            For now, you can manage tasks from the Dashboard! 🚀
-          </p>
-        </div>
+        <Tabs defaultValue="manage" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="manage" className="flex items-center space-x-2">
+              <Target className="h-4 w-4" />
+              <span>Manage Tasks</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="analytics"
+              className="flex items-center space-x-2"
+            >
+              <BarChart3 className="h-4 w-4" />
+              <span>Analytics</span>
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="manage" className="space-y-6">
+            {/* Filter Panel */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between text-sm">
+                  <span>Filters & Search</span>
+                  <div className="flex items-center space-x-2">
+                    <Badge variant="outline">
+                      {filteredTasks.length} of {allTasks.length} tasks
+                    </Badge>
+                    <div className="flex items-center border rounded-md">
+                      <Button
+                        variant={viewMode === "grid" ? "default" : "ghost"}
+                        size="sm"
+                        className="h-8 w-8 p-0"
+                        onClick={() => setViewMode("grid")}
+                      >
+                        <Grid3X3 className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant={viewMode === "list" ? "default" : "ghost"}
+                        size="sm"
+                        className="h-8 w-8 p-0"
+                        onClick={() => setViewMode("list")}
+                      >
+                        <List className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <TaskFilterPanel
+                  filters={filters}
+                  onUpdateFilter={updateFilter}
+                  onResetFilters={resetFilters}
+                  filterCount={getFilterCount()}
+                  availableTags={availableTags}
+                />
+              </CardContent>
+            </Card>
+
+            {/* Bulk Operations */}
+            <TaskBulkOperations
+              selectedTasks={selectedTasks}
+              onSelectAll={handleSelectAll}
+              onDeselectAll={handleDeselectAll}
+              onBulkComplete={handleBulkComplete}
+              onBulkDelete={handleBulkDelete}
+              onBulkUpdatePeriod={handleBulkUpdatePeriod}
+              onBulkUpdatePriority={handleBulkUpdatePriority}
+              onBulkAddTags={handleBulkAddTags}
+              onBulkDuplicate={handleBulkDuplicate}
+              totalTaskCount={filteredTasks.length}
+            />
+
+            {/* Tasks Display */}
+            <div
+              className={
+                viewMode === "grid"
+                  ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+                  : "space-y-3"
+              }
+            >
+              {filteredTasks.length === 0 ? (
+                <div className="col-span-full text-center py-12">
+                  <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <h3 className="text-lg font-medium mb-2">No tasks found</h3>
+                  <p className="text-muted-foreground">
+                    {allTasks.length === 0
+                      ? "Create your first task to get started!"
+                      : "Try adjusting your filters or search terms."}
+                  </p>
+                </div>
+              ) : (
+                filteredTasks.map((task) => (
+                  <div key={task.id} className="relative">
+                    <div className="absolute top-2 left-2 z-10">
+                      <Checkbox
+                        checked={selectedTasks.some(
+                          (selectedTask) => selectedTask.id === task.id,
+                        )}
+                        onCheckedChange={(checked) =>
+                          handleTaskSelection(task, !!checked)
+                        }
+                      />
+                    </div>
+                    <TaskCard
+                      task={task}
+                      onToggleComplete={handleToggleComplete}
+                      onEdit={handleEditTask}
+                      onDelete={handleDeleteTask}
+                      showPeriod={true}
+                    />
+                  </div>
+                ))
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="analytics">
+            <TaskAnalyticsDashboard />
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );
