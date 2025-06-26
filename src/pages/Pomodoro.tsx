@@ -68,7 +68,9 @@ export default function Pomodoro() {
   useEffect(() => {
     const linkedTask = location.state?.linkedTask;
     if (linkedTask && state === "idle") {
-      handleStartWithTask(linkedTask.id);
+      handleStartWithTask(linkedTask.id).catch((error) => {
+        console.error("Error starting timer with linked task:", error);
+      });
     }
   }, [location.state]);
 
