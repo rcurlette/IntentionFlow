@@ -481,6 +481,17 @@ export default function Tasks() {
           </TabsList>
 
           <TabsContent value="manage" className="space-y-6">
+            {/* AI-Powered Quick Add */}
+            <div className="max-w-4xl mx-auto">
+              <QuickAddWithNLP
+                onCreateTask={async (taskData) => {
+                  await addTask(taskData);
+                  const tasks = await getAllTasks();
+                  setAllTasks(tasks);
+                }}
+              />
+            </div>
+
             {/* Big New Task Button */}
             <div className="flex justify-center">
               <Dialog
