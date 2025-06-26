@@ -41,14 +41,21 @@ export function TaskLinker({
   const [selectedTaskId, setSelectedTaskId] = useState<string>("");
 
   useEffect(() => {
-    const todayPlan = getTodayPlan();
-    const incompleteTasks = [
-      ...todayPlan.morningTasks,
-      ...todayPlan.afternoonTasks,
-      ...todayPlan.laterBird,
-    ].filter((task) => !task.completed);
+    const loadTasks = async () => {
+      try {
+        const todayPlan = await getTodayPlan();
+        const incompleteTasks = [
+          ...todayPlan.morningTasks,
+          ...todayPlan.afternoonTasks,
+        ].filter((task) => task.status !== "completed");
 
-    setAvailableTasks(incompleteTasks);
+        setAvailableTasks(incompleteTasks);
+      } catch (error) {
+        console.error("Error loading tasks for linker:", error);
+      }
+    };
+
+    loadTasks();
   }, []);
 
   const handleLinkTask = () => {
