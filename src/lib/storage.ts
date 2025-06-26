@@ -7,6 +7,7 @@ import {
   streaksApi,
   pomodoroApi,
 } from "./database";
+import { isSupabaseConfigured } from "./supabase";
 
 // Keep storage keys for backward compatibility and fallbacks
 const STORAGE_KEYS = {
