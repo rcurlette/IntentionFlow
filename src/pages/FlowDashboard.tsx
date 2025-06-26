@@ -6,13 +6,12 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { format, differenceInDays } from "date-fns";
+import { format } from "date-fns";
 import {
   getFlowProgress,
   getTodayFlowSession,
   saveFlowSession,
   initializeFlowJourney,
-  getFlowInsights,
 } from "@/lib/flow-storage";
 import { FlowActions } from "@/components/app/FlowActions";
 import { FlowCoaching } from "@/components/app/FlowCoaching";
