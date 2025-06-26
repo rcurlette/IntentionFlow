@@ -191,12 +191,8 @@ export function getRecentTags(
   const dayPlans = getDayPlans();
   const tagUsage: Record<string, { count: number; lastUsed: Date }> = {};
 
-  dayPlans.forEach((plan) => {
-    const allTasks = [
-      ...plan.morningTasks,
-      ...plan.afternoonTasks,
-      ...plan.laterBird,
-    ];
+  Object.values(dayPlans).forEach((plan) => {
+    const allTasks = [...plan.morningTasks, ...plan.afternoonTasks];
     allTasks.forEach((task) => {
       if (task.tags) {
         task.tags.forEach((tag) => {
@@ -236,12 +232,8 @@ export function getSimilarTasks(
   const dayPlans = getDayPlans();
   const allTasks: Task[] = [];
 
-  dayPlans.forEach((plan) => {
-    allTasks.push(
-      ...plan.morningTasks,
-      ...plan.afternoonTasks,
-      ...plan.laterBird,
-    );
+  Object.values(dayPlans).forEach((plan) => {
+    allTasks.push(...plan.morningTasks, ...plan.afternoonTasks);
   });
 
   const searchText = `${title} ${description}`.toLowerCase();
