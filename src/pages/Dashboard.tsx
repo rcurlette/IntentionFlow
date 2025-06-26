@@ -46,7 +46,6 @@ import {
   Coffee,
   Sparkles,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 export default function Dashboard() {
   const [dayPlan, setDayPlan] = useState<DayPlan | null>(null);
