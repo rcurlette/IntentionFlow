@@ -301,9 +301,9 @@ export function CalendarView({
         {/* Calendar Grid */}
         <div className="flex-1 bg-gray-50">
           <div className="grid grid-cols-7 border-b border-gray-200 bg-white">
-            {weekDays.map((day) => (
+            {weekDays.map((day, dayIndex) => (
               <div
-                key={day.toISOString()}
+                key={`week-header-${day.toISOString()}`}
                 className="border-r border-gray-200 last:border-r-0"
               >
                 <div className="p-4 text-center">
