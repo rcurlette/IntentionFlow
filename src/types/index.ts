@@ -19,26 +19,16 @@ export interface Task {
 }
 
 export interface DayPlan {
-  id: string;
   date: string; // YYYY-MM-DD
   morningTasks: Task[];
   afternoonTasks: Task[];
-  eveningReflection: {
-    tomorrowNeeds?: string;
-    preparation?: string;
-    randomThoughts?: string;
-    dontForget?: string;
-  };
-  firstHourPlan?: {
-    focus: string;
-    resources: Array<{
-      title: string;
-      url: string;
-      type: "doc" | "site" | "video" | "other";
-    }>;
-  };
+  completedTasks: number;
+  totalTasks: number;
   pomodoroCompleted: number;
-  streakCount: number;
+  totalFocusTime: number;
+  averageFlowScore: number;
+  currentStreak: number;
+  achievements: Achievement[];
 }
 
 export interface PomodoroSession {
