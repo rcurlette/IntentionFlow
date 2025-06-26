@@ -69,14 +69,39 @@ export function DragDropTaskManager({
     }),
   );
 
-  // Organize tasks by period and completion status
-  const morningTasks = tasks.filter(
-    (task) => task.period === "morning" && !task.completed,
-  );
-  const afternoonTasks = tasks.filter(
-    (task) => task.period === "afternoon" && !task.completed,
-  );
-  const completedTasks = tasks.filter((task) => task.completed);
+  // Organize tasks by period and completion status with proper sorting
+  const morningTasks = tasks
+    .filter((task) => task.period === "morning" && !task.completed)
+    .sort((a, b) => {
+      // Sort by sortOrder first, then by creation date
+      if (a.sortOrder !== undefined && b.sortOrder !== undefined) {
+        return a.sortOrder - b.sortOrder;
+      }
+      if (a.sortOrder !== undefined) return -1;
+      if (b.sortOrder !== undefined) return 1;
+      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+    });
+
+  const afternoonTasks = tasks
+    .filter((task) => task.period === "afternoon" && !task.completed)
+    .sort((a, b) => {
+      // Sort by sortOrder first, then by creation date
+      if (a.sortOrder !== undefined && b.sortOrder !== undefined) {
+        return a.sortOrder - b.sortOrder;
+      }
+      if (a.sortOrder !== undefined) return -1;
+      if (b.sortOrder !== undefined) return 1;
+      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+    });
+
+  const completedTasks = tasks
+    .filter((task) => task.completed)
+    .sort((a, b) => {
+      // Sort completed tasks by completion date (most recent first)
+      const aCompleted = a.completedAt ? new Date(a.completedAt).getTime() : 0;
+      const bCompleted = b.completedAt ? new Date(b.completedAt).getTime() : 0;
+      return bCompleted - aCompleted;
+    });
 
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event;
