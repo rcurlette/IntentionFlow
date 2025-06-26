@@ -19,6 +19,8 @@ import {
   Shield,
   Eye,
   Brain,
+  Music,
+  Activity,
 } from "lucide-react";
 
 export default function Settings() {
