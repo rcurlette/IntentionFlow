@@ -17,6 +17,7 @@ import {
   Coffee,
   Brain,
   Zap,
+  FileText,
 } from "lucide-react";
 
 interface PomodoroTimerProps {
