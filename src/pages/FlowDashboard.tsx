@@ -15,6 +15,7 @@ import {
   getFlowInsights,
 } from "@/lib/flow-storage";
 import { FlowActions } from "@/components/app/FlowActions";
+import { FlowCoaching } from "@/components/app/FlowCoaching";
 import {
   Sunrise,
   Brain,
