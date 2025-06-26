@@ -1027,10 +1027,16 @@ export default function Tasks() {
                           <div className="pl-8">
                             <EnhancedTaskItem
                               task={task}
+                              subtasks={getSubtasks(task.id)}
                               onToggleComplete={handleToggleComplete}
                               onEdit={handleEditTask}
                               onDelete={handleDeleteTask}
                               onStartPomodoro={handleStartPomodoro}
+                              onCreateSubtask={handleCreateSubtask}
+                              onUpdateSubtask={handleUpdateSubtask}
+                              onDeleteSubtask={handleDeleteSubtask}
+                              onToggleSubtask={handleToggleSubtask}
+                              onReorderSubtasks={handleReorderSubtasks}
                             />
                           </div>
                         </div>
