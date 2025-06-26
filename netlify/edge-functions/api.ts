@@ -443,6 +443,8 @@ export default async function handler(request: Request, context: Context) {
       return await handleDayPlans(request, context);
     case "pomodoro":
       return await handlePomodoro(request, context);
+    case "health":
+      return await handleHealth(request, context);
     default:
       return errorResponse("Route not found", 404);
   }
