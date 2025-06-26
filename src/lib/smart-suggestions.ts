@@ -261,11 +261,11 @@ export async function getSimilarTasks(
     .map((item) => item.task);
 }
 
-export function getTimeEstimateFromHistory(
+export async function getTimeEstimateFromHistory(
   title: string,
   description: string = "",
-  taskType: "brain" | "admin",
-): number | null {
+): Promise<number | null> {
+  const similarTasks = await getSimilarTasks(title, description);
   const similarTasks = getSimilarTasks(title, description);
   const completedSimilarTasks = similarTasks.filter(
     (task) => task.completed && task.timeBlock && task.type === taskType,
