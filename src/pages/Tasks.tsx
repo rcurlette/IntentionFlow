@@ -113,7 +113,7 @@ export default function Tasks() {
         setAllTasks(tasks);
 
         // Load recent tags
-        const recent = getRecentTags(8);
+        const recent = await getRecentTags(8);
         setRecentTags(recent.map((r) => r.tag));
       } catch (error) {
         console.error("Error loading tasks:", error);
