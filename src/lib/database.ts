@@ -214,19 +214,24 @@ export const tasksApi = {
 
   async bulkUpdate(ids: string[], updates: Partial<Task>): Promise<void> {
     if (!isSupabaseConfigured) {
-      throw new Error("Supabase not configured, falling back to localStorage");
+      return; // Gracefully return to allow localStorage fallback
     }
 
-    const dbUpdates = taskToDbTask(updates);
-    const { error } = await supabase
-      .from("tasks")
-      .update(dbUpdates)
-      .in("id", ids)
-      .eq("user_id", TEMP_USER_ID);
+    try {
+      const dbUpdates = taskToDbTask(updates);
+      const { error } = await supabase
+        .from("tasks")
+        .update(dbUpdates)
+        .in("id", ids)
+        .eq("user_id", TEMP_USER_ID);
 
-    if (error) {
-      console.error("Error bulk updating tasks:", error);
-      throw error;
+      if (error) {
+        console.error("Error bulk updating tasks:", error);
+        throw error;
+      }
+    } catch (error) {
+      console.error("Database error in bulkUpdate:", error);
+      throw error; // Re-throw database errors to trigger localStorage fallback
     }
   },
 
