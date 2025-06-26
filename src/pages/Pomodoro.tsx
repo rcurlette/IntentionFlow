@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { Navigation } from "@/components/app/Navigation";
 import { PomodoroTimer } from "@/components/app/PomodoroTimer";
 import { TaskLinker } from "@/components/app/TaskLinker";
@@ -22,6 +23,8 @@ import {
 } from "lucide-react";
 
 export default function Pomodoro() {
+  const location = useLocation();
+
   const {
     state,
     timeRemaining,
@@ -50,6 +53,14 @@ export default function Pomodoro() {
     setTodayPomodoroCount(todayPlan.pomodoroCompleted);
     setTotalFocusTime(todayPlan.pomodoroCompleted * settings.focusDuration);
   }, [sessionsCompleted, settings.focusDuration]);
+
+  // Handle linked task from navigation
+  useEffect(() => {
+    const linkedTask = location.state?.linkedTask;
+    if (linkedTask && state === "idle") {
+      handleStartWithTask(linkedTask.id);
+    }
+  }, [location.state]);
 
   const handleStartWithTask = (taskId: string) => {
     startTimer(taskId);
