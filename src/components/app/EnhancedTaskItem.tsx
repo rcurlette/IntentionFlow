@@ -27,10 +27,22 @@ import { SubtaskManager } from "./SubtaskManager";
 
 interface EnhancedTaskItemProps {
   task: Task;
+  subtasks?: Task[];
   onToggleComplete: (taskId: string) => void;
   onEdit: (task: Task) => void;
   onDelete: (taskId: string) => void;
   onStartPomodoro?: (task: Task) => void;
+  onCreateSubtask?: (
+    parentId: string,
+    subtaskData: Partial<Task>,
+  ) => Promise<void>;
+  onUpdateSubtask?: (
+    subtaskId: string,
+    updates: Partial<Task>,
+  ) => Promise<void>;
+  onDeleteSubtask?: (subtaskId: string) => Promise<void>;
+  onToggleSubtask?: (subtaskId: string) => Promise<void>;
+  onReorderSubtasks?: (parentId: string, subtaskIds: string[]) => Promise<void>;
   className?: string;
 }
 
