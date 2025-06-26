@@ -71,3 +71,65 @@ export interface FlowState {
   distractionCount: number;
   flowScore: number; // 0-100
 }
+
+// Flow Tracking System
+export interface FlowEntry {
+  id: string;
+  userId?: string;
+  timestamp: Date;
+  activity: string;
+  activityType: "brain" | "admin" | "break" | "other";
+  flowRating: number; // 1-5 scale (1=terrible, 5=amazing)
+  mood: number; // 1-5 scale (1=frustrated, 5=joyful)
+  energyLevel: number; // 1-5 scale (1=drained, 5=energized)
+  location?: string;
+  notes?: string;
+  tags?: string[];
+  duration?: number; // in minutes, if activity completed
+  createdAt: Date;
+}
+
+export interface FlowPattern {
+  timeOfDay: string; // "09:00", "14:30", etc.
+  hour: number; // 0-23
+  dayOfWeek: number; // 0-6 (Sunday = 0)
+  averageFlowRating: number;
+  averageMood: number;
+  averageEnergyLevel: number;
+  activityCount: number;
+  commonActivities: { activity: string; count: number; avgRating: number }[];
+  bestActivities: { activity: string; avgRating: number }[];
+  worstActivities: { activity: string; avgRating: number }[];
+}
+
+export interface FlowInsights {
+  peakFlowHours: number[]; // Hours when flow is highest
+  lowFlowHours: number[]; // Hours when flow is lowest
+  bestActivitiesForMorning: string[];
+  bestActivitiesForAfternoon: string[];
+  activitiesToAvoid: string[];
+  optimalFlowPattern: {
+    morning: { time: string; activity: string; expectedFlow: number }[];
+    afternoon: { time: string; activity: string; expectedFlow: number }[];
+  };
+  weeklyTrends: {
+    [key: string]: { day: string; avgFlow: number; bestActivity: string };
+  };
+  improvementSuggestions: string[];
+  dataQuality: {
+    totalEntries: number;
+    daysTracked: number;
+    entriesNeededForBetterInsights: number;
+  };
+}
+
+export interface FlowTrackingSettings {
+  isEnabled: boolean;
+  interval: number; // minutes between prompts (30, 60, 90, 120)
+  quietHours: { start: string; end: string }; // "09:00" format
+  trackingDays: number[]; // 0-6, days of week to track
+  autoDetectActivity: boolean;
+  showFlowInsights: boolean;
+  minimumEntriesForInsights: number;
+  promptStyle: "gentle" | "persistent" | "minimal";
+}
