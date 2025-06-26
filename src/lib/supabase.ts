@@ -3,18 +3,27 @@ import { createClient } from "@supabase/supabase-js";
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error(
-    "Missing Supabase environment variables. Please check your .env file.",
-  );
-}
+// Check if Supabase is configured
+export const isSupabaseConfigured = !!(supabaseUrl && supabaseAnonKey);
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-  },
+// Create a mock client for when Supabase isn't configured
+const createMockClient = () => ({
+  from: () => ({
+    select: () => Promise.reject(new Error("Supabase not configured")),
+    insert: () => Promise.reject(new Error("Supabase not configured")),
+    update: () => Promise.reject(new Error("Supabase not configured")),
+    delete: () => Promise.reject(new Error("Supabase not configured")),
+  }),
 });
+
+export const supabase = isSupabaseConfigured
+  ? createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+      },
+    })
+  : createMockClient();
 
 // For now, we'll use a temporary user ID until auth is implemented
 export const TEMP_USER_ID = "00000000-0000-0000-0000-000000000000";
