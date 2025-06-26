@@ -93,6 +93,45 @@ export default function Settings() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
+                <Activity className="h-5 w-5" />
+                <span>Flow Tracking</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label htmlFor="flow-tracking-enabled">
+                    Enable Flow Tracking
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    Track your productivity and flow states throughout the day
+                  </p>
+                </div>
+                <Switch
+                  id="flow-tracking-enabled"
+                  checked={flowSettings.isEnabled}
+                  onCheckedChange={(checked) =>
+                    updateFlowSettings({ isEnabled: checked })
+                  }
+                />
+              </div>
+              {flowSettings.isEnabled && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={triggerManualPrompt}
+                  className="w-full"
+                >
+                  <Activity className="h-4 w-4 mr-2" />
+                  Test Flow Tracker
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
                 <Bell className="h-5 w-5" />
                 <span>Notifications</span>
               </CardTitle>
