@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/lib/theme-context";
 import { MusicPlayerProvider } from "@/components/app/MusicPlayerProvider";
 import { FlowTrackingPrompt } from "@/components/app/FlowTrackingPrompt";
 import { useFlowTracking } from "@/hooks/use-flow-tracking";
+import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import Dashboard from "./pages/Dashboard";
 import Tasks from "./pages/Tasks";
 import Pomodoro from "./pages/Pomodoro";
@@ -19,8 +20,18 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 function FlowTracker() {
-  const { isPromptOpen, hidePrompt, submitFlowEntry, isSubmitting } =
-    useFlowTracking();
+  const {
+    isPromptOpen,
+    hidePrompt,
+    submitFlowEntry,
+    isSubmitting,
+    triggerManualPrompt,
+  } = useFlowTracking();
+
+  // Global keyboard shortcuts
+  useKeyboardShortcuts({
+    onFlowTracker: triggerManualPrompt,
+  });
 
   return (
     <FlowTrackingPrompt
