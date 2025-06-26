@@ -100,7 +100,12 @@ export default function Dashboard() {
   const handleDeleteTask = async (taskId: string) => {
     try {
       await deleteTask(taskId);
+      console.log("Dashboard: Refreshing day plan...");
       const updatedPlan = await getTodayPlan();
+      console.log("Dashboard: Updated plan received", {
+        morningTasks: updatedPlan.morningTasks?.length || 0,
+        afternoonTasks: updatedPlan.afternoonTasks?.length || 0,
+      });
       setDayPlan(updatedPlan);
     } catch (error) {
       console.error("Error deleting task:", error);
