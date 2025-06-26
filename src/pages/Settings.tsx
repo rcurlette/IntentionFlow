@@ -19,6 +19,8 @@ import {
   Shield,
   Eye,
   Brain,
+  Music,
+  Activity,
 } from "lucide-react";
 
 export default function Settings() {
@@ -91,6 +93,45 @@ export default function Settings() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
+                <Activity className="h-5 w-5" />
+                <span>Flow Tracking</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label htmlFor="flow-tracking-enabled">
+                    Enable Flow Tracking
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    Track your productivity and flow states throughout the day
+                  </p>
+                </div>
+                <Switch
+                  id="flow-tracking-enabled"
+                  checked={flowSettings.isEnabled}
+                  onCheckedChange={(checked) =>
+                    updateFlowSettings({ isEnabled: checked })
+                  }
+                />
+              </div>
+              {flowSettings.isEnabled && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={triggerManualPrompt}
+                  className="w-full"
+                >
+                  <Activity className="h-4 w-4 mr-2" />
+                  Test Flow Tracker
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
                 <Bell className="h-5 w-5" />
                 <span>Notifications</span>
               </CardTitle>
@@ -150,6 +191,47 @@ export default function Settings() {
               <div className="flex items-center justify-between">
                 <Label htmlFor="high-contrast">High Contrast Mode</Label>
                 <Switch id="high-contrast" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Music className="h-5 w-5" />
+                <span>YouTube Music Player</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="youtube-url">YouTube Music/Video URL</Label>
+                <Input
+                  id="youtube-url"
+                  placeholder="https://www.youtube.com/watch?v=..."
+                />
+                <p className="text-xs text-muted-foreground">
+                  Paste any YouTube video URL for background music during focus
+                  sessions
+                </p>
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="autoplay-music">Auto-play on Focus Start</Label>
+                <Switch id="autoplay-music" />
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="loop-music">Loop Current Track</Label>
+                <Switch id="loop-music" defaultChecked />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="music-volume">Default Volume</Label>
+                <Input
+                  id="music-volume"
+                  type="range"
+                  min="0"
+                  max="100"
+                  defaultValue="50"
+                  className="w-full"
+                />
               </div>
             </CardContent>
           </Card>

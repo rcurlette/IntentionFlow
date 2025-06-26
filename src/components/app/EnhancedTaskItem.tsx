@@ -132,9 +132,9 @@ export function EnhancedTaskItem({
             )}
             {task.tags && task.tags.length > 0 && (
               <div className="flex flex-wrap gap-1">
-                {task.tags.slice(0, 2).map((tag) => (
+                {task.tags.slice(0, 2).map((tag, index) => (
                   <Badge
-                    key={tag}
+                    key={`${task.id}-tag-${index}-${tag}`}
                     variant="secondary"
                     className="text-xs px-1 py-0"
                   >

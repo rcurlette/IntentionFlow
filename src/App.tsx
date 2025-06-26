@@ -14,6 +14,7 @@ import Pomodoro from "./pages/Pomodoro";
 import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
 import About from "./pages/About";
+import ApiDemo from "./pages/ApiDemo";
 import FlowTrackerPopupPage from "./pages/FlowTrackerPopupPage";
 import NotFound from "./pages/NotFound";
 
@@ -59,6 +60,7 @@ const App = () => (
               <Route path="/analytics" element={<Analytics />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/about" element={<About />} />
+              <Route path="/api-demo" element={<ApiDemo />} />
               <Route
                 path="/flow-tracker-popup"
                 element={<FlowTrackerPopupPage />}

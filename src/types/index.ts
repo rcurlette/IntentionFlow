@@ -4,36 +4,31 @@ export interface Task {
   description?: string;
   type: "brain" | "admin";
   period: "morning" | "afternoon";
-  completed: boolean;
+  status: "todo" | "in-progress" | "completed";
+  completed: boolean; // Computed from status for backward compatibility
   timeBlock?: number; // in minutes
+  timeEstimate?: number; // in minutes
+  timeSpent?: number; // in minutes
+  pomodoroCount?: number;
   priority: "low" | "medium" | "high";
-  createdAt: Date;
-  completedAt?: Date;
-  pomodoroSessions?: number;
   tags?: string[];
+  scheduledFor?: string; // YYYY-MM-DD
+  createdAt: Date;
+  updatedAt: Date;
+  completedAt?: Date;
 }
 
 export interface DayPlan {
-  id: string;
   date: string; // YYYY-MM-DD
   morningTasks: Task[];
   afternoonTasks: Task[];
-  eveningReflection: {
-    tomorrowNeeds?: string;
-    preparation?: string;
-    randomThoughts?: string;
-    dontForget?: string;
-  };
-  firstHourPlan?: {
-    focus: string;
-    resources: Array<{
-      title: string;
-      url: string;
-      type: "doc" | "site" | "video" | "other";
-    }>;
-  };
+  completedTasks: number;
+  totalTasks: number;
   pomodoroCompleted: number;
-  streakCount: number;
+  totalFocusTime: number;
+  averageFlowScore: number;
+  currentStreak: number;
+  achievements: Achievement[];
 }
 
 export interface PomodoroSession {
@@ -47,12 +42,17 @@ export interface PomodoroSession {
 }
 
 export interface UserSettings {
-  pomodoroLength: number; // default 25 minutes
-  shortBreakLength: number; // default 5 minutes
-  longBreakLength: number; // default 15 minutes
-  sessionsBeforeLongBreak: number; // default 4
-  enableNotifications: boolean;
-  theme: "light" | "dark" | "auto";
+  theme: "light" | "dark";
+  colorTheme: "vibrant" | "accessible";
+  focusDuration: number;
+  shortBreakDuration: number;
+  longBreakDuration: number;
+  sessionsBeforeLongBreak: number;
+  autoStartBreaks: boolean;
+  autoStartPomodoros: boolean;
+  notificationsEnabled: boolean;
+  soundEnabled: boolean;
+  dailyGoal: number;
 }
 
 export interface Achievement {

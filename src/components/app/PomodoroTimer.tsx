@@ -6,6 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { formatTimeRemaining } from "@/lib/productivity-utils";
 import { TimerState } from "@/hooks/use-pomodoro";
+import { Task } from "@/types";
 import {
   Play,
   Pause,
@@ -16,12 +17,14 @@ import {
   Coffee,
   Brain,
   Zap,
+  FileText,
 } from "lucide-react";
 
 interface PomodoroTimerProps {
   state: TimerState;
   timeRemaining: number;
   totalDuration: number;
+  linkedTask?: Task | null;
   onStart: () => void;
   onPause: () => void;
   onResume: () => void;
@@ -34,6 +37,7 @@ export function PomodoroTimer({
   state,
   timeRemaining,
   totalDuration,
+  linkedTask,
   onStart,
   onPause,
   onResume,
@@ -124,6 +128,77 @@ export function PomodoroTimer({
           {stateInfo.icon}
           <span>{stateInfo.title}</span>
         </CardTitle>
+        {linkedTask && (
+          <div
+            className={cn(
+              "mt-3 p-4 rounded-lg border transition-all duration-300",
+              state === "running"
+                ? "bg-focus/10 border-focus/30 shadow-focus/10 shadow-md"
+                : "bg-background/50 border-primary/20",
+              state === "running" && "animate-pulse-soft",
+            )}
+          >
+            <div className="flex items-center justify-center space-x-2 text-sm mb-2">
+              <div
+                className={cn(
+                  "p-1.5 rounded transition-all duration-200",
+                  linkedTask.type === "brain"
+                    ? "bg-focus text-focus-foreground"
+                    : "bg-admin text-admin-foreground",
+                  state === "running" && "shadow-sm",
+                )}
+              >
+                {linkedTask.type === "brain" ? (
+                  <Brain className="h-4 w-4" />
+                ) : (
+                  <FileText className="h-4 w-4" />
+                )}
+              </div>
+              <span
+                className={cn(
+                  "font-semibold truncate max-w-64 transition-colors duration-200",
+                  state === "running" ? "text-focus" : "text-foreground",
+                )}
+              >
+                {linkedTask.title}
+              </span>
+            </div>
+            <div className="flex items-center justify-center space-x-3 text-xs text-muted-foreground">
+              <span className="flex items-center space-x-1">
+                <span>📅</span>
+                <span className="capitalize">{linkedTask.period}</span>
+              </span>
+              <span className="flex items-center space-x-1">
+                <span>
+                  {linkedTask.priority === "high"
+                    ? "🔥"
+                    : linkedTask.priority === "medium"
+                      ? "⚡"
+                      : "🌱"}
+                </span>
+                <span className="capitalize">
+                  {linkedTask.priority} priority
+                </span>
+              </span>
+              {linkedTask.timeBlock && (
+                <span className="flex items-center space-x-1">
+                  <span>⏱️</span>
+                  <span>{linkedTask.timeBlock}m</span>
+                </span>
+              )}
+            </div>
+            {state === "running" && (
+              <div className="mt-2 text-center">
+                <Badge
+                  variant="outline"
+                  className="bg-focus/10 text-focus border-focus/30 text-xs"
+                >
+                  🎯 Active Focus Session
+                </Badge>
+              </div>
+            )}
+          </div>
+        )}
       </CardHeader>
 
       <CardContent className="text-center space-y-6">

@@ -682,16 +682,23 @@ export default function Tasks() {
                     ) : (
                       filteredTasks
                         .filter((task) => task.period === "morning")
-                        .map((task) => (
-                          <EnhancedTaskItem
-                            key={task.id}
-                            task={task}
-                            onToggleComplete={handleToggleComplete}
-                            onEdit={handleEditTask}
-                            onDelete={handleDeleteTask}
-                            onStartPomodoro={handleStartPomodoro}
-                          />
-                        ))
+                        .map((task) => {
+                          if (!task.id) {
+                            console.warn("Task missing ID:", task);
+                            return null;
+                          }
+                          return (
+                            <EnhancedTaskItem
+                              key={task.id}
+                              task={task}
+                              onToggleComplete={handleToggleComplete}
+                              onEdit={handleEditTask}
+                              onDelete={handleDeleteTask}
+                              onStartPomodoro={handleStartPomodoro}
+                            />
+                          );
+                        })
+                        .filter(Boolean)
                     )}
                   </div>
                 </CardContent>
@@ -734,16 +741,23 @@ export default function Tasks() {
                     ) : (
                       filteredTasks
                         .filter((task) => task.period === "afternoon")
-                        .map((task) => (
-                          <EnhancedTaskItem
-                            key={task.id}
-                            task={task}
-                            onToggleComplete={handleToggleComplete}
-                            onEdit={handleEditTask}
-                            onDelete={handleDeleteTask}
-                            onStartPomodoro={handleStartPomodoro}
-                          />
-                        ))
+                        .map((task) => {
+                          if (!task.id) {
+                            console.warn("Task missing ID:", task);
+                            return null;
+                          }
+                          return (
+                            <EnhancedTaskItem
+                              key={task.id}
+                              task={task}
+                              onToggleComplete={handleToggleComplete}
+                              onEdit={handleEditTask}
+                              onDelete={handleDeleteTask}
+                              onStartPomodoro={handleStartPomodoro}
+                            />
+                          );
+                        })
+                        .filter(Boolean)
                     )}
                   </div>
                 </CardContent>

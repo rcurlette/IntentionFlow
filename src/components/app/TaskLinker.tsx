@@ -22,6 +22,7 @@ import {
   Clock,
   CheckCircle2,
   Plus,
+  RefreshCw,
 } from "lucide-react";
 
 interface TaskLinkerProps {
@@ -39,23 +40,53 @@ export function TaskLinker({
 }: TaskLinkerProps) {
   const [availableTasks, setAvailableTasks] = useState<Task[]>([]);
   const [selectedTaskId, setSelectedTaskId] = useState<string>("");
+  const [isLoading, setIsLoading] = useState(true);
+
+  const loadTasks = async () => {
+    setIsLoading(true);
+    try {
+      const todayPlan = await getTodayPlan();
+      console.log("TaskLinker: Loading tasks", {
+        morningTasks: todayPlan.morningTasks.length,
+        afternoonTasks: todayPlan.afternoonTasks.length,
+      });
+
+      const allTasks = [...todayPlan.morningTasks, ...todayPlan.afternoonTasks];
+
+      const incompleteTasks = allTasks.filter((task) => {
+        // Handle both old and new task formats
+        if (task.status) {
+          return task.status !== "completed";
+        }
+        // Fallback to completed field for backward compatibility
+        return !task.completed;
+      });
+
+      console.log("TaskLinker: Filtered incomplete tasks", {
+        total: allTasks.length,
+        incomplete: incompleteTasks.length,
+        tasks: incompleteTasks.map((t) => ({
+          id: t.id,
+          title: t.title,
+          status: t.status,
+          completed: t.completed,
+        })),
+      });
+
+      setAvailableTasks(incompleteTasks);
+    } catch (error) {
+      console.error("Error loading tasks for linker:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const loadTasks = async () => {
-      try {
-        const todayPlan = await getTodayPlan();
-        const incompleteTasks = [
-          ...todayPlan.morningTasks,
-          ...todayPlan.afternoonTasks,
-        ].filter((task) => task.status !== "completed");
-
-        setAvailableTasks(incompleteTasks);
-      } catch (error) {
-        console.error("Error loading tasks for linker:", error);
-      }
-    };
-
     loadTasks();
+
+    // Set up periodic refresh to catch new tasks
+    const interval = setInterval(loadTasks, 3000); // Refresh every 3 seconds
+    return () => clearInterval(interval);
   }, []);
 
   const handleLinkTask = () => {
@@ -82,17 +113,32 @@ export function TaskLinker({
   return (
     <Card className="border-dashed border-2 border-primary/20 bg-primary/5">
       <CardHeader className="pb-4">
-        <CardTitle className="flex items-center space-x-2 text-sm">
-          <Link className="h-4 w-4" />
-          <span>Link to Task</span>
-          {linkedTask && (
-            <Badge
-              variant="outline"
-              className="ml-auto bg-success text-success-foreground"
+        <CardTitle className="flex items-center justify-between text-sm">
+          <div className="flex items-center space-x-2">
+            <Link className="h-4 w-4" />
+            <span>Link to Task</span>
+            {linkedTask && (
+              <Badge
+                variant="outline"
+                className="bg-success text-success-foreground"
+              >
+                <CheckCircle2 className="h-3 w-3 mr-1" />
+                Linked
+              </Badge>
+            )}
+          </div>
+          {!linkedTask && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={loadTasks}
+              disabled={isLoading}
+              className="h-6 w-6 p-0"
             >
-              <CheckCircle2 className="h-3 w-3 mr-1" />
-              Linked
-            </Badge>
+              <RefreshCw
+                className={cn("h-3 w-3", isLoading && "animate-spin")}
+              />
+            </Button>
           )}
         </CardTitle>
       </CardHeader>
@@ -199,14 +245,34 @@ export function TaskLinker({
               </>
             ) : (
               <div className="text-center py-6">
-                <Target className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                <p className="text-sm text-muted-foreground mb-3">
-                  No incomplete tasks available
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Add some tasks in your Dashboard to link them to Pomodoro
-                  sessions
-                </p>
+                {isLoading ? (
+                  <>
+                    <RefreshCw className="h-8 w-8 mx-auto mb-2 opacity-50 animate-spin" />
+                    <p className="text-sm text-muted-foreground">
+                      Loading your tasks...
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <Target className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm text-muted-foreground mb-3">
+                      No incomplete tasks available
+                    </p>
+                    <p className="text-xs text-muted-foreground mb-3">
+                      Add some tasks in your Dashboard to link them to Pomodoro
+                      sessions
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={loadTasks}
+                      className="text-xs"
+                    >
+                      <RefreshCw className="h-3 w-3 mr-1" />
+                      Refresh Tasks
+                    </Button>
+                  </>
+                )}
               </div>
             )}
 

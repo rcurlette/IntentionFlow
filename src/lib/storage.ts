@@ -46,8 +46,19 @@ export async function getAllTasks(): Promise<Task[]> {
     const tasks = getFromStorage<Task[]>(STORAGE_KEYS.TASKS, []);
     return tasks.map((task) => ({
       ...task,
+      // Ensure backward compatibility with old Task format
+      status: task.status || (task.completed ? "completed" : "todo"),
+      completed:
+        task.completed !== undefined
+          ? task.completed
+          : task.status === "completed",
+      timeSpent: task.timeSpent || 0,
+      pomodoroCount: task.pomodoroCount || 0,
+      tags: task.tags || [],
       createdAt: new Date(task.createdAt),
-      updatedAt: new Date(task.updatedAt),
+      updatedAt: task.updatedAt
+        ? new Date(task.updatedAt)
+        : new Date(task.createdAt),
       completedAt: task.completedAt ? new Date(task.completedAt) : undefined,
     }));
   }
@@ -59,8 +70,19 @@ export async function getAllTasks(): Promise<Task[]> {
     const tasks = getFromStorage<Task[]>(STORAGE_KEYS.TASKS, []);
     return tasks.map((task) => ({
       ...task,
+      // Ensure backward compatibility with old Task format
+      status: task.status || (task.completed ? "completed" : "todo"),
+      completed:
+        task.completed !== undefined
+          ? task.completed
+          : task.status === "completed",
+      timeSpent: task.timeSpent || 0,
+      pomodoroCount: task.pomodoroCount || 0,
+      tags: task.tags || [],
       createdAt: new Date(task.createdAt),
-      updatedAt: new Date(task.updatedAt),
+      updatedAt: task.updatedAt
+        ? new Date(task.updatedAt)
+        : new Date(task.createdAt),
       completedAt: task.completedAt ? new Date(task.completedAt) : undefined,
     }));
   }
@@ -192,36 +214,49 @@ export async function getTodayPlan(): Promise<DayPlan> {
   if (!isSupabaseConfigured) {
     console.log("Supabase not configured, using localStorage");
     const today = new Date().toISOString().split("T")[0];
-    const dayPlans = getFromStorage<Record<string, DayPlan>>(
-      STORAGE_KEYS.DAY_PLANS,
-      {},
-    );
 
-    if (!dayPlans[today]) {
-      // Create day plan from current tasks
-      const allTasks = await getAllTasks();
-      const todayTasks = allTasks.filter((task) => {
-        const taskDate = task.createdAt.toISOString().split("T")[0];
-        return taskDate === today;
+    // Always refresh from current tasks to ensure up-to-date data
+    const allTasks = await getAllTasks();
+    console.log("getTodayPlan localStorage: All tasks loaded", allTasks.length);
+
+    const todayTasks = allTasks.filter((task) => {
+      const taskDate = task.createdAt.toISOString().split("T")[0];
+      const isToday = taskDate === today;
+      console.log("Task date check:", {
+        taskTitle: task.title,
+        taskDate,
+        today,
+        isToday,
+        period: task.period,
+        status: task.status,
       });
+      return isToday;
+    });
 
-      dayPlans[today] = {
-        date: today,
-        morningTasks: todayTasks.filter((t) => t.period === "morning"),
-        afternoonTasks: todayTasks.filter((t) => t.period === "afternoon"),
-        completedTasks: todayTasks.filter((t) => t.status === "completed")
-          .length,
-        totalTasks: todayTasks.length,
-        pomodoroCompleted: 0,
-        totalFocusTime: 0,
-        averageFlowScore: 0,
-        currentStreak: getFromStorage(STORAGE_KEYS.CURRENT_STREAK, 0),
-        achievements: [],
-      };
-      setToStorage(STORAGE_KEYS.DAY_PLANS, dayPlans);
-    }
+    console.log("getTodayPlan localStorage: Today's tasks", todayTasks.length);
 
-    return dayPlans[today];
+    const dayPlan: DayPlan = {
+      date: today,
+      morningTasks: todayTasks.filter((t) => t.period === "morning"),
+      afternoonTasks: todayTasks.filter((t) => t.period === "afternoon"),
+      completedTasks: todayTasks.filter(
+        (t) => t.status === "completed" || t.completed,
+      ).length,
+      totalTasks: todayTasks.length,
+      pomodoroCompleted: 0,
+      totalFocusTime: 0,
+      averageFlowScore: 0,
+      currentStreak: getFromStorage(STORAGE_KEYS.CURRENT_STREAK, 0),
+      achievements: [],
+    };
+
+    console.log("getTodayPlan localStorage: Final day plan", {
+      morningTasks: dayPlan.morningTasks.length,
+      afternoonTasks: dayPlan.afternoonTasks.length,
+      totalTasks: dayPlan.totalTasks,
+    });
+
+    return dayPlan;
   }
 
   try {
@@ -291,6 +326,7 @@ export function createEmptyDayPlan(date: string): DayPlan {
         period: "morning",
         priority: "high",
         status: "todo",
+        completed: false,
         tags: ["planning"],
         timeSpent: 0,
         pomodoroCount: 0,
@@ -305,6 +341,7 @@ export function createEmptyDayPlan(date: string): DayPlan {
         period: "morning",
         priority: "high",
         status: "todo",
+        completed: false,
         tags: ["focus", "deep-work"],
         timeEstimate: 50,
         timeSpent: 0,
@@ -320,6 +357,7 @@ export function createEmptyDayPlan(date: string): DayPlan {
         period: "afternoon",
         priority: "medium",
         status: "todo",
+        completed: false,
         tags: ["email", "communication"],
         timeEstimate: 25,
         timeSpent: 0,
@@ -553,9 +591,56 @@ export async function bulkDeleteTasks(taskIds: string[]): Promise<void> {
   }
 }
 
-// Legacy function aliases for backward compatibility
-export const addTask = saveTask;
-export const updateTask = saveTask;
+// Task creation function with proper defaults
+export async function addTask(
+  taskData: Omit<Task, "id" | "createdAt" | "updatedAt" | "completed">,
+): Promise<void> {
+  const newTask: Task = {
+    ...taskData,
+    id: crypto.randomUUID(),
+    status: taskData.status || "todo",
+    completed: (taskData.status || "todo") === "completed",
+    timeSpent: taskData.timeSpent || 0,
+    pomodoroCount: taskData.pomodoroCount || 0,
+    tags: taskData.tags || [],
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+  await saveTask(newTask);
+}
+
+// Task update function that handles status/completed sync
+export async function updateTask(
+  taskId: string,
+  updates: Partial<Task>,
+): Promise<void> {
+  const existingTask = await getTaskById(taskId);
+  if (!existingTask) {
+    console.warn(`Task with ID ${taskId} not found for update`);
+    return;
+  }
+
+  const updatedTask: Task = {
+    ...existingTask,
+    ...updates,
+    updatedAt: new Date(),
+  };
+
+  // Sync status and completed fields
+  if (updates.status) {
+    updatedTask.completed = updates.status === "completed";
+    if (updates.status === "completed" && !updatedTask.completedAt) {
+      updatedTask.completedAt = new Date();
+    }
+  } else if (updates.completed !== undefined) {
+    updatedTask.status = updates.completed ? "completed" : "todo";
+    if (updates.completed && !updatedTask.completedAt) {
+      updatedTask.completedAt = new Date();
+    }
+  }
+
+  await saveTask(updatedTask);
+}
 
 // Add missing functions
 export async function addLaterBirdTask(

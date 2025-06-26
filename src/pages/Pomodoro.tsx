@@ -6,6 +6,7 @@ import { TaskLinker } from "@/components/app/TaskLinker";
 import { FlowStateMonitor } from "@/components/app/FlowStateMonitor";
 import { PomodoroSettings } from "@/components/app/PomodoroSettings";
 import { FocusMusicSelector } from "@/components/app/FocusMusicSelector";
+import { YouTubeMusicPlayer } from "@/components/app/YouTubeMusicPlayer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -67,16 +68,18 @@ export default function Pomodoro() {
   useEffect(() => {
     const linkedTask = location.state?.linkedTask;
     if (linkedTask && state === "idle") {
-      handleStartWithTask(linkedTask.id);
+      handleStartWithTask(linkedTask.id).catch((error) => {
+        console.error("Error starting timer with linked task:", error);
+      });
     }
   }, [location.state]);
 
-  const handleStartWithTask = (taskId: string) => {
-    startTimer(taskId);
+  const handleStartWithTask = async (taskId: string) => {
+    await startTimer(taskId);
   };
 
-  const handleStartWithoutTask = () => {
-    startTimer();
+  const handleStartWithoutTask = async () => {
+    await startTimer();
   };
 
   const handleLinkTask = (taskId: string) => {
@@ -190,6 +193,7 @@ export default function Pomodoro() {
               state={state}
               timeRemaining={timeRemaining}
               totalDuration={getCurrentDuration()}
+              linkedTask={linkedTask}
               onStart={handleStartWithoutTask}
               onPause={pauseTimer}
               onResume={resumeTimer}
@@ -210,6 +214,8 @@ export default function Pomodoro() {
           {/* Flow State Monitor and Music */}
           <div className="space-y-6">
             <FocusMusicSelector isTimerRunning={state === "running"} />
+
+            <YouTubeMusicPlayer autoPlay={state === "running"} />
 
             <FlowStateMonitor
               flowScore={flowScore}
@@ -233,7 +239,7 @@ export default function Pomodoro() {
                   size="sm"
                   className="w-full justify-start"
                   disabled={state !== "idle"}
-                  onClick={() => startTimer()}
+                  onClick={() => handleStartWithoutTask()}
                 >
                   <Brain className="h-4 w-4 mr-2" />
                   Quick Focus Session

@@ -32,10 +32,12 @@ const dbTaskToTask = (dbTask: DatabaseTask): Task => ({
   period: dbTask.period,
   priority: dbTask.priority,
   status: dbTask.status,
-  tags: dbTask.tags,
+  completed: dbTask.status === "completed",
+  tags: dbTask.tags || [],
   timeEstimate: dbTask.time_estimate,
-  timeSpent: dbTask.time_spent,
-  pomodoroCount: dbTask.pomodoro_count,
+  timeSpent: dbTask.time_spent || 0,
+  pomodoroCount: dbTask.pomodoro_count || 0,
+  timeBlock: dbTask.time_estimate, // Map time_estimate to timeBlock for compatibility
   scheduledFor: dbTask.scheduled_for,
   completedAt: dbTask.completed_at ? new Date(dbTask.completed_at) : undefined,
   createdAt: new Date(dbTask.created_at),
@@ -46,21 +48,29 @@ const dbTaskToTask = (dbTask: DatabaseTask): Task => ({
 const taskToDbTask = (
   task: Partial<Task>,
   userId: string = TEMP_USER_ID,
-): Partial<DatabaseTask> => ({
-  user_id: userId,
-  title: task.title,
-  description: task.description,
-  type: task.type,
-  period: task.period,
-  priority: task.priority,
-  status: task.status,
-  tags: task.tags || [],
-  time_estimate: task.timeEstimate,
-  time_spent: task.timeSpent || 0,
-  pomodoro_count: task.pomodoroCount || 0,
-  scheduled_for: task.scheduledFor,
-  completed_at: task.completedAt?.toISOString(),
-});
+): Partial<DatabaseTask> => {
+  // Determine status from either status or completed field
+  let status = task.status;
+  if (!status && task.completed !== undefined) {
+    status = task.completed ? "completed" : "todo";
+  }
+
+  return {
+    user_id: userId,
+    title: task.title,
+    description: task.description,
+    type: task.type,
+    period: task.period,
+    priority: task.priority,
+    status: status || "todo",
+    tags: task.tags || [],
+    time_estimate: task.timeEstimate || task.timeBlock,
+    time_spent: task.timeSpent || 0,
+    pomodoro_count: task.pomodoroCount || 0,
+    scheduled_for: task.scheduledFor || new Date().toISOString().split("T")[0],
+    completed_at: task.completedAt?.toISOString(),
+  };
+};
 
 // Tasks API
 export const tasksApi = {
@@ -85,23 +95,28 @@ export const tasksApi = {
 
   async getById(id: string): Promise<Task | null> {
     if (!isSupabaseConfigured) {
-      throw new Error("Supabase not configured, falling back to localStorage");
+      return null; // Return null instead of throwing error to allow fallback
     }
 
-    const { data, error } = await supabase
-      .from("tasks")
-      .select("*")
-      .eq("id", id)
-      .eq("user_id", TEMP_USER_ID)
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from("tasks")
+        .select("*")
+        .eq("id", id)
+        .eq("user_id", TEMP_USER_ID)
+        .single();
 
-    if (error) {
-      if (error.code === "PGRST116") return null; // Not found
-      console.error("Error fetching task:", error);
-      throw error;
+      if (error) {
+        if (error.code === "PGRST116") return null; // Not found
+        console.error("Error fetching task:", error);
+        throw error;
+      }
+
+      return data ? dbTaskToTask(data) : null;
+    } catch (error) {
+      console.error("Database error in getById:", error);
+      return null; // Return null to allow fallback
     }
-
-    return data ? dbTaskToTask(data) : null;
   },
 
   async create(
@@ -150,18 +165,23 @@ export const tasksApi = {
 
   async delete(id: string): Promise<void> {
     if (!isSupabaseConfigured) {
-      throw new Error("Supabase not configured, falling back to localStorage");
+      return; // Gracefully return to allow localStorage fallback
     }
 
-    const { error } = await supabase
-      .from("tasks")
-      .delete()
-      .eq("id", id)
-      .eq("user_id", TEMP_USER_ID);
+    try {
+      const { error } = await supabase
+        .from("tasks")
+        .delete()
+        .eq("id", id)
+        .eq("user_id", TEMP_USER_ID);
 
-    if (error) {
-      console.error("Error deleting task:", error);
-      throw error;
+      if (error) {
+        console.error("Error deleting task:", error);
+        throw error;
+      }
+    } catch (error) {
+      console.error("Database error in delete:", error);
+      throw error; // Re-throw database errors to trigger localStorage fallback
     }
   },
 
@@ -194,36 +214,46 @@ export const tasksApi = {
 
   async bulkUpdate(ids: string[], updates: Partial<Task>): Promise<void> {
     if (!isSupabaseConfigured) {
-      throw new Error("Supabase not configured, falling back to localStorage");
+      return; // Gracefully return to allow localStorage fallback
     }
 
-    const dbUpdates = taskToDbTask(updates);
-    const { error } = await supabase
-      .from("tasks")
-      .update(dbUpdates)
-      .in("id", ids)
-      .eq("user_id", TEMP_USER_ID);
+    try {
+      const dbUpdates = taskToDbTask(updates);
+      const { error } = await supabase
+        .from("tasks")
+        .update(dbUpdates)
+        .in("id", ids)
+        .eq("user_id", TEMP_USER_ID);
 
-    if (error) {
-      console.error("Error bulk updating tasks:", error);
-      throw error;
+      if (error) {
+        console.error("Error bulk updating tasks:", error);
+        throw error;
+      }
+    } catch (error) {
+      console.error("Database error in bulkUpdate:", error);
+      throw error; // Re-throw database errors to trigger localStorage fallback
     }
   },
 
   async bulkDelete(ids: string[]): Promise<void> {
     if (!isSupabaseConfigured) {
-      throw new Error("Supabase not configured, falling back to localStorage");
+      return; // Gracefully return to allow localStorage fallback
     }
 
-    const { error } = await supabase
-      .from("tasks")
-      .delete()
-      .in("id", ids)
-      .eq("user_id", TEMP_USER_ID);
+    try {
+      const { error } = await supabase
+        .from("tasks")
+        .delete()
+        .in("id", ids)
+        .eq("user_id", TEMP_USER_ID);
 
-    if (error) {
-      console.error("Error bulk deleting tasks:", error);
-      throw error;
+      if (error) {
+        console.error("Error bulk deleting tasks:", error);
+        throw error;
+      }
+    } catch (error) {
+      console.error("Database error in bulkDelete:", error);
+      throw error; // Re-throw database errors to trigger localStorage fallback
     }
   },
 };
