@@ -165,18 +165,23 @@ export const tasksApi = {
 
   async delete(id: string): Promise<void> {
     if (!isSupabaseConfigured) {
-      throw new Error("Supabase not configured, falling back to localStorage");
+      return; // Gracefully return to allow localStorage fallback
     }
 
-    const { error } = await supabase
-      .from("tasks")
-      .delete()
-      .eq("id", id)
-      .eq("user_id", TEMP_USER_ID);
+    try {
+      const { error } = await supabase
+        .from("tasks")
+        .delete()
+        .eq("id", id)
+        .eq("user_id", TEMP_USER_ID);
 
-    if (error) {
-      console.error("Error deleting task:", error);
-      throw error;
+      if (error) {
+        console.error("Error deleting task:", error);
+        throw error;
+      }
+    } catch (error) {
+      console.error("Database error in delete:", error);
+      throw error; // Re-throw database errors to trigger localStorage fallback
     }
   },
 
