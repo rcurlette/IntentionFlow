@@ -538,6 +538,83 @@ export class NaturalLanguageProcessor {
     return Array.from(tags);
   }
 
+  private static extractContextTags(text: string): string[] {
+    const contexts: Set<string> = new Set();
+
+    // Extract @context tags
+    const contextMatches = text.matchAll(/@(\w+)/g);
+    for (const match of contextMatches) {
+      contexts.add(`@${match[1].toLowerCase()}`);
+    }
+
+    // Extract implied contexts
+    const contextWords = [
+      { words: ["call", "phone"], context: "@calls" },
+      { words: ["email", "message"], context: "@email" },
+      { words: ["computer", "code", "type"], context: "@computer" },
+      { words: ["office", "work"], context: "@office" },
+      { words: ["home", "house"], context: "@home" },
+      { words: ["errands", "shopping", "buy"], context: "@errands" },
+      { words: ["waiting", "wait"], context: "@waiting" },
+      { words: ["review", "check"], context: "@review" },
+      { words: ["read", "reading"], context: "@read" },
+    ];
+
+    for (const { words, context } of contextWords) {
+      for (const word of words) {
+        if (text.toLowerCase().includes(word)) {
+          contexts.add(context);
+          break;
+        }
+      }
+    }
+
+    return Array.from(contexts);
+  }
+
+  private static extractEnergy(
+    text: string,
+  ): "low" | "medium" | "high" | undefined {
+    let lowScore = 0;
+    let mediumScore = 0;
+    let highScore = 0;
+
+    // Check energy keywords
+    for (const keyword of ENERGY_KEYWORDS.low) {
+      if (text.includes(keyword.toLowerCase())) lowScore++;
+    }
+    for (const keyword of ENERGY_KEYWORDS.medium) {
+      if (text.includes(keyword.toLowerCase())) mediumScore++;
+    }
+    for (const keyword of ENERGY_KEYWORDS.high) {
+      if (text.includes(keyword.toLowerCase())) highScore++;
+    }
+
+    if (highScore > lowScore && highScore > mediumScore) return "high";
+    if (lowScore > mediumScore && lowScore > highScore) return "low";
+    if (mediumScore > 0) return "medium";
+
+    return undefined;
+  }
+
+  private static extractFocus(text: string): "shallow" | "deep" | undefined {
+    let shallowScore = 0;
+    let deepScore = 0;
+
+    // Check focus keywords
+    for (const keyword of FOCUS_KEYWORDS.shallow) {
+      if (text.includes(keyword.toLowerCase())) shallowScore++;
+    }
+    for (const keyword of FOCUS_KEYWORDS.deep) {
+      if (text.includes(keyword.toLowerCase())) deepScore++;
+    }
+
+    if (deepScore > shallowScore) return "deep";
+    if (shallowScore > deepScore) return "shallow";
+
+    return undefined;
+  }
+
   private static extractDuration(text: string): number | undefined {
     for (const pattern of DURATION_PATTERNS) {
       const match = text.match(pattern.pattern);
