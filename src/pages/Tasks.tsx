@@ -94,6 +94,7 @@ export default function Tasks() {
   const [smartSuggestions, setSmartSuggestions] = useState<any>(null);
   const [recentTags, setRecentTags] = useState<string[]>([]);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [isDueDateCalendarOpen, setIsDueDateCalendarOpen] = useState(false);
 
   const navigate = useNavigate();
 
