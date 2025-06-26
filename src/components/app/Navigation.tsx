@@ -11,8 +11,6 @@ import {
   Brain,
   Zap,
   BookOpen,
-  Heart,
-  Activity,
 } from "lucide-react";
 
 const navItems = [
