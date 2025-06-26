@@ -22,6 +22,12 @@ import {
 } from "lucide-react";
 
 export default function Settings() {
+  const {
+    settings: flowSettings,
+    updateSettings: updateFlowSettings,
+    triggerManualPrompt,
+  } = useFlowTracking();
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
