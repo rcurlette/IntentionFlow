@@ -892,7 +892,7 @@ export default function Tasks() {
 
             {/* Drag & Drop Task Manager */}
             <DragDropTaskManager
-              tasks={filteredTasks}
+              tasks={filteredTasks.filter((task) => !task.isSubtask)}
               onUpdateTask={updateTask}
               onToggleComplete={handleToggleComplete}
               onEditTask={handleEditTask}
