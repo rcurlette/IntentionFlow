@@ -525,6 +525,16 @@ export default async function handler(request: Request, context: Context) {
       return await handleDayPlans(request, context);
     case "pomodoro":
       return await handlePomodoro(request, context);
+    case "flow":
+      return await handleFlow(request, context);
+    case "analytics":
+      return await handleAnalytics(request, context);
+    case "settings":
+      return await handleSettings(request, context);
+    case "achievements":
+      return await handleAchievements(request, context);
+    case "streaks":
+      return await handleStreaks(request, context);
     case "health":
       return await handleHealth(request, context);
     default:
