@@ -261,7 +261,10 @@ export async function saveDayPlan(dayPlan: DayPlan): Promise<void> {
 }
 
 export function createEmptyDayPlan(date: string): DayPlan {
-  return {
+  // Check if this is the very first time (no tasks in storage)
+  const existingTasks = getFromStorage<Task[]>(STORAGE_KEYS.TASKS, []);
+
+  const plan: DayPlan = {
     date,
     morningTasks: [],
     afternoonTasks: [],
@@ -270,9 +273,71 @@ export function createEmptyDayPlan(date: string): DayPlan {
     pomodoroCompleted: 0,
     totalFocusTime: 0,
     averageFlowScore: 0,
-    currentStreak: 0, // Will be loaded from database
+    currentStreak: 0,
     achievements: [],
   };
+
+  // Add sample tasks for demo if storage is completely empty
+  if (
+    existingTasks.length === 0 &&
+    date === new Date().toISOString().split("T")[0]
+  ) {
+    const sampleTasks: Task[] = [
+      {
+        id: crypto.randomUUID(),
+        title: "Review morning priorities",
+        description: "Plan the most important tasks for today",
+        type: "brain",
+        period: "morning",
+        priority: "high",
+        status: "todo",
+        tags: ["planning"],
+        timeSpent: 0,
+        pomodoroCount: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: crypto.randomUUID(),
+        title: "Focus work session",
+        description: "Deep work on primary project",
+        type: "brain",
+        period: "morning",
+        priority: "high",
+        status: "todo",
+        tags: ["focus", "deep-work"],
+        timeEstimate: 50,
+        timeSpent: 0,
+        pomodoroCount: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: crypto.randomUUID(),
+        title: "Check and respond to emails",
+        description: "Process inbox and respond to urgent messages",
+        type: "admin",
+        period: "afternoon",
+        priority: "medium",
+        status: "todo",
+        tags: ["email", "communication"],
+        timeEstimate: 25,
+        timeSpent: 0,
+        pomodoroCount: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ];
+
+    // Save sample tasks
+    setToStorage(STORAGE_KEYS.TASKS, sampleTasks);
+
+    plan.morningTasks = sampleTasks.filter((t) => t.period === "morning");
+    plan.afternoonTasks = sampleTasks.filter((t) => t.period === "afternoon");
+    plan.totalTasks = sampleTasks.length;
+  }
+
+  return plan;
 }
 
 export async function updateDayPlanStats(): Promise<void> {
