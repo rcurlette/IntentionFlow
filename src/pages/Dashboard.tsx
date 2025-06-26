@@ -157,11 +157,9 @@ export default function Dashboard() {
 
   const findTask = (taskId: string): Task | undefined => {
     if (!dayPlan) return undefined;
-    return [
-      ...dayPlan.morningTasks,
-      ...dayPlan.afternoonTasks,
-      ...dayPlan.laterBird,
-    ].find((task) => task.id === taskId);
+    return [...dayPlan.morningTasks, ...dayPlan.afternoonTasks].find(
+      (task) => task.id === taskId,
+    );
   };
 
   const getStats = () => {
