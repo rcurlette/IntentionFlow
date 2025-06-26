@@ -48,21 +48,29 @@ const dbTaskToTask = (dbTask: DatabaseTask): Task => ({
 const taskToDbTask = (
   task: Partial<Task>,
   userId: string = TEMP_USER_ID,
-): Partial<DatabaseTask> => ({
-  user_id: userId,
-  title: task.title,
-  description: task.description,
-  type: task.type,
-  period: task.period,
-  priority: task.priority,
-  status: task.status,
-  tags: task.tags || [],
-  time_estimate: task.timeEstimate,
-  time_spent: task.timeSpent || 0,
-  pomodoro_count: task.pomodoroCount || 0,
-  scheduled_for: task.scheduledFor,
-  completed_at: task.completedAt?.toISOString(),
-});
+): Partial<DatabaseTask> => {
+  // Determine status from either status or completed field
+  let status = task.status;
+  if (!status && task.completed !== undefined) {
+    status = task.completed ? "completed" : "todo";
+  }
+
+  return {
+    user_id: userId,
+    title: task.title,
+    description: task.description,
+    type: task.type,
+    period: task.period,
+    priority: task.priority,
+    status: status || "todo",
+    tags: task.tags || [],
+    time_estimate: task.timeEstimate || task.timeBlock,
+    time_spent: task.timeSpent || 0,
+    pomodoro_count: task.pomodoroCount || 0,
+    scheduled_for: task.scheduledFor || new Date().toISOString().split("T")[0],
+    completed_at: task.completedAt?.toISOString(),
+  };
+};
 
 // Tasks API
 export const tasksApi = {
