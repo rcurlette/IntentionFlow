@@ -41,6 +41,17 @@ function setToStorage<T>(key: string, value: T): void {
 
 // Task Management - Database-backed with localStorage fallback
 export async function getAllTasks(): Promise<Task[]> {
+  if (!isSupabaseConfigured) {
+    console.log("Supabase not configured, using localStorage");
+    const tasks = getFromStorage<Task[]>(STORAGE_KEYS.TASKS, []);
+    return tasks.map((task) => ({
+      ...task,
+      createdAt: new Date(task.createdAt),
+      updatedAt: new Date(task.updatedAt),
+      completedAt: task.completedAt ? new Date(task.completedAt) : undefined,
+    }));
+  }
+
   try {
     return await tasksApi.getAll();
   } catch (error) {
