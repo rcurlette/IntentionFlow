@@ -176,6 +176,12 @@ export default function FlowDashboard() {
           }),
         );
       }
+
+      // Load vision board
+      const savedVisionBoard = localStorage.getItem("flow-vision-board");
+      if (savedVisionBoard) {
+        setVisionBoard(savedVisionBoard);
+      }
     }
   }, []);
 
