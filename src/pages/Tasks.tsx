@@ -757,6 +757,7 @@ export default function Tasks() {
                             />
                           );
                         })
+                        .filter(Boolean)
                     )}
                   </div>
                 </CardContent>
