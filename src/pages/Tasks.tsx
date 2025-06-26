@@ -103,6 +103,15 @@ export default function Tasks() {
   // Keyboard shortcuts
   useKeyboardShortcuts({
     onNewTask: () => setIsCreateTaskOpen(true),
+    onQuickAdd: () => {
+      // Focus on the quick add input
+      const quickAddInput = document.querySelector(
+        '[placeholder*="natural language"]',
+      ) as HTMLInputElement;
+      if (quickAddInput) {
+        quickAddInput.focus();
+      }
+    },
     onEscape: () => {
       setIsCreateTaskOpen(false);
       setEditingTask(null);
