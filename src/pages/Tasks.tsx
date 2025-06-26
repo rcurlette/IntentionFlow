@@ -731,6 +731,9 @@ export default function Tasks() {
                       priority: "medium",
                       timeBlock: 25,
                       tags: [],
+                      scheduledFor: "",
+                      dueDate: null,
+                      dueTime: "",
                     });
                   }
                 }}
