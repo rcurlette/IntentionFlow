@@ -191,6 +191,21 @@ export function EnhancedTaskItem({
                 : "opacity-0 translate-x-2",
             )}
           >
+            {/* Quick Add Subtask */}
+            {!task.completed && onCreateSubtask && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0 text-muted-foreground hover:text-primary hover:bg-primary/10"
+                onClick={() =>
+                  onCreateSubtask(task.id, { title: "New subtask" })
+                }
+                title="Add Subtask"
+              >
+                <Plus className="h-3 w-3" />
+              </Button>
+            )}
+
             {!task.completed && onStartPomodoro && (
               <Button
                 variant="ghost"
