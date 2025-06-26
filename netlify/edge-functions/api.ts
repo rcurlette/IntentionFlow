@@ -501,6 +501,165 @@ async function getPomodoroStats(date: string, context: Context) {
   }
 }
 
+async function handleFlow(request: Request, context: Context) {
+  const url = new URL(request.url);
+  const method = request.method;
+  const pathParts = url.pathname.split("/").filter(Boolean);
+  const subRoute = pathParts[2]; // entries, analytics, settings
+
+  switch (method) {
+    case "OPTIONS":
+      return new Response(null, {
+        status: 204,
+        headers: corsHeaders(),
+      });
+
+    case "GET":
+      if (subRoute === "entries") {
+        // GET /api/flow/entries?days=7&date=2024-01-01
+        const days = parseInt(url.searchParams.get("days") || "7");
+        const date = url.searchParams.get("date");
+        return await getFlowEntries(days, date, context);
+      } else if (subRoute === "analytics") {
+        // GET /api/flow/analytics?days=30
+        const days = parseInt(url.searchParams.get("days") || "30");
+        return await getFlowAnalytics(days, context);
+      } else if (subRoute === "settings") {
+        // GET /api/flow/settings
+        return await getFlowSettings(context);
+      }
+      return errorResponse("Invalid flow endpoint", 400);
+
+    case "POST":
+      if (subRoute === "entries") {
+        // POST /api/flow/entries
+        const entryData = await request.json();
+        return await createFlowEntry(entryData, context);
+      }
+      return errorResponse("Invalid flow endpoint", 400);
+
+    case "PUT":
+      if (subRoute === "settings") {
+        // PUT /api/flow/settings
+        const settingsData = await request.json();
+        return await updateFlowSettings(settingsData, context);
+      }
+      return errorResponse("Invalid flow endpoint", 400);
+
+    default:
+      return errorResponse("Method not allowed", 405);
+  }
+}
+
+async function handleAnalytics(request: Request, context: Context) {
+  const url = new URL(request.url);
+  const method = request.method;
+  const pathParts = url.pathname.split("/").filter(Boolean);
+  const subRoute = pathParts[2]; // tasks, productivity, patterns, trends
+
+  switch (method) {
+    case "OPTIONS":
+      return new Response(null, {
+        status: 204,
+        headers: corsHeaders(),
+      });
+
+    case "GET":
+      const dateRange = url.searchParams.get("range") || "30d";
+      const date = url.searchParams.get("date");
+
+      if (subRoute === "tasks") {
+        // GET /api/analytics/tasks?range=30d
+        return await getTaskAnalytics(dateRange, context);
+      } else if (subRoute === "productivity") {
+        // GET /api/analytics/productivity?range=7d
+        return await getProductivityInsights(dateRange, context);
+      } else if (subRoute === "patterns") {
+        // GET /api/analytics/patterns?range=30d
+        return await getActivityPatterns(dateRange, context);
+      } else if (subRoute === "trends") {
+        // GET /api/analytics/trends?range=90d
+        return await getTrendAnalysis(dateRange, context);
+      }
+      return errorResponse("Invalid analytics endpoint", 400);
+
+    default:
+      return errorResponse("Method not allowed", 405);
+  }
+}
+
+async function handleSettings(request: Request, context: Context) {
+  const method = request.method;
+
+  switch (method) {
+    case "OPTIONS":
+      return new Response(null, {
+        status: 204,
+        headers: corsHeaders(),
+      });
+
+    case "GET":
+      // GET /api/settings
+      return await getUserSettings(context);
+
+    case "PUT":
+      // PUT /api/settings
+      const settingsData = await request.json();
+      return await updateUserSettings(settingsData, context);
+
+    default:
+      return errorResponse("Method not allowed", 405);
+  }
+}
+
+async function handleAchievements(request: Request, context: Context) {
+  const method = request.method;
+
+  switch (method) {
+    case "OPTIONS":
+      return new Response(null, {
+        status: 204,
+        headers: corsHeaders(),
+      });
+
+    case "GET":
+      // GET /api/achievements
+      return await getUserAchievements(context);
+
+    case "POST":
+      // POST /api/achievements
+      const achievementData = await request.json();
+      return await createAchievement(achievementData, context);
+
+    default:
+      return errorResponse("Method not allowed", 405);
+  }
+}
+
+async function handleStreaks(request: Request, context: Context) {
+  const method = request.method;
+
+  switch (method) {
+    case "OPTIONS":
+      return new Response(null, {
+        status: 204,
+        headers: corsHeaders(),
+      });
+
+    case "GET":
+      // GET /api/streaks
+      return await getUserStreaks(context);
+
+    case "PUT":
+      // PUT /api/streaks
+      const streakData = await request.json();
+      return await updateUserStreaks(streakData, context);
+
+    default:
+      return errorResponse("Method not allowed", 405);
+  }
+}
+
 async function handleHealth(request: Request, context: Context) {
   return jsonResponse({
     status: "healthy",
