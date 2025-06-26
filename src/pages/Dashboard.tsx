@@ -331,8 +331,8 @@ export default function Dashboard() {
                   <span className="text-morning">Morning Tasks</span>
                   <Coffee className="h-4 w-4 text-morning animate-pulse" />
                   {currentPeriod === "morning" && (
-                    <Badge className="bg-morning text-morning-foreground animate-pulse-soft">
-                      Active Period
+                    <Badge className="bg-morning text-morning-foreground animate-pulse-soft px-2 py-1">
+                      <span className="text-xs">🎯</span>
                     </Badge>
                   )}
                 </div>
