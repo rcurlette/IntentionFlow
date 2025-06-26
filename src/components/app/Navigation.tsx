@@ -11,6 +11,7 @@ import {
   Zap,
   BookOpen,
   Sparkles,
+  Calendar,
 } from "lucide-react";
 
 const navItems = [
