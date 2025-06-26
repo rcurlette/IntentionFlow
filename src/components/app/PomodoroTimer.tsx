@@ -142,7 +142,7 @@ export function PomodoroTimer({
                 {linkedTask.type === "brain" ? (
                   <Brain className="h-3 w-3" />
                 ) : (
-                  <Zap className="h-3 w-3" />
+                  <FileText className="h-3 w-3" />
                 )}
               </div>
               <span className="font-medium text-foreground truncate max-w-48">
