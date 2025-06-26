@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { Task } from "@/types";
 import {
   getDayPlans,
@@ -10,10 +11,23 @@ import {
 } from "@/lib/storage";
 import { getTemplates, createTasksFromTemplate } from "@/lib/task-templates";
 import { useTaskFilters } from "@/hooks/use-task-filters";
+import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { generateId } from "@/lib/productivity-utils";
+import {
+  getSmartSuggestions,
+  getRecentTags,
+  getTimeEstimateFromHistory,
+} from "@/lib/smart-suggestions";
+import {
+  exportTasks,
+  downloadFile,
+  getExportFilename,
+} from "@/lib/task-export";
 
 import { Navigation } from "@/components/app/Navigation";
 import { TaskCard } from "@/components/app/TaskCard";
+import { EnhancedTaskItem } from "@/components/app/EnhancedTaskItem";
+import { TasksEmptyState } from "@/components/app/TasksEmptyState";
 import { TaskFilterPanel } from "@/components/app/TaskFilterPanel";
 import { TaskTemplatesPanel } from "@/components/app/TaskTemplatesPanel";
 import { TaskBulkOperations } from "@/components/app/TaskBulkOperations";
@@ -58,6 +72,10 @@ export default function Tasks() {
   const [selectedTasks, setSelectedTasks] = useState<Task[]>([]);
   const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [smartSuggestions, setSmartSuggestions] = useState<any>(null);
+  const [recentTags, setRecentTags] = useState<string[]>([]);
+
+  const navigate = useNavigate();
 
   const [newTask, setNewTask] = useState({
     title: "",
@@ -70,6 +88,15 @@ export default function Tasks() {
   });
 
   const templates = getTemplates();
+
+  // Keyboard shortcuts
+  useKeyboardShortcuts({
+    onNewTask: () => setIsCreateTaskOpen(true),
+    onEscape: () => {
+      setIsCreateTaskOpen(false);
+      setEditingTask(null);
+    },
+  });
 
   // Load all tasks from all day plans
   useEffect(() => {
@@ -85,6 +112,10 @@ export default function Tasks() {
     });
 
     setAllTasks(tasks);
+
+    // Load recent tags
+    const recent = getRecentTags(8);
+    setRecentTags(recent.map((r) => r.tag));
   }, []);
 
   // Get available tags from all tasks
@@ -322,6 +353,49 @@ export default function Tasks() {
       .map((tag) => tag.trim())
       .filter((tag) => tag.length > 0);
     setNewTask((prev) => ({ ...prev, tags }));
+  };
+
+  const handleTitleChange = (title: string) => {
+    setNewTask((prev) => ({ ...prev, title }));
+
+    // Get smart suggestions when title has enough content
+    if (title.length > 3) {
+      const suggestions = getSmartSuggestions(title, newTask.description);
+      setSmartSuggestions(suggestions);
+
+      // Auto-apply high-confidence suggestions
+      if (suggestions.confidence > 0.8) {
+        setNewTask((prev) => ({
+          ...prev,
+          type: suggestions.suggestedType,
+          timeBlock: suggestions.suggestedTimeBlock,
+        }));
+      }
+    } else {
+      setSmartSuggestions(null);
+    }
+  };
+
+  const handleStartPomodoro = (task: Task) => {
+    // Navigate to Pomodoro page with task linked
+    navigate("/pomodoro", { state: { linkedTask: task } });
+  };
+
+  const handleExportTasks = (format: "json" | "csv" | "markdown" | "txt") => {
+    const content = exportTasks(filteredTasks, {
+      format,
+      includeCompleted: true,
+      includePending: true,
+    });
+
+    const mimeTypes = {
+      json: "application/json",
+      csv: "text/csv",
+      markdown: "text/markdown",
+      txt: "text/plain",
+    };
+
+    downloadFile(content, getExportFilename(format), mimeTypes[format]);
   };
 
   return (
