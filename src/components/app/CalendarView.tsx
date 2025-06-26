@@ -172,16 +172,16 @@ export function CalendarView({
 
           {/* Mini Calendar Grid */}
           <div className="grid grid-cols-7 gap-1 text-center text-xs font-medium text-gray-500 mb-2">
-            {["S", "M", "T", "W", "T", "F", "S"].map((day) => (
-              <div key={day} className="py-2">
+            {["S", "M", "T", "W", "T", "F", "S"].map((day, index) => (
+              <div key={`header-${index}`} className="py-2">
                 {day}
               </div>
             ))}
           </div>
           <div className="grid grid-cols-7 gap-1">
-            {miniCalendarDays.map((day) => (
+            {miniCalendarDays.map((day, index) => (
               <button
-                key={day.toISOString()}
+                key={`mini-cal-${day.toISOString()}`}
                 onClick={() => {
                   setSelectedDate(day);
                   setCurrentWeek(day);
