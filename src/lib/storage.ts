@@ -46,8 +46,19 @@ export async function getAllTasks(): Promise<Task[]> {
     const tasks = getFromStorage<Task[]>(STORAGE_KEYS.TASKS, []);
     return tasks.map((task) => ({
       ...task,
+      // Ensure backward compatibility with old Task format
+      status: task.status || (task.completed ? "completed" : "todo"),
+      completed:
+        task.completed !== undefined
+          ? task.completed
+          : task.status === "completed",
+      timeSpent: task.timeSpent || 0,
+      pomodoroCount: task.pomodoroCount || 0,
+      tags: task.tags || [],
       createdAt: new Date(task.createdAt),
-      updatedAt: new Date(task.updatedAt),
+      updatedAt: task.updatedAt
+        ? new Date(task.updatedAt)
+        : new Date(task.createdAt),
       completedAt: task.completedAt ? new Date(task.completedAt) : undefined,
     }));
   }
@@ -59,8 +70,19 @@ export async function getAllTasks(): Promise<Task[]> {
     const tasks = getFromStorage<Task[]>(STORAGE_KEYS.TASKS, []);
     return tasks.map((task) => ({
       ...task,
+      // Ensure backward compatibility with old Task format
+      status: task.status || (task.completed ? "completed" : "todo"),
+      completed:
+        task.completed !== undefined
+          ? task.completed
+          : task.status === "completed",
+      timeSpent: task.timeSpent || 0,
+      pomodoroCount: task.pomodoroCount || 0,
+      tags: task.tags || [],
       createdAt: new Date(task.createdAt),
-      updatedAt: new Date(task.updatedAt),
+      updatedAt: task.updatedAt
+        ? new Date(task.updatedAt)
+        : new Date(task.createdAt),
       completedAt: task.completedAt ? new Date(task.completedAt) : undefined,
     }));
   }
