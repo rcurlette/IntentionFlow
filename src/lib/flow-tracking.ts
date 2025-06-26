@@ -14,7 +14,7 @@ const FLOW_STORAGE_KEYS = {
 // Default settings
 export const DEFAULT_FLOW_SETTINGS: FlowTrackingSettings = {
   isEnabled: false,
-  interval: 60, // 1 hour
+  interval: 60, // 1 hour - ideal for flow tracking
   quietHours: { start: "22:00", end: "08:00" },
   trackingDays: [1, 2, 3, 4, 5], // Monday to Friday
   autoDetectActivity: false,
