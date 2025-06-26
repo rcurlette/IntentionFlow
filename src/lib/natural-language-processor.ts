@@ -705,7 +705,94 @@ export class NaturalLanguageProcessor {
       "Team standup daily at 9:30am",
       "Review quarterly reports urgent!!!",
       "Plan vacation in 2 weeks #personal",
+      // Subtask examples
+      "Project setup: 1) Create repository 2) Set up environment 3) Install dependencies",
+      "Blog post with steps: research topic, write outline, draft content, edit and publish",
+      "Shopping list: milk, bread, eggs, and bananas",
     ];
+  }
+
+  /**
+   * Parse subtasks from natural language input
+   */
+  static parseSubtasks(text: string): string[] {
+    const subtasks: string[] = [];
+
+    // Pattern 1: Numbered lists (1), 2), 3) or 1. 2. 3.
+    const numberedPattern =
+      /(?:^|\s)(\d+)[\.\)]\s*([^\d\n]+?)(?=\s*\d+[\.\)]|$)/g;
+    let match;
+    while ((match = numberedPattern.exec(text)) !== null) {
+      const subtaskText = match[2].trim();
+      if (subtaskText.length > 2) {
+        subtasks.push(subtaskText);
+      }
+    }
+
+    // Pattern 2: Bullet points (-, *, •)
+    if (subtasks.length === 0) {
+      const bulletPattern = /(?:^|\n)\s*[-\*•]\s*([^\n]+)/g;
+      while ((match = bulletPattern.exec(text)) !== null) {
+        const subtaskText = match[1].trim();
+        if (subtaskText.length > 2) {
+          subtasks.push(subtaskText);
+        }
+      }
+    }
+
+    // Pattern 3: "with steps:" or "including:" followed by comma-separated items
+    if (subtasks.length === 0) {
+      const stepsPattern = /(?:with steps|including|steps|tasks?):\s*([^\.]+)/i;
+      const stepsMatch = text.match(stepsPattern);
+      if (stepsMatch) {
+        const stepsText = stepsMatch[1];
+        const items = stepsText.split(/,|\sand\s/).map((item) => item.trim());
+        items.forEach((item) => {
+          if (item.length > 2 && !item.match(/^\d+$/)) {
+            subtasks.push(item);
+          }
+        });
+      }
+    }
+
+    // Pattern 4: Colon-separated tasks "Task: subtask1, subtask2, subtask3"
+    if (subtasks.length === 0) {
+      const colonPattern = /:\s*([^\.!?]+)/;
+      const colonMatch = text.match(colonPattern);
+      if (colonMatch) {
+        const afterColon = colonMatch[1];
+        if (afterColon.includes(",") || afterColon.includes(" and ")) {
+          const items = afterColon
+            .split(/,|\sand\s/)
+            .map((item) => item.trim());
+          items.forEach((item) => {
+            if (item.length > 2) {
+              subtasks.push(item);
+            }
+          });
+        }
+      }
+    }
+
+    return subtasks.slice(0, 10); // Limit to 10 subtasks for practicality
+  }
+
+  /**
+   * Enhanced parse method that includes subtask detection
+   */
+  static parseWithSubtasks(input: string): ParsedTask & { subtasks: string[] } {
+    const parsed = this.parse(input);
+    const detectedSubtasks = this.parseSubtasks(input);
+
+    if (detectedSubtasks.length > 0) {
+      parsed.suggestions.push(`Detected ${detectedSubtasks.length} subtasks`);
+      parsed.confidence += 0.1; // Boost confidence for subtask detection
+    }
+
+    return {
+      ...parsed,
+      subtasks: detectedSubtasks,
+    };
   }
 
   // Helper method for testing
