@@ -62,6 +62,35 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        // Custom productivity colors
+        energy: {
+          DEFAULT: "hsl(var(--energy))",
+          foreground: "hsl(var(--energy-foreground))",
+        },
+        focus: {
+          DEFAULT: "hsl(var(--focus))",
+          foreground: "hsl(var(--focus-foreground))",
+        },
+        admin: {
+          DEFAULT: "hsl(var(--admin))",
+          foreground: "hsl(var(--admin-foreground))",
+        },
+        morning: {
+          DEFAULT: "hsl(var(--morning))",
+          foreground: "hsl(var(--morning-foreground))",
+        },
+        afternoon: {
+          DEFAULT: "hsl(var(--afternoon))",
+          foreground: "hsl(var(--afternoon-foreground))",
+        },
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
+        },
+        warning: {
+          DEFAULT: "hsl(var(--warning))",
+          foreground: "hsl(var(--warning-foreground))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -85,10 +114,46 @@ export default {
             height: "0",
           },
         },
+        "pulse-soft": {
+          "0%, 100%": {
+            opacity: "1",
+          },
+          "50%": {
+            opacity: "0.8",
+          },
+        },
+        wiggle: {
+          "0%, 100%": {
+            transform: "rotate(-3deg)",
+          },
+          "50%": {
+            transform: "rotate(3deg)",
+          },
+        },
+        celebration: {
+          "0%": {
+            transform: "scale(1) rotate(0deg)",
+          },
+          "25%": {
+            transform: "scale(1.1) rotate(-5deg)",
+          },
+          "50%": {
+            transform: "scale(1.2) rotate(5deg)",
+          },
+          "75%": {
+            transform: "scale(1.1) rotate(-3deg)",
+          },
+          "100%": {
+            transform: "scale(1) rotate(0deg)",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "pulse-soft": "pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        wiggle: "wiggle 1s ease-in-out infinite",
+        celebration: "celebration 0.6s ease-in-out",
       },
     },
   },
