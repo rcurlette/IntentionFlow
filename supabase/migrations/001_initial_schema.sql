@@ -1,6 +1,3 @@
--- Enable Row Level Security
-ALTER DATABASE postgres SET "app.jwt_secret" TO 'your-jwt-secret';
-
 -- Create users table (for future auth integration)
 CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -174,7 +171,7 @@ BEGIN
   -- Insert default settings
   INSERT INTO user_settings (user_id) VALUES (user_id)
   ON CONFLICT (user_id) DO NOTHING;
-  
+
   -- Insert default streak data
   INSERT INTO user_streaks (user_id) VALUES (user_id)
   ON CONFLICT (user_id) DO NOTHING;
