@@ -234,7 +234,7 @@ export default function Dashboard() {
                 className="bg-energy text-energy-foreground"
               >
                 <Flame className="h-3 w-3 mr-1" />
-                {getStreakMessage(dayPlan.streakCount)}
+                {getStreakMessage(dayPlan.currentStreak || 0)}
               </Badge>
             </div>
           </div>
