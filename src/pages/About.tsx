@@ -90,6 +90,44 @@ export default function About() {
           </CardContent>
         </Card>
 
+        {/* Flow State Impact Stats */}
+        <div className="mb-8 p-6 bg-gradient-to-r from-primary/10 to-energy/10 rounded-lg border border-primary/20">
+          <div className="text-center">
+            <h3 className="text-3xl font-bold text-primary mb-2">
+              20% Productivity Increase
+            </h3>
+            <p className="text-muted-foreground mb-4">
+              Research shows that people can improve their productivity by up to
+              20% when working within their optimal flow states and aligning
+              tasks with their natural energy rhythms.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-focus mb-1">85%</div>
+                <div className="text-xs text-muted-foreground">
+                  Report higher satisfaction when in flow
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-energy mb-1">5x</div>
+                <div className="text-xs text-muted-foreground">
+                  More productive during peak hours
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-admin mb-1">40%</div>
+                <div className="text-xs text-muted-foreground">
+                  Less time wasted on wrong tasks
+                </div>
+              </div>
+            </div>
+            <div className="mt-4 text-xs text-muted-foreground">
+              Sources: McKinsey Global Institute, Harvard Business Review, Flow
+              Research Collective
+            </div>
+          </div>
+        </div>
+
         {/* Flow State Science */}
         <Card className="mb-8">
           <CardHeader>
