@@ -278,6 +278,42 @@ const TAG_PATTERNS = [
   /\b(personal|work|home|health|finance|shopping|travel)\b/gi, // common categories
 ];
 
+// Context patterns (GTD contexts)
+const CONTEXT_PATTERNS = [
+  /@(\w+)/g, // @context tags
+  /\b(calls?|phone|email|computer|office|home|errands?|waiting|review|read)\b/gi,
+];
+
+// Energy level keywords
+const ENERGY_KEYWORDS = {
+  low: ["simple", "easy", "quick", "routine", "basic", "light"],
+  medium: ["normal", "regular", "standard", "moderate"],
+  high: [
+    "complex",
+    "challenging",
+    "intensive",
+    "creative",
+    "difficult",
+    "deep",
+  ],
+};
+
+// Focus level keywords
+const FOCUS_KEYWORDS = {
+  shallow: ["quick", "simple", "call", "email", "message", "check", "update"],
+  deep: [
+    "focus",
+    "deep",
+    "think",
+    "analyze",
+    "design",
+    "code",
+    "write",
+    "create",
+    "plan",
+  ],
+};
+
 // Duration patterns
 const DURATION_PATTERNS = [
   {
