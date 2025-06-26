@@ -189,6 +189,41 @@ export async function updateTaskPomodoroCount(taskId: string): Promise<void> {
 
 // Day Plan Management - Database-backed
 export async function getTodayPlan(): Promise<DayPlan> {
+  if (!isSupabaseConfigured) {
+    console.log("Supabase not configured, using localStorage");
+    const today = new Date().toISOString().split("T")[0];
+    const dayPlans = getFromStorage<Record<string, DayPlan>>(
+      STORAGE_KEYS.DAY_PLANS,
+      {},
+    );
+
+    if (!dayPlans[today]) {
+      // Create day plan from current tasks
+      const allTasks = await getAllTasks();
+      const todayTasks = allTasks.filter((task) => {
+        const taskDate = task.createdAt.toISOString().split("T")[0];
+        return taskDate === today;
+      });
+
+      dayPlans[today] = {
+        date: today,
+        morningTasks: todayTasks.filter((t) => t.period === "morning"),
+        afternoonTasks: todayTasks.filter((t) => t.period === "afternoon"),
+        completedTasks: todayTasks.filter((t) => t.status === "completed")
+          .length,
+        totalTasks: todayTasks.length,
+        pomodoroCompleted: 0,
+        totalFocusTime: 0,
+        averageFlowScore: 0,
+        currentStreak: getFromStorage(STORAGE_KEYS.CURRENT_STREAK, 0),
+        achievements: [],
+      };
+      setToStorage(STORAGE_KEYS.DAY_PLANS, dayPlans);
+    }
+
+    return dayPlans[today];
+  }
+
   try {
     return await dayPlanApi.getToday();
   } catch (error) {
