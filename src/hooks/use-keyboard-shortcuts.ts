@@ -1,46 +1,34 @@
 import { useEffect } from "react";
 
-interface KeyboardShortcutOptions {
+interface KeyboardShortcutsOptions {
   onNewTask?: () => void;
-  onToggleSearch?: () => void;
   onEscape?: () => void;
+  onFlowTracker?: () => void;
 }
 
 export function useKeyboardShortcuts({
   onNewTask,
-  onToggleSearch,
   onEscape,
-}: KeyboardShortcutOptions) {
+  onFlowTracker,
+}: KeyboardShortcutsOptions) {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      // Don't trigger shortcuts when user is typing in inputs
-      if (
-        event.target instanceof HTMLInputElement ||
-        event.target instanceof HTMLTextAreaElement ||
-        event.target instanceof HTMLSelectElement ||
-        (event.target as HTMLElement)?.contentEditable === "true"
-      ) {
-        return;
-      }
-
-      // Ctrl+N or Cmd+N for new task
-      if ((event.ctrlKey || event.metaKey) && event.key === "n") {
+      // New task shortcut: Ctrl+N
+      if (event.ctrlKey && event.key === "n" && onNewTask) {
         event.preventDefault();
-        onNewTask?.();
-        return;
+        onNewTask();
       }
 
-      // Ctrl+K or Cmd+K for search
-      if ((event.ctrlKey || event.metaKey) && event.key === "k") {
+      // Flow tracker shortcut: Ctrl+F
+      if (event.ctrlKey && event.key === "f" && onFlowTracker) {
         event.preventDefault();
-        onToggleSearch?.();
-        return;
+        onFlowTracker();
       }
 
-      // Escape key
-      if (event.key === "Escape") {
-        onEscape?.();
-        return;
+      // Escape shortcut
+      if (event.key === "Escape" && onEscape) {
+        event.preventDefault();
+        onEscape();
       }
     };
 
@@ -49,5 +37,5 @@ export function useKeyboardShortcuts({
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [onNewTask, onToggleSearch, onEscape]);
+  }, [onNewTask, onEscape, onFlowTracker]);
 }
