@@ -60,9 +60,6 @@ interface FlowIdentity {
 }
 
 export default function FlowDashboard() {
-  const [currentStep, setCurrentStep] = useState<
-    "identity" | "assess" | "ritual" | "intention"
-  >("assess");
   const [flowState, setFlowState] = useState<FlowState>({
     energy: "medium",
     focus: "calm",
@@ -120,6 +117,90 @@ export default function FlowDashboard() {
   const [morningIntention, setMorningIntention] = useState("");
   const [meditationTimer, setMeditationTimer] = useState(0);
   const [isTimerActive, setIsTimerActive] = useState(false);
+  const [isFirstTime, setIsFirstTime] = useState(false);
+
+  // Load flow data on mount
+  useEffect(() => {
+    const flowData = getFlowProgress();
+
+    if (!flowData) {
+      // First time user - initialize with default archetype
+      setIsFirstTime(true);
+      const identity = initializeFlowJourney("Deep Worker");
+      setFlowIdentity({
+        archetype: identity.archetype,
+        daysLiving: 1,
+        currentPhase: identity.currentPhase,
+        streak: identity.currentStreak,
+        startDate: identity.startDate,
+      });
+    } else {
+      // Load existing data
+      const daysSinceStart =
+        Math.floor(
+          (new Date().getTime() - flowData.identity.startDate.getTime()) /
+            (1000 * 60 * 60 * 24),
+        ) + 1;
+
+      setFlowIdentity({
+        archetype: flowData.identity.archetype,
+        daysLiving: daysSinceStart,
+        currentPhase: flowData.identity.currentPhase,
+        streak: flowData.identity.currentStreak,
+        startDate: flowData.identity.startDate,
+      });
+
+      // Load today's session if it exists
+      const todaySession = getTodayFlowSession();
+      if (todaySession) {
+        setFlowState(todaySession.flowState);
+        setMorningIntention(todaySession.intention);
+        setRituals((prev) =>
+          prev.map((ritual) => {
+            const todayRitual = todaySession.rituals.find(
+              (r) => r.id === ritual.id,
+            );
+            return todayRitual
+              ? { ...ritual, completed: todayRitual.completed }
+              : ritual;
+          }),
+        );
+      }
+    }
+  }, []);
+
+  // Save session when data changes
+  useEffect(() => {
+    if (flowIdentity.daysLiving > 0) {
+      const saveSession = () => {
+        const today = new Date().toISOString().split("T")[0];
+        saveFlowSession({
+          date: today,
+          rituals: rituals.map((r) => ({
+            id: r.id,
+            name: r.name,
+            duration: r.duration,
+            description: r.description,
+            completed: r.completed,
+            completedAt: r.completed ? new Date() : undefined,
+            isCore: r.isCore,
+          })),
+          flowState: {
+            ...flowState,
+            assessedAt: new Date(),
+          },
+          intention: morningIntention,
+          completedAt: rituals.filter((r) => r.isCore).every((r) => r.completed)
+            ? new Date()
+            : undefined,
+        });
+      };
+
+      // Debounce saves
+      const timeoutId = setTimeout(saveSession, 1000);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [rituals, flowState, morningIntention, flowIdentity.daysLiving]);
 
   const completedRituals = rituals.filter((r) => r.completed).length;
   const totalRituals = rituals.length;
