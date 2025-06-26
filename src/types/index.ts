@@ -42,12 +42,17 @@ export interface PomodoroSession {
 }
 
 export interface UserSettings {
-  pomodoroLength: number; // default 25 minutes
-  shortBreakLength: number; // default 5 minutes
-  longBreakLength: number; // default 15 minutes
-  sessionsBeforeLongBreak: number; // default 4
-  enableNotifications: boolean;
-  theme: "light" | "dark" | "auto";
+  theme: "light" | "dark";
+  colorTheme: "vibrant" | "accessible";
+  focusDuration: number;
+  shortBreakDuration: number;
+  longBreakDuration: number;
+  sessionsBeforeLongBreak: number;
+  autoStartBreaks: boolean;
+  autoStartPomodoros: boolean;
+  notificationsEnabled: boolean;
+  soundEnabled: boolean;
+  dailyGoal: number;
 }
 
 export interface Achievement {
