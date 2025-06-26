@@ -266,7 +266,6 @@ export async function getTimeEstimateFromHistory(
   description: string = "",
 ): Promise<number | null> {
   const similarTasks = await getSimilarTasks(title, description);
-  const similarTasks = getSimilarTasks(title, description);
   const completedSimilarTasks = similarTasks.filter(
     (task) => task.completed && task.timeBlock && task.type === taskType,
   );
