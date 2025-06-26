@@ -401,6 +401,27 @@ export class NaturalLanguageProcessor {
       suggestions.push(`Tags: ${tags.join(", ")}`);
     }
 
+    // Extract context tags
+    const contextTags = this.extractContextTags(originalInput);
+    if (contextTags.length > 0) {
+      result.contextTags = contextTags;
+      suggestions.push(`Contexts: ${contextTags.join(", ")}`);
+    }
+
+    // Extract energy level
+    const energy = this.extractEnergy(workingText);
+    if (energy) {
+      result.energy = energy;
+      suggestions.push(`Energy: ${energy}`);
+    }
+
+    // Extract focus level
+    const focus = this.extractFocus(workingText);
+    if (focus) {
+      result.focus = focus;
+      suggestions.push(`Focus: ${focus}`);
+    }
+
     // Extract duration/time block
     const duration = this.extractDuration(workingText);
     if (duration) {
