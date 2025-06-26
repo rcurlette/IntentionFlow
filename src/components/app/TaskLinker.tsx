@@ -47,7 +47,14 @@ export function TaskLinker({
         const incompleteTasks = [
           ...todayPlan.morningTasks,
           ...todayPlan.afternoonTasks,
-        ].filter((task) => task.status !== "completed");
+        ].filter((task) => {
+          // Handle both old and new task formats
+          if (task.status) {
+            return task.status !== "completed";
+          }
+          // Fallback to completed field for backward compatibility
+          return !task.completed;
+        });
 
         setAvailableTasks(incompleteTasks);
       } catch (error) {
