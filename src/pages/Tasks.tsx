@@ -816,6 +816,88 @@ export default function Tasks() {
               </CardContent>
             </Card>
 
+            {/* All Tasks List */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <span>All Tasks</span>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      checked={
+                        selectedTasks.length === filteredTasks.length &&
+                        filteredTasks.length > 0
+                      }
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          handleSelectAll();
+                        } else {
+                          handleDeselectAll();
+                        }
+                      }}
+                    />
+                    <Badge variant="outline">
+                      {filteredTasks.length} tasks
+                    </Badge>
+                  </div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {filteredTasks.length === 0 ? (
+                  <div className="text-center text-muted-foreground py-8">
+                    <p>No tasks found matching your filters.</p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={resetFilters}
+                      className="mt-2"
+                    >
+                      Clear Filters
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {filteredTasks.map((task) => {
+                      if (!task.id) {
+                        console.warn("Task missing ID:", task);
+                        return null;
+                      }
+                      const isSelected = selectedTasks.some(
+                        (selectedTask) => selectedTask.id === task.id,
+                      );
+                      return (
+                        <div
+                          key={task.id}
+                          className={cn(
+                            "relative",
+                            isSelected && "ring-2 ring-primary/20 rounded-lg",
+                          )}
+                        >
+                          <div className="absolute left-2 top-2 z-10">
+                            <Checkbox
+                              checked={isSelected}
+                              onCheckedChange={(checked) =>
+                                handleTaskSelection(task, !!checked)
+                              }
+                              className="bg-background"
+                            />
+                          </div>
+                          <div className="pl-8">
+                            <EnhancedTaskItem
+                              task={task}
+                              onToggleComplete={handleToggleComplete}
+                              onEdit={handleEditTask}
+                              onDelete={handleDeleteTask}
+                              onStartPomodoro={handleStartPomodoro}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
             {/* Bulk Operations */}
             <TaskBulkOperations
               selectedTasks={selectedTasks}
