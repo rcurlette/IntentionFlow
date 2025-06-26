@@ -36,6 +36,7 @@ export function PomodoroTimer({
   state,
   timeRemaining,
   totalDuration,
+  linkedTask,
   onStart,
   onPause,
   onResume,
