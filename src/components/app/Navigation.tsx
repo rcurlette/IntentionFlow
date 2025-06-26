@@ -26,6 +26,11 @@ const navItems = [
     icon: Target,
   },
   {
+    href: "/calendar",
+    label: "Calendar",
+    icon: Calendar,
+  },
+  {
     href: "/pomodoro",
     label: "Focus",
     icon: Clock,
