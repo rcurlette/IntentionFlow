@@ -155,6 +155,18 @@ export function EnhancedTaskItem({
                 <span>{task.timeBlock}m</span>
               </div>
             )}
+
+            {/* Subtask Progress */}
+            {totalSubtasks > 0 && (
+              <div className="flex items-center space-x-1">
+                <Target className="h-3 w-3" />
+                <span>
+                  {completedSubtasks}/{totalSubtasks}
+                </span>
+                <Progress value={subtaskProgress} className="w-12 h-1" />
+              </div>
+            )}
+
             {task.tags && task.tags.length > 0 && (
               <div className="flex flex-wrap gap-1">
                 {task.tags.slice(0, 2).map((tag, index) => (
