@@ -6,6 +6,8 @@
     "dev": "vite",
     "build": "vite build",
     "test": "vitest --run",
+    "test:api": "tsx scripts/test-api.ts",
+    "test:all": "npm run test && npm run test:api",
     "format.fix": "prettier --write .",
     "typecheck": "tsc"
   },
