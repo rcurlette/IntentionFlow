@@ -59,21 +59,21 @@ export function QuickStart({ onAddFirstTask }: QuickStartProps) {
             <div className="space-y-2">
               <Button
                 size="sm"
-                onClick={() => onAddFirstTask("brain", "morning")}
-                className="w-full bg-focus text-focus-foreground justify-start"
+                onClick={() => onAddFirstTask("admin", "morning")}
+                className="w-full bg-admin text-admin-foreground justify-start"
               >
-                <Brain className="h-4 w-4 mr-2" />
-                Add Brain Task
+                <FileText className="h-4 w-4 mr-2" />
+                Add Admin Task
                 <ArrowRight className="h-3 w-3 ml-auto" />
               </Button>
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => onAddFirstTask("admin", "morning")}
-                className="w-full justify-start border-admin text-admin"
+                onClick={() => onAddFirstTask("brain", "morning")}
+                className="w-full justify-start border-focus text-focus"
               >
-                <FileText className="h-4 w-4 mr-2" />
-                Add Admin Task
+                <Brain className="h-4 w-4 mr-2" />
+                Add Brain Task
                 <ArrowRight className="h-3 w-3 ml-auto" />
               </Button>
             </div>
