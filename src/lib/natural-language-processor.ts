@@ -673,17 +673,21 @@ export class NaturalLanguageProcessor {
     let confidence = 0.3; // Base confidence
 
     // Increase confidence for each parsed element
-    if (result.dueDate) confidence += 0.15;
-    if (result.dueTime) confidence += 0.15;
-    if (result.recurrence) confidence += 0.1;
-    if (result.priority !== "medium") confidence += 0.1;
-    if (result.type && result.type !== "brain") confidence += 0.1;
-    if (result.tags.length > 0) confidence += 0.1;
-    if (result.timeBlock) confidence += 0.1;
+    if (result.dueDate) confidence += 0.12;
+    if (result.dueTime) confidence += 0.12;
+    if (result.recurrence) confidence += 0.08;
+    if (result.priority !== "medium") confidence += 0.08;
+    if (result.type && result.type !== "brain") confidence += 0.08;
+    if (result.tags.length > 0) confidence += 0.08;
+    if (result.contextTags.length > 0) confidence += 0.08;
+    if (result.timeBlock) confidence += 0.08;
+    if (result.energy && result.energy !== "medium") confidence += 0.05;
+    if (result.focus && result.focus !== "shallow") confidence += 0.05;
 
     // Bonus for complex parsing
-    if (result.suggestions.length >= 3) confidence += 0.1;
-    if (result.suggestions.length >= 5) confidence += 0.1;
+    if (result.suggestions.length >= 3) confidence += 0.08;
+    if (result.suggestions.length >= 5) confidence += 0.08;
+    if (result.suggestions.length >= 7) confidence += 0.04;
 
     return Math.min(confidence, 1.0);
   }
