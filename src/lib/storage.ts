@@ -214,36 +214,49 @@ export async function getTodayPlan(): Promise<DayPlan> {
   if (!isSupabaseConfigured) {
     console.log("Supabase not configured, using localStorage");
     const today = new Date().toISOString().split("T")[0];
-    const dayPlans = getFromStorage<Record<string, DayPlan>>(
-      STORAGE_KEYS.DAY_PLANS,
-      {},
-    );
 
-    if (!dayPlans[today]) {
-      // Create day plan from current tasks
-      const allTasks = await getAllTasks();
-      const todayTasks = allTasks.filter((task) => {
-        const taskDate = task.createdAt.toISOString().split("T")[0];
-        return taskDate === today;
+    // Always refresh from current tasks to ensure up-to-date data
+    const allTasks = await getAllTasks();
+    console.log("getTodayPlan localStorage: All tasks loaded", allTasks.length);
+
+    const todayTasks = allTasks.filter((task) => {
+      const taskDate = task.createdAt.toISOString().split("T")[0];
+      const isToday = taskDate === today;
+      console.log("Task date check:", {
+        taskTitle: task.title,
+        taskDate,
+        today,
+        isToday,
+        period: task.period,
+        status: task.status,
       });
+      return isToday;
+    });
 
-      dayPlans[today] = {
-        date: today,
-        morningTasks: todayTasks.filter((t) => t.period === "morning"),
-        afternoonTasks: todayTasks.filter((t) => t.period === "afternoon"),
-        completedTasks: todayTasks.filter((t) => t.status === "completed")
-          .length,
-        totalTasks: todayTasks.length,
-        pomodoroCompleted: 0,
-        totalFocusTime: 0,
-        averageFlowScore: 0,
-        currentStreak: getFromStorage(STORAGE_KEYS.CURRENT_STREAK, 0),
-        achievements: [],
-      };
-      setToStorage(STORAGE_KEYS.DAY_PLANS, dayPlans);
-    }
+    console.log("getTodayPlan localStorage: Today's tasks", todayTasks.length);
 
-    return dayPlans[today];
+    const dayPlan: DayPlan = {
+      date: today,
+      morningTasks: todayTasks.filter((t) => t.period === "morning"),
+      afternoonTasks: todayTasks.filter((t) => t.period === "afternoon"),
+      completedTasks: todayTasks.filter(
+        (t) => t.status === "completed" || t.completed,
+      ).length,
+      totalTasks: todayTasks.length,
+      pomodoroCompleted: 0,
+      totalFocusTime: 0,
+      averageFlowScore: 0,
+      currentStreak: getFromStorage(STORAGE_KEYS.CURRENT_STREAK, 0),
+      achievements: [],
+    };
+
+    console.log("getTodayPlan localStorage: Final day plan", {
+      morningTasks: dayPlan.morningTasks.length,
+      afternoonTasks: dayPlan.afternoonTasks.length,
+      totalTasks: dayPlan.totalTasks,
+    });
+
+    return dayPlan;
   }
 
   try {
