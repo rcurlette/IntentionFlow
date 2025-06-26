@@ -72,12 +72,12 @@ export default function Pomodoro() {
     }
   }, [location.state]);
 
-  const handleStartWithTask = (taskId: string) => {
-    startTimer(taskId);
+  const handleStartWithTask = async (taskId: string) => {
+    await startTimer(taskId);
   };
 
-  const handleStartWithoutTask = () => {
-    startTimer();
+  const handleStartWithoutTask = async () => {
+    await startTimer();
   };
 
   const handleLinkTask = (taskId: string) => {
