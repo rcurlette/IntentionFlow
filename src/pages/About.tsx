@@ -137,25 +137,7 @@ export default function About() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            <p className="text-muted-foreground">
-              Flow state, discovered by psychologist Mihaly Csikszentmihalyi, is
-              a mental state where you're fully immersed in an activity with
-              complete focus and energized concentration. FlowTracker is
-              designed to help you achieve and maintain this optimal performance
-              state.
-            </p>
-
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="text-center p-4 rounded-lg bg-focus/10 border border-focus/20">
-                <Brain className="h-8 w-8 text-focus mx-auto mb-2" />
-                <h4 className="font-semibold text-focus mb-2">
-                  Neurological Benefits
-                </h4>
-                <p className="text-xs text-muted-foreground">
-                  Flow state increases norepinephrine, dopamine, and anandamide
-                  - enhancing focus, pattern recognition, and creative thinking.
-                </p>
-              </div>
               <div className="text-center p-4 rounded-lg bg-energy/10 border border-energy/20">
                 <TrendingUp className="h-8 w-8 text-energy mx-auto mb-2" />
                 <h4 className="font-semibold text-energy mb-2">
@@ -164,6 +146,16 @@ export default function About() {
                 <p className="text-xs text-muted-foreground">
                   Studies show 300-500% performance improvements in flow state
                   across creativity, problem-solving, and skill acquisition.
+                </p>
+              </div>
+              <div className="text-center p-4 rounded-lg bg-focus/10 border border-focus/20">
+                <Brain className="h-8 w-8 text-focus mx-auto mb-2" />
+                <h4 className="font-semibold text-focus mb-2">
+                  Neurological Benefits
+                </h4>
+                <p className="text-xs text-muted-foreground">
+                  Flow state increases norepinephrine, dopamine, and anandamide
+                  - enhancing focus, pattern recognition, and creative thinking.
                 </p>
               </div>
               <div className="text-center p-4 rounded-lg bg-success/10 border border-success/20">
@@ -177,6 +169,14 @@ export default function About() {
                 </p>
               </div>
             </div>
+
+            <p className="text-muted-foreground">
+              Flow state, discovered by psychologist Mihaly Csikszentmihalyi, is
+              a mental state where you're fully immersed in an activity with
+              complete focus and energized concentration. FlowTracker is
+              designed to help you achieve and maintain this optimal performance
+              state.
+            </p>
 
             <div className="bg-muted/50 rounded-lg p-4">
               <h4 className="font-semibold mb-2 flex items-center space-x-2">
