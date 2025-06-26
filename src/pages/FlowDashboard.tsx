@@ -679,6 +679,79 @@ export default function FlowDashboard() {
                   ? "Intention Set"
                   : "Set Intention"}
               </Button>
+
+              {/* Vision Board Section */}
+              <div className="mt-6 pt-4 border-t border-slate-600">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-sm font-medium text-slate-300">
+                    Vision Board
+                  </h4>
+                  <Badge
+                    variant={
+                      rituals.find((r) => r.id === "vision")?.completed
+                        ? "default"
+                        : "outline"
+                    }
+                    className="text-xs"
+                  >
+                    {rituals.find((r) => r.id === "vision")?.completed
+                      ? "Connected"
+                      : "Optional"}
+                  </Badge>
+                </div>
+
+                {visionBoard ? (
+                  <div className="space-y-3">
+                    <div className="relative group">
+                      <img
+                        src={visionBoard}
+                        alt="Vision Board"
+                        className="w-full h-32 object-cover rounded-lg border border-slate-600"
+                      />
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={removeVisionBoard}
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                    </div>
+                    <p className="text-xs text-slate-400 text-center">
+                      Your vision anchors your flow intention
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="border-2 border-dashed border-slate-600 rounded-lg p-6 text-center hover:border-slate-500 transition-colors">
+                      <Heart className="h-8 w-8 text-slate-400 mx-auto mb-2" />
+                      <p className="text-sm text-slate-400 mb-3">
+                        Upload your vision board to anchor your flow
+                      </p>
+                      <label className="cursor-pointer">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleVisionBoardUpload}
+                          className="hidden"
+                        />
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="pointer-events-none"
+                        >
+                          <Sparkles className="h-4 w-4 mr-2" />
+                          Upload Vision Board
+                        </Button>
+                      </label>
+                    </div>
+                    <p className="text-xs text-slate-500 text-center">
+                      Goals, dreams, or visual inspiration to fuel your flow
+                    </p>
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
         </div>
