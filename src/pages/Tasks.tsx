@@ -46,24 +46,16 @@ import {
   Plus,
   Layers,
   BarChart3,
-  Download,
-  Upload,
-  Search,
-  Grid3X3,
-  List,
   Target,
   Brain,
   FileText,
   Clock,
   Sparkles,
-  Sun,
-  Sunset,
 } from "lucide-react";
 
 export default function Tasks() {
   const [allTasks, setAllTasks] = useState<Task[]>([]);
   const [selectedTasks, setSelectedTasks] = useState<Task[]>([]);
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
 
@@ -787,80 +779,6 @@ export default function Tasks() {
               onBulkDuplicate={handleBulkDuplicate}
               totalTaskCount={filteredTasks.length}
             />
-
-            {/* Advanced Grid/List View (Collapsible) */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between text-sm">
-                  <span>Advanced View</span>
-                  <div className="flex items-center space-x-2">
-                    <div className="flex items-center border rounded-md">
-                      <Button
-                        variant={viewMode === "grid" ? "default" : "ghost"}
-                        size="sm"
-                        className="h-8 w-8 p-0"
-                        onClick={() => setViewMode("grid")}
-                      >
-                        <Grid3X3 className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant={viewMode === "list" ? "default" : "ghost"}
-                        size="sm"
-                        className="h-8 w-8 p-0"
-                        onClick={() => setViewMode("list")}
-                      >
-                        <List className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div
-                  className={
-                    viewMode === "grid"
-                      ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
-                      : "space-y-3"
-                  }
-                >
-                  {filteredTasks.length === 0 ? (
-                    <div className="col-span-full text-center py-12">
-                      <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                      <h3 className="text-lg font-medium mb-2">
-                        No tasks found
-                      </h3>
-                      <p className="text-muted-foreground">
-                        {allTasks.length === 0
-                          ? "Create your first task to get started!"
-                          : "Try adjusting your filters or search terms."}
-                      </p>
-                    </div>
-                  ) : (
-                    filteredTasks.map((task) => (
-                      <div key={task.id} className="relative">
-                        <div className="absolute top-2 left-2 z-10">
-                          <Checkbox
-                            checked={selectedTasks.some(
-                              (selectedTask) => selectedTask.id === task.id,
-                            )}
-                            onCheckedChange={(checked) =>
-                              handleTaskSelection(task, !!checked)
-                            }
-                          />
-                        </div>
-                        <TaskCard
-                          task={task}
-                          onToggleComplete={handleToggleComplete}
-                          onEdit={handleEditTask}
-                          onDelete={handleDeleteTask}
-                          showPeriod={true}
-                        />
-                      </div>
-                    ))
-                  )}
-                </div>
-              </CardContent>
-            </Card>
           </TabsContent>
 
           <TabsContent value="analytics">
