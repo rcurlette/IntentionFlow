@@ -32,6 +32,8 @@ interface FlowTrackingSettingsProps {
   settings: FlowSettings;
   onUpdateSettings: (settings: FlowSettings) => void;
   onTriggerPrompt?: () => void;
+  onRequestNotifications?: () => Promise<boolean>;
+  hasNotificationPermission?: boolean;
   className?: string;
 }
 
@@ -39,6 +41,8 @@ export function FlowTrackingSettings({
   settings,
   onUpdateSettings,
   onTriggerPrompt,
+  onRequestNotifications,
+  hasNotificationPermission = false,
   className,
 }: FlowTrackingSettingsProps) {
   const [localSettings, setLocalSettings] = useState<FlowSettings>(settings);
@@ -102,31 +106,74 @@ export function FlowTrackingSettings({
             </p>
 
             {localSettings.isEnabled && (
-              <div className="flex items-center space-x-4 p-3 bg-primary/5 rounded-lg">
-                <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
-                  <span className="text-sm font-medium text-primary">
-                    Active
+              <div className="space-y-3">
+                <div className="flex items-center space-x-4 p-3 bg-primary/5 rounded-lg">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+                    <span className="text-sm font-medium text-primary">
+                      Active
+                    </span>
+                  </div>
+                  <Separator orientation="vertical" className="h-4" />
+                  <span className="text-sm text-muted-foreground">
+                    Next prompt in ~{localSettings.interval} minutes
                   </span>
+                  {onTriggerPrompt && (
+                    <>
+                      <Separator orientation="vertical" className="h-4" />
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={onTriggerPrompt}
+                        className="h-auto p-1"
+                      >
+                        <PlayCircle className="h-4 w-4 mr-1" />
+                        Test Now
+                      </Button>
+                    </>
+                  )}
                 </div>
-                <Separator orientation="vertical" className="h-4" />
-                <span className="text-sm text-muted-foreground">
-                  Next prompt in ~{localSettings.interval} minutes
-                </span>
-                {onTriggerPrompt && (
-                  <>
-                    <Separator orientation="vertical" className="h-4" />
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={onTriggerPrompt}
-                      className="h-auto p-1"
-                    >
-                      <PlayCircle className="h-4 w-4 mr-1" />
-                      Test Now
-                    </Button>
-                  </>
-                )}
+
+                {/* Notifications Status */}
+                <div className="flex items-center space-x-4 p-3 bg-muted/20 rounded-lg">
+                  <div className="flex items-center space-x-2">
+                    <Bell className="h-4 w-4" />
+                    <span className="text-sm font-medium">
+                      Browser Notifications
+                    </span>
+                  </div>
+                  <Separator orientation="vertical" className="h-4" />
+                  {hasNotificationPermission ? (
+                    <Badge variant="default" className="bg-energy">
+                      <CheckCircle className="h-3 w-3 mr-1" />
+                      Enabled
+                    </Badge>
+                  ) : (
+                    <>
+                      <Badge
+                        variant="outline"
+                        className="border-warning text-warning"
+                      >
+                        <AlertTriangle className="h-3 w-3 mr-1" />
+                        Disabled
+                      </Badge>
+                      {onRequestNotifications && (
+                        <>
+                          <Separator orientation="vertical" className="h-4" />
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={onRequestNotifications}
+                            className="h-auto p-1"
+                          >
+                            <Bell className="h-4 w-4 mr-1" />
+                            Enable
+                          </Button>
+                        </>
+                      )}
+                    </>
+                  )}
+                </div>
               </div>
             )}
           </div>

@@ -3,19 +3,21 @@ import { FlowEntry, FlowTrackingSettings } from "@/types";
 import {
   getFlowSettings,
   saveFlowSettings,
-  createFlowEntry,
-  saveFlowEntry,
-  FlowTrackingSession,
   DEFAULT_FLOW_SETTINGS,
 } from "@/lib/flow-tracking";
+import {
+  PopupFlowTrackingSession,
+  FlowNotificationManager,
+} from "@/lib/flow-popup-manager";
 
 export function useFlowTracking() {
   const [settings, setSettings] = useState<FlowTrackingSettings>(
     DEFAULT_FLOW_SETTINGS,
   );
   const [isPromptOpen, setIsPromptOpen] = useState(false);
-  const [session, setSession] = useState<FlowTrackingSession | null>(null);
+  const [session, setSession] = useState<PopupFlowTrackingSession | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [notificationManager] = useState(() => new FlowNotificationManager());
 
   // Load settings on mount
   useEffect(() => {
@@ -26,10 +28,16 @@ export function useFlowTracking() {
   // Initialize tracking session
   useEffect(() => {
     if (settings.isEnabled && !session) {
-      const newSession = new FlowTrackingSession(() => {
-        showPrompt();
-      });
-      newSession.start();
+      const newSession = new PopupFlowTrackingSession(
+        () => {
+          showPrompt();
+        },
+        (entry) => {
+          console.log("Flow entry submitted:", entry);
+          // Could trigger a refresh of insights here
+        },
+      );
+      newSession.start(settings);
       setSession(newSession);
     } else if (!settings.isEnabled && session) {
       session.stop();
@@ -38,7 +46,7 @@ export function useFlowTracking() {
 
     return () => {
       if (session) {
-        session.stop();
+        session.destroy();
       }
     };
   }, [settings.isEnabled]);
@@ -112,8 +120,20 @@ export function useFlowTracking() {
   );
 
   const triggerManualPrompt = useCallback(() => {
-    showPrompt();
-  }, [showPrompt]);
+    if (session) {
+      session.triggerManualCheck();
+    } else {
+      showPrompt();
+    }
+  }, [session, showPrompt]);
+
+  const requestNotificationPermission = useCallback(async () => {
+    return await notificationManager.requestPermission();
+  }, [notificationManager]);
+
+  const hasNotificationPermission = useCallback(() => {
+    return notificationManager.hasPermission();
+  }, [notificationManager]);
 
   return {
     // State
@@ -133,5 +153,9 @@ export function useFlowTracking() {
     setQuietHours,
     setTrackingDays,
     triggerManualPrompt,
+
+    // Notifications
+    requestNotificationPermission,
+    hasNotificationPermission,
   };
 }

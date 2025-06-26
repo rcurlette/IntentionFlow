@@ -13,6 +13,7 @@ import Pomodoro from "./pages/Pomodoro";
 import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
 import About from "./pages/About";
+import FlowTrackerPopupPage from "./pages/FlowTrackerPopupPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -47,6 +48,10 @@ const App = () => (
               <Route path="/analytics" element={<Analytics />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/about" element={<About />} />
+              <Route
+                path="/flow-tracker-popup"
+                element={<FlowTrackerPopupPage />}
+              />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

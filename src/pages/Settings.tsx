@@ -26,6 +26,8 @@ export default function Settings() {
     settings: flowSettings,
     updateSettings: updateFlowSettings,
     triggerManualPrompt,
+    requestNotificationPermission,
+    hasNotificationPermission,
   } = useFlowTracking();
 
   return (
@@ -49,6 +51,8 @@ export default function Settings() {
               settings={flowSettings}
               onUpdateSettings={updateFlowSettings}
               onTriggerPrompt={triggerManualPrompt}
+              onRequestNotifications={requestNotificationPermission}
+              hasNotificationPermission={hasNotificationPermission()}
             />
           </div>
           <Card>
