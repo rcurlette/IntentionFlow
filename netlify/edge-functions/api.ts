@@ -169,7 +169,10 @@ async function handleTasks(request: Request, context: Context) {
       });
 
     case "GET":
-      if (taskId) {
+      if (taskId === "templates") {
+        // GET /api/tasks/templates
+        return await getTaskTemplates(context);
+      } else if (taskId) {
         // GET /api/tasks/:id
         return await getTask(taskId, context);
       } else {
@@ -183,24 +186,44 @@ async function handleTasks(request: Request, context: Context) {
       }
 
     case "POST":
-      // POST /api/tasks
-      const taskData = await request.json();
-      return await createTask(taskData, context);
+      if (taskId === "bulk") {
+        // POST /api/tasks/bulk
+        const bulkData = await request.json();
+        return await createBulkTasks(bulkData, context);
+      } else if (taskId === "templates") {
+        // POST /api/tasks/templates
+        const templateData = await request.json();
+        return await createTaskTemplate(templateData, context);
+      } else {
+        // POST /api/tasks
+        const taskData = await request.json();
+        return await createTask(taskData, context);
+      }
 
     case "PUT":
-      if (!taskId) {
+      if (taskId === "bulk") {
+        // PUT /api/tasks/bulk
+        const bulkUpdate = await request.json();
+        return await updateBulkTasks(bulkUpdate, context);
+      } else if (!taskId) {
         return errorResponse("Task ID is required for updates");
+      } else {
+        // PUT /api/tasks/:id
+        const updates = await request.json();
+        return await updateTask(taskId, updates, context);
       }
-      // PUT /api/tasks/:id
-      const updates = await request.json();
-      return await updateTask(taskId, updates, context);
 
     case "DELETE":
-      if (!taskId) {
+      if (taskId === "bulk") {
+        // DELETE /api/tasks/bulk
+        const bulkDelete = await request.json();
+        return await deleteBulkTasks(bulkDelete, context);
+      } else if (!taskId) {
         return errorResponse("Task ID is required for deletion");
+      } else {
+        // DELETE /api/tasks/:id
+        return await deleteTask(taskId, context);
       }
-      // DELETE /api/tasks/:id
-      return await deleteTask(taskId, context);
 
     default:
       return errorResponse("Method not allowed", 405);
