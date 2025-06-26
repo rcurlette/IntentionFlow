@@ -113,41 +113,46 @@ export default function Dashboard() {
     setIsAddTaskOpen(true);
   };
 
-  const handleSaveTask = () => {
+  const handleSaveTask = async () => {
     if (!newTask.title.trim()) return;
 
-    if (editingTask) {
-      updateTask(editingTask.id, {
-        title: newTask.title,
-        description: newTask.description,
-        type: newTask.type,
-        period: newTask.period,
-        priority: newTask.priority,
-        timeBlock: newTask.timeBlock,
-      });
-    } else {
-      addTask({
-        title: newTask.title,
-        description: newTask.description,
-        type: newTask.type,
-        period: newTask.period,
-        priority: newTask.priority,
-        timeBlock: newTask.timeBlock,
-        completed: false,
-      });
-    }
+    try {
+      if (editingTask) {
+        await updateTask(editingTask.id, {
+          title: newTask.title,
+          description: newTask.description,
+          type: newTask.type,
+          period: newTask.period,
+          priority: newTask.priority,
+          timeBlock: newTask.timeBlock,
+        });
+      } else {
+        await addTask({
+          title: newTask.title,
+          description: newTask.description,
+          type: newTask.type,
+          period: newTask.period,
+          priority: newTask.priority,
+          timeBlock: newTask.timeBlock,
+          completed: false,
+        });
+      }
 
-    setDayPlan(getTodayPlan());
-    setIsAddTaskOpen(false);
-    setEditingTask(null);
-    setNewTask({
-      title: "",
-      description: "",
-      type: "brain",
-      period: getTimeOfDay(),
-      priority: "medium",
-      timeBlock: 25,
-    });
+      const updatedPlan = await getTodayPlan();
+      setDayPlan(updatedPlan);
+      setIsAddTaskOpen(false);
+      setEditingTask(null);
+      setNewTask({
+        title: "",
+        description: "",
+        type: "brain",
+        period: getTimeOfDay(),
+        priority: "medium",
+        timeBlock: 25,
+      });
+    } catch (error) {
+      console.error("Error saving task:", error);
+    }
   };
 
   const findTask = (taskId: string): Task | undefined => {
