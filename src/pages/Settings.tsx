@@ -43,6 +43,14 @@ export default function Settings() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Flow Tracking Settings - Full Width */}
+          <div className="lg:col-span-2">
+            <FlowTrackingSettings
+              settings={flowSettings}
+              onUpdateSettings={updateFlowSettings}
+              onTriggerPrompt={triggerManualPrompt}
+            />
+          </div>
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
