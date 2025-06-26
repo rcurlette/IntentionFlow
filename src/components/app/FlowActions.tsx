@@ -24,7 +24,7 @@ import {
 interface FlowAction {
   id: string;
   name: string;
-  icon: any;
+  icon: React.ComponentType<{ className?: string }>;
   duration: number; // in seconds
   description: string;
   category: "reset" | "boost" | "align" | "assess";
