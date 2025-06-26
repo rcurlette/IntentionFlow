@@ -57,7 +57,9 @@ const App = () => (
           <FlowTracker />
           <BrowserRouter>
             <Routes>
-              <Route path="/" element={<Dashboard />} />
+              <Route path="/" element={<FlowDashboard />} />
+              <Route path="/flow" element={<FlowDashboard />} />
+              <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/tasks" element={<Tasks />} />
               <Route path="/calendar" element={<Calendar />} />
               <Route path="/pomodoro" element={<Pomodoro />} />
