@@ -1,6 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useFlowTracking } from "@/hooks/use-flow-tracking";
 import {
   Home,
   Target,
@@ -10,6 +11,8 @@ import {
   Brain,
   Zap,
   BookOpen,
+  Heart,
+  Activity,
 } from "lucide-react";
 
 const navItems = [
@@ -47,6 +50,7 @@ const navItems = [
 
 export function Navigation() {
   const location = useLocation();
+  const { triggerManualPrompt, isTrackingEnabled } = useFlowTracking();
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -70,6 +74,34 @@ export function Navigation() {
           </div>
 
           <div className="flex items-center space-x-1">
+            {/* Flow Tracker Button */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={triggerManualPrompt}
+              className={cn(
+                "relative border-2 transition-all duration-200",
+                isTrackingEnabled
+                  ? "border-energy/40 bg-energy/10 text-energy hover:bg-energy/20 hover:border-energy/60"
+                  : "border-muted text-muted-foreground hover:text-foreground hover:border-border",
+              )}
+              title={
+                isTrackingEnabled
+                  ? "Open Flow Tracker"
+                  : "Enable flow tracking in Settings first"
+              }
+            >
+              <Activity className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">
+                {isTrackingEnabled ? "Track Flow" : "Flow Off"}
+              </span>
+              {isTrackingEnabled && (
+                <div className="absolute -top-1 -right-1 w-2 h-2 bg-energy rounded-full animate-pulse"></div>
+              )}
+            </Button>
+
+            <div className="h-4 w-px bg-border mx-2" />
+
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.href;
