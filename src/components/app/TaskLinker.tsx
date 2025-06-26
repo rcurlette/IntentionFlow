@@ -44,16 +44,34 @@ export function TaskLinker({
     const loadTasks = async () => {
       try {
         const todayPlan = await getTodayPlan();
-        const incompleteTasks = [
+        console.log("TaskLinker: Loading tasks", {
+          morningTasks: todayPlan.morningTasks.length,
+          afternoonTasks: todayPlan.afternoonTasks.length,
+        });
+
+        const allTasks = [
           ...todayPlan.morningTasks,
           ...todayPlan.afternoonTasks,
-        ].filter((task) => {
+        ];
+
+        const incompleteTasks = allTasks.filter((task) => {
           // Handle both old and new task formats
           if (task.status) {
             return task.status !== "completed";
           }
           // Fallback to completed field for backward compatibility
           return !task.completed;
+        });
+
+        console.log("TaskLinker: Filtered incomplete tasks", {
+          total: allTasks.length,
+          incomplete: incompleteTasks.length,
+          tasks: incompleteTasks.map((t) => ({
+            id: t.id,
+            title: t.title,
+            status: t.status,
+            completed: t.completed,
+          })),
         });
 
         setAvailableTasks(incompleteTasks);
@@ -63,6 +81,10 @@ export function TaskLinker({
     };
 
     loadTasks();
+
+    // Set up periodic refresh to catch new tasks
+    const interval = setInterval(loadTasks, 2000); // Refresh every 2 seconds
+    return () => clearInterval(interval);
   }, []);
 
   const handleLinkTask = () => {
