@@ -231,9 +231,9 @@ export function CalendarView({
                 count: tasks.filter((t) => t.tags?.includes("family")).length,
                 color: "bg-orange-500",
               },
-            ].map((channel) => (
+            ].map((channel, channelIndex) => (
               <div
-                key={channel.name}
+                key={`channel-${channel.name}-${channelIndex}`}
                 className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
               >
                 <div className={cn("w-3 h-3 rounded-full", channel.color)} />
