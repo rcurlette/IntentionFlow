@@ -249,6 +249,16 @@ export function EnhancedTaskItem({
                     Start Focus
                   </DropdownMenuItem>
                 )}
+                {onCreateSubtask && (
+                  <DropdownMenuItem
+                    onClick={() =>
+                      onCreateSubtask(task.id, { title: "New subtask" })
+                    }
+                  >
+                    <Plus className="h-3 w-3 mr-2" />
+                    Add Subtask
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem
                   onClick={() => onDelete(task.id)}
                   className="text-destructive focus:text-destructive"
@@ -260,6 +270,24 @@ export function EnhancedTaskItem({
             </DropdownMenu>
           </div>
         </div>
+
+        {/* Subtask Manager */}
+        {onCreateSubtask &&
+          onUpdateSubtask &&
+          onDeleteSubtask &&
+          onToggleSubtask && (
+            <SubtaskManager
+              parentTask={task}
+              subtasks={subtasks}
+              onCreateSubtask={onCreateSubtask}
+              onUpdateSubtask={onUpdateSubtask}
+              onDeleteSubtask={onDeleteSubtask}
+              onToggleSubtask={onToggleSubtask}
+              onReorderSubtasks={onReorderSubtasks || (async () => {})}
+              depth={task.depth || 0}
+              maxDepth={3}
+            />
+          )}
       </div>
     </div>
   );
