@@ -425,3 +425,32 @@ export async function bulkDeleteTasks(taskIds: string[]): Promise<void> {
     }
   }
 }
+
+// Legacy function aliases for backward compatibility
+export const addTask = saveTask;
+export const updateTask = saveTask;
+
+// Add missing functions
+export async function addLaterBirdTask(
+  task: Omit<Task, "id" | "createdAt" | "updatedAt">,
+): Promise<void> {
+  const newTask: Task = {
+    ...task,
+    id: crypto.randomUUID(),
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+  await saveTask(newTask);
+}
+
+export async function getDayPlans(): Promise<Record<string, DayPlan>> {
+  // In the database version, we don't store day plans as a collection
+  // This function is kept for compatibility but returns today's plan
+  try {
+    const today = await getTodayPlan();
+    return { [today.date]: today };
+  } catch (error) {
+    console.error("Database error, falling back to localStorage:", error);
+    return getFromStorage<Record<string, DayPlan>>(STORAGE_KEYS.DAY_PLANS, {});
+  }
+}
