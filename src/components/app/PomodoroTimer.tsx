@@ -23,6 +23,7 @@ interface PomodoroTimerProps {
   state: TimerState;
   timeRemaining: number;
   totalDuration: number;
+  linkedTask?: Task | null;
   onStart: () => void;
   onPause: () => void;
   onResume: () => void;
