@@ -76,7 +76,15 @@ import {
   FileText,
   Clock,
   Sparkles,
+  CalendarIcon,
 } from "lucide-react";
+import { format, addDays } from "date-fns";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 export default function Tasks() {
   const [allTasks, setAllTasks] = useState<Task[]>([]);
