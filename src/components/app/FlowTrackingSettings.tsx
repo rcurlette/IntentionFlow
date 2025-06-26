@@ -26,6 +26,8 @@ import {
   PlayCircle,
   Pause,
   Settings,
+  CheckCircle,
+  AlertTriangle,
 } from "lucide-react";
 
 interface FlowTrackingSettingsProps {
