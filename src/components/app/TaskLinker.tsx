@@ -42,50 +42,50 @@ export function TaskLinker({
   const [selectedTaskId, setSelectedTaskId] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
 
+  const loadTasks = async () => {
+    setIsLoading(true);
+    try {
+      const todayPlan = await getTodayPlan();
+      console.log("TaskLinker: Loading tasks", {
+        morningTasks: todayPlan.morningTasks.length,
+        afternoonTasks: todayPlan.afternoonTasks.length,
+      });
+
+      const allTasks = [...todayPlan.morningTasks, ...todayPlan.afternoonTasks];
+
+      const incompleteTasks = allTasks.filter((task) => {
+        // Handle both old and new task formats
+        if (task.status) {
+          return task.status !== "completed";
+        }
+        // Fallback to completed field for backward compatibility
+        return !task.completed;
+      });
+
+      console.log("TaskLinker: Filtered incomplete tasks", {
+        total: allTasks.length,
+        incomplete: incompleteTasks.length,
+        tasks: incompleteTasks.map((t) => ({
+          id: t.id,
+          title: t.title,
+          status: t.status,
+          completed: t.completed,
+        })),
+      });
+
+      setAvailableTasks(incompleteTasks);
+    } catch (error) {
+      console.error("Error loading tasks for linker:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const loadTasks = async () => {
-      try {
-        const todayPlan = await getTodayPlan();
-        console.log("TaskLinker: Loading tasks", {
-          morningTasks: todayPlan.morningTasks.length,
-          afternoonTasks: todayPlan.afternoonTasks.length,
-        });
-
-        const allTasks = [
-          ...todayPlan.morningTasks,
-          ...todayPlan.afternoonTasks,
-        ];
-
-        const incompleteTasks = allTasks.filter((task) => {
-          // Handle both old and new task formats
-          if (task.status) {
-            return task.status !== "completed";
-          }
-          // Fallback to completed field for backward compatibility
-          return !task.completed;
-        });
-
-        console.log("TaskLinker: Filtered incomplete tasks", {
-          total: allTasks.length,
-          incomplete: incompleteTasks.length,
-          tasks: incompleteTasks.map((t) => ({
-            id: t.id,
-            title: t.title,
-            status: t.status,
-            completed: t.completed,
-          })),
-        });
-
-        setAvailableTasks(incompleteTasks);
-      } catch (error) {
-        console.error("Error loading tasks for linker:", error);
-      }
-    };
-
     loadTasks();
 
     // Set up periodic refresh to catch new tasks
-    const interval = setInterval(loadTasks, 2000); // Refresh every 2 seconds
+    const interval = setInterval(loadTasks, 3000); // Refresh every 3 seconds
     return () => clearInterval(interval);
   }, []);
 
