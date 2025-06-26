@@ -540,13 +540,17 @@ export default function Dashboard() {
                 <Button
                   size="sm"
                   onClick={() => {
-                    setNewTask((prev) => ({ ...prev, period: "afternoon" }));
+                    setNewTask((prev) => ({
+                      ...prev,
+                      period: "afternoon",
+                      type: "admin",
+                    }));
                     setIsAddTaskOpen(true);
                   }}
-                  className="bg-afternoon text-afternoon-foreground hover:bg-afternoon/90"
+                  className="bg-gradient-to-r from-energy to-energy/80 text-white border-2 border-energy/30 shadow-lg hover:shadow-energy/20 hover:scale-105 transition-all duration-200 animate-pulse-soft"
                 >
                   <Plus className="h-4 w-4 mr-1" />
-                  Add Task
+                  Add Admin Task
                 </Button>
               </CardTitle>
             </CardHeader>
