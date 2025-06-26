@@ -27,6 +27,13 @@ export interface Task {
   projectId?: string; // For future project grouping
   contextTags?: string[]; // GTD contexts (@calls, @computer, etc.)
 
+  // Subtask Support
+  parentTaskId?: string; // Reference to parent task
+  subtasks?: Task[]; // Child tasks (for nested structure)
+  subtaskIds?: string[]; // Array of subtask IDs (for flat structure)
+  depth?: number; // Nesting level (0 = root task, 1 = first level subtask, etc.)
+  isSubtask?: boolean; // Quick check if this is a subtask
+
   // Enhanced Tracking
   isRecurring?: boolean;
   recurringPattern?: {
