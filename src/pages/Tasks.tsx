@@ -96,6 +96,9 @@ export default function Tasks() {
     priority: "medium" as Task["priority"],
     timeBlock: 25,
     tags: [] as string[],
+    scheduledFor: "",
+    dueDate: null as Date | null,
+    dueTime: "",
   });
 
   const templates = getTemplates();
