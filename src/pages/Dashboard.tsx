@@ -357,12 +357,16 @@ export default function Dashboard() {
                     <Button
                       size="sm"
                       onClick={() =>
-                        setNewTask((prev) => ({ ...prev, period: "morning" }))
+                        setNewTask((prev) => ({
+                          ...prev,
+                          period: "morning",
+                          type: "brain",
+                        }))
                       }
-                      className="bg-morning text-morning-foreground hover:bg-morning/90"
+                      className="bg-focus text-focus-foreground hover:bg-focus/90"
                     >
                       <Plus className="h-4 w-4 mr-1" />
-                      Add Task
+                      Add Brain Task
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
