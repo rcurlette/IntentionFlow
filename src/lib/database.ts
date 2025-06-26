@@ -77,6 +77,10 @@ export const tasksApi = {
   },
 
   async getById(id: string): Promise<Task | null> {
+    if (!isSupabaseConfigured) {
+      throw new Error("Supabase not configured, falling back to localStorage");
+    }
+
     const { data, error } = await supabase
       .from("tasks")
       .select("*")
@@ -96,6 +100,10 @@ export const tasksApi = {
   async create(
     task: Omit<Task, "id" | "createdAt" | "updatedAt">,
   ): Promise<Task> {
+    if (!isSupabaseConfigured) {
+      throw new Error("Supabase not configured, falling back to localStorage");
+    }
+
     const dbTask = taskToDbTask(task);
     const { data, error } = await supabase
       .from("tasks")
@@ -112,6 +120,10 @@ export const tasksApi = {
   },
 
   async update(id: string, updates: Partial<Task>): Promise<Task> {
+    if (!isSupabaseConfigured) {
+      throw new Error("Supabase not configured, falling back to localStorage");
+    }
+
     const dbUpdates = taskToDbTask(updates);
     const { data, error } = await supabase
       .from("tasks")
@@ -130,6 +142,10 @@ export const tasksApi = {
   },
 
   async delete(id: string): Promise<void> {
+    if (!isSupabaseConfigured) {
+      throw new Error("Supabase not configured, falling back to localStorage");
+    }
+
     const { error } = await supabase
       .from("tasks")
       .delete()
