@@ -18,6 +18,7 @@ import ApiDemo from "./pages/ApiDemo";
 import AIFeatures from "./pages/AIFeatures";
 import Calendar from "./pages/Calendar";
 import FlowDashboard from "./pages/FlowDashboard";
+import FlowCoach from "./pages/FlowCoach";
 import FlowTrackerPopupPage from "./pages/FlowTrackerPopupPage";
 import NotFound from "./pages/NotFound";
 
@@ -59,6 +60,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<FlowDashboard />} />
               <Route path="/flow" element={<FlowDashboard />} />
+              <Route path="/flow-coach" element={<FlowCoach />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/tasks" element={<Tasks />} />
               <Route path="/calendar" element={<Calendar />} />

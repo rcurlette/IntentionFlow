@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { Navigation } from "@/components/app/Navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,7 +16,6 @@ import {
   getFlowInsights,
 } from "@/lib/flow-storage";
 import { FlowActions } from "@/components/app/FlowActions";
-import { FlowCoaching } from "@/components/app/FlowCoaching";
 import {
   Sunrise,
   Brain,
@@ -390,16 +390,33 @@ export default function FlowDashboard() {
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-4 gap-6">
-          {/* Flow Coaching */}
-          <FlowCoaching
-            currentDay={flowIdentity.daysLiving}
-            currentPhase={flowIdentity.currentPhase}
-            completedRituals={completedRituals}
-            totalRituals={totalRituals}
-            streak={flowIdentity.streak}
-          />
+        {/* Quick Coach Access */}
+        <Card className="mb-6 bg-gradient-to-r from-purple-500/10 to-blue-500/10 border-purple-500/30">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="relative">
+                  <Brain className="h-8 w-8 text-purple-400 animate-pulse-soft" />
+                  <Sparkles className="h-4 w-4 text-yellow-300 absolute -top-1 -right-1 animate-bounce" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-purple-300">Flow Coach</h3>
+                  <p className="text-sm text-slate-400">
+                    Get personalized guidance for your flow journey
+                  </p>
+                </div>
+              </div>
+              <Button asChild className="bg-purple-500 hover:bg-purple-600">
+                <Link to="/flow-coach">
+                  <Brain className="h-4 w-4 mr-2" />
+                  Open Coach
+                </Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
+        <div className="grid lg:grid-cols-3 gap-6">
           {/* Flow State Assessment */}
           <Card className="bg-slate-800/50 border-slate-700">
             <CardHeader>
@@ -411,14 +428,14 @@ export default function FlowDashboard() {
             <CardContent className="space-y-4">
               {/* Energy Level */}
               <div>
-                <label className="text-sm font-medium text-slate-300 mb-2 block">
+                <label className="text-base font-medium text-slate-300 mb-3 block">
                   Energy Level
                 </label>
                 <div className="flex space-x-2">
                   {["low", "medium", "high"].map((level) => (
                     <Button
                       key={level}
-                      size="sm"
+                      size="default"
                       variant={
                         flowState.energy === level ? "default" : "outline"
                       }
@@ -428,7 +445,7 @@ export default function FlowDashboard() {
                           energy: level as any,
                         }))
                       }
-                      className="flex-1 h-8"
+                      className="flex-1 h-10"
                     >
                       {getEnergyIcon(level)}
                       <span className="ml-1 capitalize">{level}</span>
@@ -439,14 +456,14 @@ export default function FlowDashboard() {
 
               {/* Focus Quality */}
               <div>
-                <label className="text-sm font-medium text-slate-300 mb-2 block">
+                <label className="text-base font-medium text-slate-300 mb-3 block">
                   Mental Focus
                 </label>
                 <div className="flex space-x-2">
                   {["scattered", "calm", "sharp"].map((level) => (
                     <Button
                       key={level}
-                      size="sm"
+                      size="default"
                       variant={
                         flowState.focus === level ? "default" : "outline"
                       }
@@ -456,7 +473,7 @@ export default function FlowDashboard() {
                           focus: level as any,
                         }))
                       }
-                      className="flex-1 h-8"
+                      className="flex-1 h-10"
                     >
                       {getFocusIcon(level)}
                       <span className="ml-1 capitalize">{level}</span>
@@ -467,19 +484,19 @@ export default function FlowDashboard() {
 
               {/* Mood */}
               <div>
-                <label className="text-sm font-medium text-slate-300 mb-2 block">
+                <label className="text-base font-medium text-slate-300 mb-3 block">
                   Inner State
                 </label>
                 <div className="flex space-x-2">
                   {["challenged", "neutral", "inspired"].map((mood) => (
                     <Button
                       key={mood}
-                      size="sm"
+                      size="default"
                       variant={flowState.mood === mood ? "default" : "outline"}
                       onClick={() =>
                         setFlowState((prev) => ({ ...prev, mood: mood as any }))
                       }
-                      className="flex-1 h-8 text-xs"
+                      className="flex-1 h-10 text-sm"
                     >
                       <span className="capitalize">{mood}</span>
                     </Button>
@@ -554,7 +571,7 @@ export default function FlowDashboard() {
                   <div className="flex-1">
                     <h4
                       className={cn(
-                        "font-medium text-sm",
+                        "font-medium text-base",
                         ritual.completed ? "text-green-300" : "text-slate-200",
                       )}
                     >
@@ -565,12 +582,12 @@ export default function FlowDashboard() {
                         </Badge>
                       )}
                     </h4>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-sm text-slate-400">
                       {ritual.description}
                     </p>
                   </div>
 
-                  <div className="text-xs text-slate-400">
+                  <div className="text-sm text-slate-400">
                     {ritual.duration}m
                   </div>
                 </div>
@@ -579,7 +596,7 @@ export default function FlowDashboard() {
               {/* Meditation Timer */}
               {!rituals.find((r) => r.id === "meditation")?.completed && (
                 <div className="mt-4 p-3 bg-slate-700/30 rounded-lg border border-slate-600">
-                  <h4 className="text-sm font-medium text-slate-200 mb-2">
+                  <h4 className="text-base font-medium text-slate-200 mb-3">
                     Quick Meditation Timer
                   </h4>
                   {!isTimerActive ? (
@@ -644,7 +661,7 @@ export default function FlowDashboard() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-slate-300 mb-2 block">
+                <label className="text-base font-medium text-slate-300 mb-3 block">
                   How do you want to show up today?
                 </label>
                 <Textarea
@@ -694,7 +711,7 @@ export default function FlowDashboard() {
               {/* Vision Board Section */}
               <div className="mt-6 pt-4 border-t border-slate-600">
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-sm font-medium text-slate-300">
+                  <h4 className="text-base font-medium text-slate-300">
                     Vision Board
                   </h4>
                   <Badge

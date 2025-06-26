@@ -21,6 +21,11 @@ const navItems = [
     icon: Brain,
   },
   {
+    href: "/flow-coach",
+    label: "Coach",
+    icon: Sparkles,
+  },
+  {
     href: "/tasks",
     label: "Tasks",
     icon: Target,
