@@ -419,6 +419,15 @@ async function getPomodoroStats(date: string, context: Context) {
   }
 }
 
+async function handleHealth(request: Request, context: Context) {
+  return jsonResponse({
+    status: "healthy",
+    timestamp: new Date().toISOString(),
+    environment: "netlify-edge",
+    version: "1.0.0",
+  });
+}
+
 // Main handler
 export default async function handler(request: Request, context: Context) {
   const url = new URL(request.url);
