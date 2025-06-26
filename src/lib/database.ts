@@ -58,6 +58,10 @@ const taskToDbTask = (
 // Tasks API
 export const tasksApi = {
   async getAll(): Promise<Task[]> {
+    if (!isSupabaseConfigured) {
+      throw new Error("Supabase not configured, falling back to localStorage");
+    }
+
     const { data, error } = await supabase
       .from("tasks")
       .select("*")
