@@ -354,7 +354,28 @@ export default function Tasks() {
                 templates={templates}
                 onUseTemplate={handleUseTemplate}
               />
+            </div>
+          </div>
+        </div>
 
+        <Tabs defaultValue="manage" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="manage" className="flex items-center space-x-2">
+              <Target className="h-4 w-4" />
+              <span>Manage Tasks</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="analytics"
+              className="flex items-center space-x-2"
+            >
+              <BarChart3 className="h-4 w-4" />
+              <span>Analytics</span>
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="manage" className="space-y-6">
+            {/* Big New Task Button */}
+            <div className="flex justify-center">
               <Dialog
                 open={isCreateTaskOpen}
                 onOpenChange={(open) => {
@@ -374,9 +395,13 @@ export default function Tasks() {
                 }}
               >
                 <DialogTrigger asChild>
-                  <Button>
-                    <Plus className="h-4 w-4 mr-2" />
-                    New Task
+                  <Button
+                    size="lg"
+                    className="bg-primary text-primary-foreground hover:bg-primary/90 px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+                  >
+                    <Plus className="h-6 w-6 mr-3" />
+                    Add New Task
+                    <Sparkles className="h-5 w-5 ml-3 animate-pulse" />
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
@@ -512,79 +537,6 @@ export default function Tasks() {
                 </DialogContent>
               </Dialog>
             </div>
-          </div>
-        </div>
-
-        <Tabs defaultValue="manage" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="manage" className="flex items-center space-x-2">
-              <Target className="h-4 w-4" />
-              <span>Manage Tasks</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="analytics"
-              className="flex items-center space-x-2"
-            >
-              <BarChart3 className="h-4 w-4" />
-              <span>Analytics</span>
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="manage" className="space-y-6">
-            {/* Filter Panel */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between text-sm">
-                  <span>Filters & Search</span>
-                  <div className="flex items-center space-x-2">
-                    <Badge variant="outline">
-                      {filteredTasks.length} of {allTasks.length} tasks
-                    </Badge>
-                    <div className="flex items-center border rounded-md">
-                      <Button
-                        variant={viewMode === "grid" ? "default" : "ghost"}
-                        size="sm"
-                        className="h-8 w-8 p-0"
-                        onClick={() => setViewMode("grid")}
-                      >
-                        <Grid3X3 className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant={viewMode === "list" ? "default" : "ghost"}
-                        size="sm"
-                        className="h-8 w-8 p-0"
-                        onClick={() => setViewMode("list")}
-                      >
-                        <List className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <TaskFilterPanel
-                  filters={filters}
-                  onUpdateFilter={updateFilter}
-                  onResetFilters={resetFilters}
-                  filterCount={getFilterCount()}
-                  availableTags={availableTags}
-                />
-              </CardContent>
-            </Card>
-
-            {/* Bulk Operations */}
-            <TaskBulkOperations
-              selectedTasks={selectedTasks}
-              onSelectAll={handleSelectAll}
-              onDeselectAll={handleDeselectAll}
-              onBulkComplete={handleBulkComplete}
-              onBulkDelete={handleBulkDelete}
-              onBulkUpdatePeriod={handleBulkUpdatePeriod}
-              onBulkUpdatePriority={handleBulkUpdatePriority}
-              onBulkAddTags={handleBulkAddTags}
-              onBulkDuplicate={handleBulkDuplicate}
-              totalTaskCount={filteredTasks.length}
-            />
 
             {/* Two-Box Task View */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -798,6 +750,43 @@ export default function Tasks() {
                 </CardContent>
               </Card>
             </div>
+
+            {/* Filter Panel - Moved Below Tasks */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between text-sm">
+                  <span>Filters & Search</span>
+                  <div className="flex items-center space-x-2">
+                    <Badge variant="outline">
+                      {filteredTasks.length} of {allTasks.length} tasks
+                    </Badge>
+                  </div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <TaskFilterPanel
+                  filters={filters}
+                  onUpdateFilter={updateFilter}
+                  onResetFilters={resetFilters}
+                  filterCount={getFilterCount()}
+                  availableTags={availableTags}
+                />
+              </CardContent>
+            </Card>
+
+            {/* Bulk Operations */}
+            <TaskBulkOperations
+              selectedTasks={selectedTasks}
+              onSelectAll={handleSelectAll}
+              onDeselectAll={handleDeselectAll}
+              onBulkComplete={handleBulkComplete}
+              onBulkDelete={handleBulkDelete}
+              onBulkUpdatePeriod={handleBulkUpdatePeriod}
+              onBulkUpdatePriority={handleBulkUpdatePriority}
+              onBulkAddTags={handleBulkAddTags}
+              onBulkDuplicate={handleBulkDuplicate}
+              totalTaskCount={filteredTasks.length}
+            />
 
             {/* Advanced Grid/List View (Collapsible) */}
             <Card>
