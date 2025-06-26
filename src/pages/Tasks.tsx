@@ -39,6 +39,12 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -482,14 +488,17 @@ export default function Tasks() {
                       <Input
                         id="title"
                         value={newTask.title}
-                        onChange={(e) =>
-                          setNewTask((prev) => ({
-                            ...prev,
-                            title: e.target.value,
-                          }))
-                        }
+                        onChange={(e) => handleTitleChange(e.target.value)}
                         placeholder="What needs to be done?"
+                        autoFocus
                       />
+                      {smartSuggestions && (
+                        <div className="mt-2 p-2 bg-muted/50 rounded text-xs">
+                          <span className="text-muted-foreground">
+                            💡 {smartSuggestions.reasoning}
+                          </span>
+                        </div>
+                      )}
                     </div>
                     <div>
                       <Label htmlFor="description">Description</Label>
@@ -594,6 +603,33 @@ export default function Tasks() {
                         onChange={(e) => handleTagInput(e.target.value)}
                         placeholder="coding, urgent, research..."
                       />
+                      {recentTags.length > 0 && (
+                        <div className="mt-2">
+                          <div className="text-xs text-muted-foreground mb-1">
+                            Recent tags:
+                          </div>
+                          <div className="flex flex-wrap gap-1">
+                            {recentTags.map((tag) => (
+                              <Badge
+                                key={tag}
+                                variant="outline"
+                                className="text-xs cursor-pointer hover:bg-primary hover:text-primary-foreground"
+                                onClick={() => {
+                                  const currentTags = newTask.tags;
+                                  if (!currentTags.includes(tag)) {
+                                    setNewTask((prev) => ({
+                                      ...prev,
+                                      tags: [...currentTags, tag],
+                                    }));
+                                  }
+                                }}
+                              >
+                                #{tag}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                     <Button onClick={handleCreateTask} className="w-full">
                       <Sparkles className="h-4 w-4 mr-2" />
@@ -604,8 +640,8 @@ export default function Tasks() {
               </Dialog>
             </div>
 
-            {/* Two-Box Task View */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Two-Box Task View - Mobile Responsive */}
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
               {/* Morning Tasks */}
               <Card className="border-2 border-morning/20 bg-morning/5">
                 <CardHeader>
@@ -630,82 +666,28 @@ export default function Tasks() {
                   <div className="space-y-3">
                     {filteredTasks.filter((task) => task.period === "morning")
                       .length === 0 ? (
-                      <div className="text-center py-8 text-muted-foreground">
-                        <div className="text-4xl mb-2">🌅</div>
-                        <p>No morning tasks</p>
-                        <p className="text-sm">
-                          Start your day with intention!
-                        </p>
-                      </div>
+                      <TasksEmptyState
+                        period="morning"
+                        onAddTask={() => {
+                          setNewTask((prev) => ({
+                            ...prev,
+                            period: "morning",
+                          }));
+                          setIsCreateTaskOpen(true);
+                        }}
+                      />
                     ) : (
                       filteredTasks
                         .filter((task) => task.period === "morning")
                         .map((task) => (
-                          <div
+                          <EnhancedTaskItem
                             key={task.id}
-                            className="flex items-start space-x-3 p-3 bg-background rounded-lg border hover:shadow-sm transition-shadow"
-                          >
-                            <Checkbox
-                              checked={task.completed}
-                              onCheckedChange={() =>
-                                handleToggleComplete(task.id)
-                              }
-                              className="mt-1"
-                            />
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center space-x-2 mb-1">
-                                <div
-                                  className={`p-1 rounded ${task.type === "brain" ? "bg-focus text-focus-foreground" : "bg-admin text-admin-foreground"}`}
-                                >
-                                  {task.type === "brain" ? (
-                                    <Brain className="h-3 w-3" />
-                                  ) : (
-                                    <FileText className="h-3 w-3" />
-                                  )}
-                                </div>
-                                <h3
-                                  className={`font-medium text-sm ${task.completed ? "line-through text-muted-foreground" : ""}`}
-                                >
-                                  {task.title}
-                                </h3>
-                                <Badge variant="outline" className="text-xs">
-                                  {task.priority === "high"
-                                    ? "🔥"
-                                    : task.priority === "medium"
-                                      ? "⚡"
-                                      : "🌱"}
-                                </Badge>
-                              </div>
-                              {task.description && (
-                                <p
-                                  className={`text-xs text-muted-foreground mb-1 ${task.completed ? "line-through" : ""}`}
-                                >
-                                  {task.description}
-                                </p>
-                              )}
-                              <div className="flex items-center space-x-2 text-xs text-muted-foreground">
-                                {task.timeBlock && (
-                                  <div className="flex items-center space-x-1">
-                                    <Clock className="h-3 w-3" />
-                                    <span>{task.timeBlock}m</span>
-                                  </div>
-                                )}
-                                {task.tags && task.tags.length > 0 && (
-                                  <div className="flex flex-wrap gap-1">
-                                    {task.tags.slice(0, 2).map((tag) => (
-                                      <Badge
-                                        key={tag}
-                                        variant="secondary"
-                                        className="text-xs px-1 py-0"
-                                      >
-                                        #{tag}
-                                      </Badge>
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </div>
+                            task={task}
+                            onToggleComplete={handleToggleComplete}
+                            onEdit={handleEditTask}
+                            onDelete={handleDeleteTask}
+                            onStartPomodoro={handleStartPomodoro}
+                          />
                         ))
                     )}
                   </div>
@@ -736,80 +718,28 @@ export default function Tasks() {
                   <div className="space-y-3">
                     {filteredTasks.filter((task) => task.period === "afternoon")
                       .length === 0 ? (
-                      <div className="text-center py-8 text-muted-foreground">
-                        <div className="text-4xl mb-2">🌆</div>
-                        <p>No afternoon tasks</p>
-                        <p className="text-sm">Keep the momentum going!</p>
-                      </div>
+                      <TasksEmptyState
+                        period="afternoon"
+                        onAddTask={() => {
+                          setNewTask((prev) => ({
+                            ...prev,
+                            period: "afternoon",
+                          }));
+                          setIsCreateTaskOpen(true);
+                        }}
+                      />
                     ) : (
                       filteredTasks
                         .filter((task) => task.period === "afternoon")
                         .map((task) => (
-                          <div
+                          <EnhancedTaskItem
                             key={task.id}
-                            className="flex items-start space-x-3 p-3 bg-background rounded-lg border hover:shadow-sm transition-shadow"
-                          >
-                            <Checkbox
-                              checked={task.completed}
-                              onCheckedChange={() =>
-                                handleToggleComplete(task.id)
-                              }
-                              className="mt-1"
-                            />
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center space-x-2 mb-1">
-                                <div
-                                  className={`p-1 rounded ${task.type === "brain" ? "bg-focus text-focus-foreground" : "bg-admin text-admin-foreground"}`}
-                                >
-                                  {task.type === "brain" ? (
-                                    <Brain className="h-3 w-3" />
-                                  ) : (
-                                    <FileText className="h-3 w-3" />
-                                  )}
-                                </div>
-                                <h3
-                                  className={`font-medium text-sm ${task.completed ? "line-through text-muted-foreground" : ""}`}
-                                >
-                                  {task.title}
-                                </h3>
-                                <Badge variant="outline" className="text-xs">
-                                  {task.priority === "high"
-                                    ? "🔥"
-                                    : task.priority === "medium"
-                                      ? "⚡"
-                                      : "🌱"}
-                                </Badge>
-                              </div>
-                              {task.description && (
-                                <p
-                                  className={`text-xs text-muted-foreground mb-1 ${task.completed ? "line-through" : ""}`}
-                                >
-                                  {task.description}
-                                </p>
-                              )}
-                              <div className="flex items-center space-x-2 text-xs text-muted-foreground">
-                                {task.timeBlock && (
-                                  <div className="flex items-center space-x-1">
-                                    <Clock className="h-3 w-3" />
-                                    <span>{task.timeBlock}m</span>
-                                  </div>
-                                )}
-                                {task.tags && task.tags.length > 0 && (
-                                  <div className="flex flex-wrap gap-1">
-                                    {task.tags.slice(0, 2).map((tag) => (
-                                      <Badge
-                                        key={tag}
-                                        variant="secondary"
-                                        className="text-xs px-1 py-0"
-                                      >
-                                        #{tag}
-                                      </Badge>
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </div>
+                            task={task}
+                            onToggleComplete={handleToggleComplete}
+                            onEdit={handleEditTask}
+                            onDelete={handleDeleteTask}
+                            onStartPomodoro={handleStartPomodoro}
+                          />
                         ))
                     )}
                   </div>
@@ -823,6 +753,35 @@ export default function Tasks() {
                 <CardTitle className="flex items-center justify-between text-sm">
                   <span>Filters & Search</span>
                   <div className="flex items-center space-x-2">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm">
+                          Export
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <DropdownMenuItem
+                          onClick={() => handleExportTasks("json")}
+                        >
+                          📄 JSON Format
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => handleExportTasks("csv")}
+                        >
+                          📊 CSV Format
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => handleExportTasks("markdown")}
+                        >
+                          📝 Markdown Format
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => handleExportTasks("txt")}
+                        >
+                          📃 Text Format
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                     <Badge variant="outline">
                       {filteredTasks.length} of {allTasks.length} tasks
                     </Badge>
