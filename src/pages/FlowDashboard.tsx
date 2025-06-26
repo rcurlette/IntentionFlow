@@ -8,6 +8,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { format, differenceInDays } from "date-fns";
 import {
+  getFlowProgress,
+  getTodayFlowSession,
+  saveFlowSession,
+  initializeFlowJourney,
+  getFlowInsights,
+} from "@/lib/flow-storage";
+import {
   Sunrise,
   Brain,
   Heart,
