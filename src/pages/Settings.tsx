@@ -198,6 +198,47 @@ export default function Settings() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
+                <Music className="h-5 w-5" />
+                <span>YouTube Music Player</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="youtube-url">YouTube Music/Video URL</Label>
+                <Input
+                  id="youtube-url"
+                  placeholder="https://www.youtube.com/watch?v=..."
+                />
+                <p className="text-xs text-muted-foreground">
+                  Paste any YouTube video URL for background music during focus
+                  sessions
+                </p>
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="autoplay-music">Auto-play on Focus Start</Label>
+                <Switch id="autoplay-music" />
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="loop-music">Loop Current Track</Label>
+                <Switch id="loop-music" defaultChecked />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="music-volume">Default Volume</Label>
+                <Input
+                  id="music-volume"
+                  type="range"
+                  min="0"
+                  max="100"
+                  defaultValue="50"
+                  className="w-full"
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
                 <User className="h-5 w-5" />
                 <span>Profile</span>
               </CardTitle>
