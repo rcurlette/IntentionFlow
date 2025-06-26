@@ -95,23 +95,28 @@ export const tasksApi = {
 
   async getById(id: string): Promise<Task | null> {
     if (!isSupabaseConfigured) {
-      throw new Error("Supabase not configured, falling back to localStorage");
+      return null; // Return null instead of throwing error to allow fallback
     }
 
-    const { data, error } = await supabase
-      .from("tasks")
-      .select("*")
-      .eq("id", id)
-      .eq("user_id", TEMP_USER_ID)
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from("tasks")
+        .select("*")
+        .eq("id", id)
+        .eq("user_id", TEMP_USER_ID)
+        .single();
 
-    if (error) {
-      if (error.code === "PGRST116") return null; // Not found
-      console.error("Error fetching task:", error);
-      throw error;
+      if (error) {
+        if (error.code === "PGRST116") return null; // Not found
+        console.error("Error fetching task:", error);
+        throw error;
+      }
+
+      return data ? dbTaskToTask(data) : null;
+    } catch (error) {
+      console.error("Database error in getById:", error);
+      return null; // Return null to allow fallback
     }
-
-    return data ? dbTaskToTask(data) : null;
   },
 
   async create(
