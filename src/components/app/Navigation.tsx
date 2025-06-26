@@ -13,6 +13,7 @@ import {
   Brain,
   Zap,
   Music,
+  BookOpen,
 } from "lucide-react";
 
 const navItems = [
@@ -41,11 +42,26 @@ const navItems = [
     label: "Settings",
     icon: Settings,
   },
+  {
+    href: "/about",
+    label: "About",
+    icon: BookOpen,
+  },
 ];
 
 export function Navigation() {
   const location = useLocation();
-  const { actions } = useMusicPlayer();
+
+  let musicActions;
+  try {
+    const { actions } = useMusicPlayer();
+    musicActions = actions;
+  } catch (error) {
+    console.error("Error accessing music player:", error);
+    musicActions = {
+      togglePlaylist: () => console.log("Music player not available"),
+    };
+  }
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -76,8 +92,9 @@ export function Navigation() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={actions.togglePlaylist}
+              onClick={musicActions.togglePlaylist}
               className="text-muted-foreground hover:text-foreground"
+              title="Open Focus Music"
             >
               <Music className="h-4 w-4" />
             </Button>

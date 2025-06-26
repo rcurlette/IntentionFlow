@@ -90,8 +90,21 @@ export function useMusicPlayer() {
 
   // Initialize YouTube API
   useEffect(() => {
+    // Check if YouTube API is already loaded
+    if ((window as any).YT) {
+      console.log("YouTube API already loaded");
+      return;
+    }
+
+    // Check if script is already added
+    if (document.querySelector('script[src*="youtube.com/iframe_api"]')) {
+      console.log("YouTube API script already added");
+      return;
+    }
+
     const script = document.createElement("script");
     script.src = "https://www.youtube.com/iframe_api";
+    script.async = true;
     document.body.appendChild(script);
 
     (window as any).onYouTubeIframeAPIReady = () => {
@@ -99,7 +112,7 @@ export function useMusicPlayer() {
     };
 
     return () => {
-      document.body.removeChild(script);
+      // Don't remove script as it might be needed by other components
     };
   }, []);
 
