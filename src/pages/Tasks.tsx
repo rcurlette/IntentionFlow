@@ -918,87 +918,22 @@ export default function Tasks() {
                                 </Button>
                               ))}
                             </div>
-                            <Popover
-                              open={isCalendarOpen}
-                              onOpenChange={setIsCalendarOpen}
-                            >
-                              <PopoverTrigger asChild>
-                                <Button
-                                  variant="outline"
-                                  type="button"
-                                  className={cn(
-                                    "w-full justify-start text-left font-normal",
-                                    !newTask.scheduledFor &&
-                                      "text-muted-foreground",
-                                  )}
-                                >
-                                  <CalendarIcon className="mr-2 h-4 w-4" />
-                                  {newTask.scheduledFor
-                                    ? format(
-                                        new Date(
-                                          newTask.scheduledFor + "T00:00:00",
-                                        ),
-                                        "PPP",
-                                      )
-                                    : "Pick a date"}
-                                </Button>
-                              </PopoverTrigger>
-                              <PopoverContent
-                                className="w-auto p-0"
-                                align="start"
-                              >
-                                <Calendar
-                                  mode="single"
-                                  selected={
-                                    newTask.scheduledFor
-                                      ? new Date(
-                                          newTask.scheduledFor + "T00:00:00",
-                                        )
-                                      : undefined
-                                  }
-                                  onSelect={(date) => {
-                                    console.log("Selected date:", date);
-                                    if (date) {
-                                      const formattedDate = format(
-                                        date,
-                                        "yyyy-MM-dd",
-                                      );
-                                      console.log(
-                                        "Formatted date:",
-                                        formattedDate,
-                                      );
-                                      setNewTask((prev) => {
-                                        const updated = {
-                                          ...prev,
-                                          scheduledFor: formattedDate,
-                                        };
-                                        console.log("Updated task:", updated);
-                                        return updated;
-                                      });
-                                    }
-                                    setIsCalendarOpen(false);
-                                  }}
-                                  initialFocus
-                                />
-                              </PopoverContent>
-                            </Popover>
-                          </div>
-                        </div>
-
-                        <div>
-                          <Label>Due Time</Label>
-                          <Input
-                            type="time"
-                            value={newTask.dueTime}
-                            onChange={(e) =>
-                              setNewTask((prev) => ({
-                                ...prev,
-                                dueTime: e.target.value,
-                              }))
-                            }
-                            className="mt-1"
-                          />
-                        </div>
+                            <Input
+                              type="date"
+                              value={newTask.scheduledFor}
+                              onChange={(e) => {
+                                console.log("Scheduled date changed:", e.target.value);
+                                setNewTask((prev) => ({
+                                  ...prev,
+                                  scheduledFor: e.target.value,
+                                }));
+                              }}
+                              className="w-full"
+                              placeholder="Select scheduled date..."
+                            />
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Current scheduled: {newTask.scheduledFor || "None"}
+                            </p>
                       </div>
 
                       <div>
@@ -1006,20 +941,11 @@ export default function Tasks() {
                         <div className="mt-1">
                           <Input
                             type="date"
-                            value={
-                              newTask.dueDate
-                                ? format(newTask.dueDate, "yyyy-MM-dd")
-                                : ""
-                            }
+                            value={newTask.dueDate ? format(newTask.dueDate, "yyyy-MM-dd") : ""}
                             onChange={(e) => {
-                              console.log(
-                                "Date input changed:",
-                                e.target.value,
-                              );
+                              console.log("Date input changed:", e.target.value);
                               if (e.target.value) {
-                                const selectedDate = new Date(
-                                  e.target.value + "T00:00:00",
-                                );
+                                const selectedDate = new Date(e.target.value + "T00:00:00");
                                 console.log("Parsed date:", selectedDate);
                                 setNewTask((prev) => {
                                   const updated = {
@@ -1040,10 +966,7 @@ export default function Tasks() {
                             placeholder="Select deadline..."
                           />
                           <p className="text-xs text-muted-foreground mt-1">
-                            Current due date:{" "}
-                            {newTask.dueDate
-                              ? newTask.dueDate.toString()
-                              : "None"}
+                            Current due date: {newTask.dueDate ? newTask.dueDate.toString() : "None"}
                           </p>
                         </div>
                       </div>
