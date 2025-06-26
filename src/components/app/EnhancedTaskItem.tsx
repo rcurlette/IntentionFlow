@@ -202,13 +202,6 @@ export function EnhancedTaskItem({
             </DropdownMenu>
           </div>
         </div>
-
-        {/* Completion Animation */}
-        {task.completed && (
-          <div className="flex items-center space-x-1 text-success mt-1 animate-pulse-soft">
-            <div className="text-xs font-medium">✨ Completed!</div>
-          </div>
-        )}
       </div>
     </div>
   );
