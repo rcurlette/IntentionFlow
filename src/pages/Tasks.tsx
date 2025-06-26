@@ -255,103 +255,133 @@ export default function Tasks() {
   };
 
   // Bulk operations
-  const handleBulkComplete = (taskIds: string[]) => {
-    taskIds.forEach((id) => {
-      updateTask(id, { completed: true });
-    });
-    setAllTasks((prev) =>
-      prev.map((task) =>
-        taskIds.includes(task.id) ? { ...task, completed: true } : task,
-      ),
-    );
-    setSelectedTasks([]);
+  const handleBulkComplete = async (taskIds: string[]) => {
+    try {
+      // Update all tasks in parallel
+      await Promise.all(
+        taskIds.map((id) =>
+          updateTask(id, { completed: true, status: "completed" }),
+        ),
+      );
+
+      // Update local state
+      setAllTasks((prev) =>
+        prev.map((task) =>
+          taskIds.includes(task.id)
+            ? { ...task, completed: true, status: "completed" as const }
+            : task,
+        ),
+      );
+      setSelectedTasks([]);
+    } catch (error) {
+      console.error("Error completing tasks:", error);
+    }
   };
 
-  const handleBulkDelete = (taskIds: string[]) => {
-    taskIds.forEach((id) => {
-      deleteTask(id);
-    });
-    setAllTasks((prev) => prev.filter((task) => !taskIds.includes(task.id)));
-    setSelectedTasks([]);
+  const handleBulkDelete = async (taskIds: string[]) => {
+    try {
+      // Delete all tasks in parallel
+      await Promise.all(taskIds.map((id) => deleteTask(id)));
+
+      // Update local state
+      setAllTasks((prev) => prev.filter((task) => !taskIds.includes(task.id)));
+      setSelectedTasks([]);
+    } catch (error) {
+      console.error("Error deleting tasks:", error);
+    }
   };
 
-  const handleBulkUpdatePeriod = (
+  const handleBulkUpdatePeriod = async (
     taskIds: string[],
     period: "morning" | "afternoon",
   ) => {
-    taskIds.forEach((id) => {
-      updateTask(id, { period });
-    });
-    setAllTasks((prev) =>
-      prev.map((task) =>
-        taskIds.includes(task.id) ? { ...task, period } : task,
-      ),
-    );
+    try {
+      // Update all tasks in parallel
+      await Promise.all(taskIds.map((id) => updateTask(id, { period })));
+
+      // Update local state
+      setAllTasks((prev) =>
+        prev.map((task) =>
+          taskIds.includes(task.id) ? { ...task, period } : task,
+        ),
+      );
+      setSelectedTasks([]);
+    } catch (error) {
+      console.error("Error updating task periods:", error);
+    }
   };
 
-  const handleBulkUpdatePriority = (
+  const handleBulkUpdatePriority = async (
     taskIds: string[],
     priority: Task["priority"],
   ) => {
-    taskIds.forEach((id) => {
-      updateTask(id, { priority });
-    });
-    setAllTasks((prev) =>
-      prev.map((task) =>
-        taskIds.includes(task.id) ? { ...task, priority } : task,
-      ),
-    );
+    try {
+      // Update all tasks in parallel
+      await Promise.all(taskIds.map((id) => updateTask(id, { priority })));
+
+      // Update local state
+      setAllTasks((prev) =>
+        prev.map((task) =>
+          taskIds.includes(task.id) ? { ...task, priority } : task,
+        ),
+      );
+      setSelectedTasks([]);
+    } catch (error) {
+      console.error("Error updating task priorities:", error);
+    }
   };
 
-  const handleBulkAddTags = (taskIds: string[], tags: string[]) => {
-    taskIds.forEach((id) => {
-      const task = allTasks.find((t) => t.id === id);
-      if (task) {
-        const existingTags = task.tags || [];
-        const newTags = [...new Set([...existingTags, ...tags])];
-        updateTask(id, { tags: newTags });
-      }
-    });
-    // Reload tasks to get updated tags
-    const dayPlans = getDayPlans();
-    const tasks: Task[] = [];
-    dayPlans.forEach((plan) => {
-      tasks.push(
-        ...plan.morningTasks,
-        ...plan.afternoonTasks,
-        ...plan.laterBird,
+  const handleBulkAddTags = async (taskIds: string[], tags: string[]) => {
+    try {
+      // Update all tasks in parallel
+      await Promise.all(
+        taskIds.map(async (id) => {
+          const task = allTasks.find((t) => t.id === id);
+          if (task) {
+            const existingTags = task.tags || [];
+            const newTags = [...new Set([...existingTags, ...tags])];
+            return updateTask(id, { tags: newTags });
+          }
+        }),
       );
-    });
-    setAllTasks(tasks);
+
+      // Reload tasks to get updated tags
+      const tasks = await getAllTasks();
+      setAllTasks(tasks);
+      setSelectedTasks([]);
+    } catch (error) {
+      console.error("Error adding tags to tasks:", error);
+    }
   };
 
-  const handleBulkDuplicate = (taskIds: string[]) => {
-    taskIds.forEach((id) => {
-      const task = allTasks.find((t) => t.id === id);
-      if (task) {
-        addTask({
-          title: `${task.title} (Copy)`,
-          description: task.description,
-          type: task.type,
-          period: task.period,
-          priority: task.priority,
-          timeBlock: task.timeBlock,
-          tags: task.tags,
-          completed: false,
-        });
-      }
-    });
-    // Reload tasks
-    const dayPlans = getDayPlans();
-    const tasks: Task[] = [];
-    dayPlans.forEach((plan) => {
-      tasks.push(
-        ...plan.morningTasks,
-        ...plan.afternoonTasks,
-        ...plan.laterBird,
+  const handleBulkDuplicate = async (taskIds: string[]) => {
+    try {
+      // Create duplicates in parallel
+      await Promise.all(
+        taskIds.map(async (id) => {
+          const task = allTasks.find((t) => t.id === id);
+          if (task) {
+            return addTask({
+              title: `${task.title} (Copy)`,
+              description: task.description,
+              type: task.type,
+              period: task.period,
+              priority: task.priority,
+              timeBlock: task.timeBlock,
+              tags: task.tags,
+              completed: false,
+            });
+          }
+        }),
       );
-    });
-    setAllTasks(tasks);
+
+      // Reload tasks
+      const tasks = await getAllTasks();
+      setAllTasks(tasks);
+      setSelectedTasks([]);
+    } catch (error) {
+      console.error("Error duplicating tasks:", error);
+    }
   };
 
   const handleTagInput = (value: string) => {
