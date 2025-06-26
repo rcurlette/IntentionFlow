@@ -14,6 +14,7 @@ import {
   initializeFlowJourney,
   getFlowInsights,
 } from "@/lib/flow-storage";
+import { FlowActions } from "@/components/app/FlowActions";
 import {
   Sunrise,
   Brain,
