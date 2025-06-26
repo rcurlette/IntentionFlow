@@ -859,6 +859,15 @@ export default function Tasks() {
           </TabsContent>
         </Tabs>
       </main>
+
+      {/* Floating Action Button for Quick Add */}
+      <FloatingActionButton
+        onCreateTask={async (taskData) => {
+          await addTask(taskData);
+          const tasks = await getAllTasks();
+          setAllTasks(tasks);
+        }}
+      />
     </div>
   );
 }
