@@ -218,26 +218,24 @@ export default function Tasks() {
     }
   };
 
-  const handleUseTemplate = (
+  const handleUseTemplate = async (
     template: any,
     period: "morning" | "afternoon",
   ) => {
-    const tasksFromTemplate = createTasksFromTemplate(template, period);
-    tasksFromTemplate.forEach((taskData) => {
-      addTask(taskData);
-    });
+    try {
+      const tasksFromTemplate = createTasksFromTemplate(template, period);
 
-    // Reload tasks
-    const dayPlans = getDayPlans();
-    const tasks: Task[] = [];
-    dayPlans.forEach((plan) => {
-      tasks.push(
-        ...plan.morningTasks,
-        ...plan.afternoonTasks,
-        ...plan.laterBird,
-      );
-    });
-    setAllTasks(tasks);
+      // Add all tasks from template
+      for (const taskData of tasksFromTemplate) {
+        await addTask(taskData);
+      }
+
+      // Reload tasks
+      const tasks = await getAllTasks();
+      setAllTasks(tasks);
+    } catch (error) {
+      console.error("Error using template:", error);
+    }
   };
 
   const handleTaskSelection = (task: Task, selected: boolean) => {
