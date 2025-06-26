@@ -71,7 +71,7 @@ export function EnhancedTaskItem({
         checked={task.completed}
         onCheckedChange={handleToggleComplete}
         className={cn(
-          "mt-1 transition-all duration-200",
+          "mt-1 transition-all duration-200 focus:ring-2 focus:ring-primary/20",
           task.completed && "data-[state=checked]:bg-success",
         )}
       />
