@@ -10,6 +10,7 @@ import {
   Brain,
   Zap,
   BookOpen,
+  Sparkles,
 } from "lucide-react";
 
 const navItems = [
