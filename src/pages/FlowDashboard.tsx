@@ -13,6 +13,16 @@ import {
   saveFlowSession,
   initializeFlowJourney,
 } from "@/lib/flow-storage";
+
+type FlowRitualLocal = {
+  id: string;
+  name: string;
+  icon: React.ComponentType<{ className?: string }>;
+  duration: number;
+  description: string;
+  completed: boolean;
+  isCore: boolean;
+};
 import { FlowActions } from "@/components/app/FlowActions";
 import { FlowCoaching } from "@/components/app/FlowCoaching";
 import {
