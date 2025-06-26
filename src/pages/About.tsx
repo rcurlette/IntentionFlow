@@ -94,7 +94,7 @@ export default function About() {
         <div className="mb-8 p-6 bg-gradient-to-r from-primary/10 to-energy/10 rounded-lg border border-primary/20">
           <div className="text-center">
             <h3 className="text-3xl font-bold text-primary mb-2">
-              20% Productivity Increase
+              Research Says There is a 20% Productivity Increase
             </h3>
             <p className="text-muted-foreground mb-4">
               Research shows that people can improve their productivity by up to
