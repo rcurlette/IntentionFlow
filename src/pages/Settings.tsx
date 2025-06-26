@@ -1,11 +1,10 @@
 import { Navigation } from "@/components/app/Navigation";
+import { ThemeSwitcher } from "@/components/app/ThemeSwitcher";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { useTheme } from "@/lib/theme-context";
 import {
   Settings as SettingsIcon,
   Clock,
@@ -17,15 +16,9 @@ import {
   Trash2,
   Shield,
   Eye,
-  Contrast,
-  Zap,
-  Sun,
-  Moon,
 } from "lucide-react";
 
 export default function Settings() {
-  const { theme, colorTheme, setTheme, setColorTheme } = useTheme();
-
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
@@ -104,83 +97,19 @@ export default function Settings() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
-                <Eye className="h-5 w-5" />
-                <span>Accessibility & Appearance</span>
+                <Palette className="h-5 w-5" />
+                <span>Theme & Appearance</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="space-y-3">
-                <Label className="text-sm font-medium">Color Theme</Label>
-                <div className="grid grid-cols-2 gap-3">
-                  <Button
-                    variant={
-                      colorTheme === "accessible" ? "default" : "outline"
-                    }
-                    size="sm"
-                    onClick={() => setColorTheme("accessible")}
-                    className="justify-start"
-                  >
-                    <Contrast className="h-4 w-4 mr-2" />
-                    Accessible
-                    {colorTheme === "accessible" && (
-                      <Badge variant="secondary" className="ml-auto text-xs">
-                        Active
-                      </Badge>
-                    )}
-                  </Button>
-                  <Button
-                    variant={colorTheme === "vibrant" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setColorTheme("vibrant")}
-                    className="justify-start"
-                  >
-                    <Zap className="h-4 w-4 mr-2" />
-                    Vibrant
-                    {colorTheme === "vibrant" && (
-                      <Badge variant="secondary" className="ml-auto text-xs">
-                        Active
-                      </Badge>
-                    )}
-                  </Button>
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-sm font-medium">Theme Settings</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Customize colors and brightness for optimal accessibility
+                  </p>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Accessible theme provides better contrast and
-                  colorblind-friendly colors
-                </p>
-              </div>
-
-              <div className="space-y-3">
-                <Label className="text-sm font-medium">Brightness</Label>
-                <div className="grid grid-cols-2 gap-3">
-                  <Button
-                    variant={theme === "light" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setTheme("light")}
-                    className="justify-start"
-                  >
-                    <Sun className="h-4 w-4 mr-2" />
-                    Light
-                    {theme === "light" && (
-                      <Badge variant="secondary" className="ml-auto text-xs">
-                        Active
-                      </Badge>
-                    )}
-                  </Button>
-                  <Button
-                    variant={theme === "dark" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setTheme("dark")}
-                    className="justify-start"
-                  >
-                    <Moon className="h-4 w-4 mr-2" />
-                    Dark
-                    {theme === "dark" && (
-                      <Badge variant="secondary" className="ml-auto text-xs">
-                        Active
-                      </Badge>
-                    )}
-                  </Button>
-                </div>
+                <ThemeSwitcher />
               </div>
 
               <div className="flex items-center justify-between">
@@ -192,6 +121,14 @@ export default function Settings() {
                   Motivational Messages
                 </Label>
                 <Switch id="motivational-messages" defaultChecked />
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="reduced-motion">Reduced Motion</Label>
+                <Switch id="reduced-motion" />
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="high-contrast">High Contrast Mode</Label>
+                <Switch id="high-contrast" />
               </div>
             </CardContent>
           </Card>

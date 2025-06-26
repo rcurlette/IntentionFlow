@@ -5,6 +5,7 @@ import { PomodoroTimer } from "@/components/app/PomodoroTimer";
 import { TaskLinker } from "@/components/app/TaskLinker";
 import { FlowStateMonitor } from "@/components/app/FlowStateMonitor";
 import { PomodoroSettings } from "@/components/app/PomodoroSettings";
+import { FocusMusicSelector } from "@/components/app/FocusMusicSelector";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -198,8 +199,10 @@ export default function Pomodoro() {
             />
           </div>
 
-          {/* Flow State Monitor */}
+          {/* Flow State Monitor and Music */}
           <div className="space-y-6">
+            <FocusMusicSelector isTimerRunning={state === "running"} />
+
             <FlowStateMonitor
               flowScore={flowScore}
               distractionCount={distractionCount}

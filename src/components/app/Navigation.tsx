@@ -1,9 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { ThemeSwitcher } from "./ThemeSwitcher";
-import { NowPlaying } from "./NowPlaying";
-import { useMusicPlayer } from "@/hooks/use-music-player";
 import {
   Home,
   Target,
@@ -12,7 +9,6 @@ import {
   Settings,
   Brain,
   Zap,
-  Music,
   BookOpen,
 } from "lucide-react";
 
@@ -52,17 +48,6 @@ const navItems = [
 export function Navigation() {
   const location = useLocation();
 
-  let musicActions;
-  try {
-    const { actions } = useMusicPlayer();
-    musicActions = actions;
-  } catch (error) {
-    console.error("Error accessing music player:", error);
-    musicActions = {
-      togglePlaylist: () => console.log("Music player not available"),
-    };
-  }
-
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4">
@@ -84,52 +69,33 @@ export function Navigation() {
             </div>
           </div>
 
-          <div className="flex items-center space-x-3">
-            {/* Now Playing */}
-            <NowPlaying />
+          <div className="flex items-center space-x-1">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = location.pathname === item.href;
 
-            {/* Music Playlist Toggle */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={musicActions.togglePlaylist}
-              className="text-muted-foreground hover:text-foreground"
-              title="Open Focus Music"
-            >
-              <Music className="h-4 w-4" />
-            </Button>
-
-            <div className="h-4 w-px bg-border" />
-
-            <div className="flex items-center space-x-1">
-              <ThemeSwitcher />
-              {navItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = location.pathname === item.href;
-
-                return (
-                  <Button
-                    key={item.href}
-                    asChild
-                    variant={isActive ? "default" : "ghost"}
-                    size="sm"
-                    className={cn(
-                      "relative",
-                      isActive &&
-                        "bg-primary text-primary-foreground shadow-lg animate-pulse-soft",
+              return (
+                <Button
+                  key={item.href}
+                  asChild
+                  variant={isActive ? "default" : "ghost"}
+                  size="sm"
+                  className={cn(
+                    "relative",
+                    isActive &&
+                      "bg-primary text-primary-foreground shadow-lg animate-pulse-soft",
+                  )}
+                >
+                  <Link to={item.href}>
+                    <Icon className="h-4 w-4 mr-2" />
+                    <span className="hidden sm:inline">{item.label}</span>
+                    {isActive && (
+                      <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-energy rounded-full animate-pulse" />
                     )}
-                  >
-                    <Link to={item.href}>
-                      <Icon className="h-4 w-4 mr-2" />
-                      <span className="hidden sm:inline">{item.label}</span>
-                      {isActive && (
-                        <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-energy rounded-full animate-pulse" />
-                      )}
-                    </Link>
-                  </Button>
-                );
-              })}
-            </div>
+                  </Link>
+                </Button>
+              );
+            })}
           </div>
         </div>
       </div>
