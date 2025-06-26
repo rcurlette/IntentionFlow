@@ -17,8 +17,8 @@ import {
 const navItems = [
   {
     href: "/",
-    label: "Dashboard",
-    icon: Home,
+    label: "Flow",
+    icon: Brain,
   },
   {
     href: "/tasks",
@@ -34,6 +34,11 @@ const navItems = [
     href: "/pomodoro",
     label: "Focus",
     icon: Clock,
+  },
+  {
+    href: "/dashboard",
+    label: "Analytics",
+    icon: Home,
   },
   {
     href: "/analytics",
