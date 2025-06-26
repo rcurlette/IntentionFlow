@@ -245,14 +245,34 @@ export function TaskLinker({
               </>
             ) : (
               <div className="text-center py-6">
-                <Target className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                <p className="text-sm text-muted-foreground mb-3">
-                  No incomplete tasks available
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Add some tasks in your Dashboard to link them to Pomodoro
-                  sessions
-                </p>
+                {isLoading ? (
+                  <>
+                    <RefreshCw className="h-8 w-8 mx-auto mb-2 opacity-50 animate-spin" />
+                    <p className="text-sm text-muted-foreground">
+                      Loading your tasks...
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <Target className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm text-muted-foreground mb-3">
+                      No incomplete tasks available
+                    </p>
+                    <p className="text-xs text-muted-foreground mb-3">
+                      Add some tasks in your Dashboard to link them to Pomodoro
+                      sessions
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={loadTasks}
+                      className="text-xs"
+                    >
+                      <RefreshCw className="h-3 w-3 mr-1" />
+                      Refresh Tasks
+                    </Button>
+                  </>
+                )}
               </div>
             )}
 
