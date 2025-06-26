@@ -934,25 +934,38 @@ export default function Tasks() {
                                   <CalendarIcon className="mr-2 h-4 w-4" />
                                   {newTask.scheduledFor
                                     ? format(
-                                        new Date(newTask.scheduledFor + "T00:00:00"),
+                                        new Date(
+                                          newTask.scheduledFor + "T00:00:00",
+                                        ),
                                         "PPP",
                                       )
                                     : "Pick a date"}
                                 </Button>
                               </PopoverTrigger>
-                              <PopoverContent className="w-auto p-0" align="start">
+                              <PopoverContent
+                                className="w-auto p-0"
+                                align="start"
+                              >
                                 <Calendar
                                   mode="single"
                                   selected={
                                     newTask.scheduledFor
-                                      ? new Date(newTask.scheduledFor + "T00:00:00")
+                                      ? new Date(
+                                          newTask.scheduledFor + "T00:00:00",
+                                        )
                                       : undefined
                                   }
                                   onSelect={(date) => {
                                     console.log("Selected date:", date);
                                     if (date) {
-                                      const formattedDate = format(date, "yyyy-MM-dd");
-                                      console.log("Formatted date:", formattedDate);
+                                      const formattedDate = format(
+                                        date,
+                                        "yyyy-MM-dd",
+                                      );
+                                      console.log(
+                                        "Formatted date:",
+                                        formattedDate,
+                                      );
                                       setNewTask((prev) => {
                                         const updated = {
                                           ...prev,
@@ -965,9 +978,6 @@ export default function Tasks() {
                                     setIsCalendarOpen(false);
                                   }}
                                   initialFocus
-                                />
-                              </PopoverContent>
-                            </Popover>
                                 />
                               </PopoverContent>
                             </Popover>
