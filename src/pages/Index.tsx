@@ -1,11 +1,20 @@
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+
 const Index = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Redirect to dashboard since this is now a fallback
+    navigate("/", { replace: true });
+  }, [navigate]);
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-focus/5">
       <div className="text-center">
-        {/* TODO: replace everything here with the actual app! */}
-        <h1 className="text-2xl font-semibold text-slate-800 flex items-center justify-center gap-3">
+        <h1 className="text-2xl font-semibold text-primary flex items-center justify-center gap-3">
           <svg
-            className="animate-spin h-8 w-8 text-slate-400"
+            className="animate-spin h-8 w-8 text-primary"
             viewBox="0 0 50 50"
           >
             <circle
@@ -18,7 +27,7 @@ const Index = () => {
               fill="none"
             />
             <circle
-              className="text-slate-600"
+              className="text-primary"
               cx="25"
               cy="25"
               r="20"
@@ -29,11 +38,10 @@ const Index = () => {
               strokeDashoffset="75"
             />
           </svg>
-          Generating your app...
+          Loading FlowTracker...
         </h1>
-        <p className="mt-4 text-slate-600 max-w-md">
-          Watch the chat on the left for updates that might need your attention
-          to finish generating
+        <p className="mt-4 text-muted-foreground max-w-md">
+          🚀 Redirecting to your productivity dashboard
         </p>
       </div>
     </div>
