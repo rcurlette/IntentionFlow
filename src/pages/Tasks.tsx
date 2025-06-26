@@ -192,21 +192,29 @@ export default function Tasks() {
     setIsCreateTaskOpen(true);
   };
 
-  const handleDeleteTask = (taskId: string) => {
-    deleteTask(taskId);
-    setAllTasks((prev) => prev.filter((task) => task.id !== taskId));
-    setSelectedTasks((prev) => prev.filter((task) => task.id !== taskId));
+  const handleDeleteTask = async (taskId: string) => {
+    try {
+      await deleteTask(taskId);
+      setAllTasks((prev) => prev.filter((task) => task.id !== taskId));
+      setSelectedTasks((prev) => prev.filter((task) => task.id !== taskId));
+    } catch (error) {
+      console.error("Error deleting task:", error);
+    }
   };
 
-  const handleToggleComplete = (taskId: string) => {
+  const handleToggleComplete = async (taskId: string) => {
     const task = allTasks.find((t) => t.id === taskId);
     if (task) {
-      updateTask(taskId, { completed: !task.completed });
-      setAllTasks((prev) =>
-        prev.map((t) =>
-          t.id === taskId ? { ...t, completed: !t.completed } : t,
-        ),
-      );
+      try {
+        await updateTask(taskId, { completed: !task.completed });
+        setAllTasks((prev) =>
+          prev.map((t) =>
+            t.id === taskId ? { ...t, completed: !t.completed } : t,
+          ),
+        );
+      } catch (error) {
+        console.error("Error updating task:", error);
+      }
     }
   };
 
