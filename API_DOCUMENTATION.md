@@ -1,51 +1,67 @@
 # FlowTracker API Documentation
 
-This document describes the RESTful API endpoints available in the FlowTracker application, implemented using Netlify Edge Functions.
+## Overview
+
+The FlowTracker API provides comprehensive endpoints for task management, flow tracking, analytics, and user settings. All endpoints are deployed as Netlify Edge Functions and are accessible via `/api/*`.
 
 ## Base URL
 
-- **Production**: `https://your-site.netlify.app/api`
+- **Production**: `https://your-domain.netlify.app/api`
 - **Development**: `http://localhost:8080/api`
 
 ## Authentication
 
-Currently, the API does not require authentication. In production, you would implement authentication using JWT tokens or API keys.
+Currently, the API uses a temporary user system. In production, this will be replaced with proper authentication.
 
-## Response Format
+## Common Response Format
 
-All endpoints return JSON responses with the following structure:
-
-### Success Response
+All API responses follow this format:
 
 ```json
 {
-  "data": { ... },
-  "message": "Success message (optional)"
+  "data": {}, // Response data
+  "message": "string", // Success/error message (optional)
+  "timestamp": "ISO string"
 }
 ```
 
-### Error Response
+## Error Handling
+
+Errors return appropriate HTTP status codes with error details:
 
 ```json
 {
-  "error": "Error message"
+  "error": "Error message",
+  "status": 400
 }
 ```
 
-## API Endpoints
+## CORS
 
-### Health Check
+All endpoints support CORS with the following headers:
 
-Check if the API is running and healthy.
+- `Access-Control-Allow-Origin: *`
+- `Access-Control-Allow-Headers: Content-Type, Authorization`
+- `Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS`
 
-- **URL**: `/api/health`
-- **Method**: `GET`
-- **Response**:
+---
+
+## Endpoints
+
+### 🔧 System Health
+
+#### Health Check
+
+```http
+GET /api/health
+```
+
+**Response:**
 
 ```json
 {
   "status": "healthy",
-  "timestamp": "2024-01-01T12:00:00Z",
+  "timestamp": "2024-01-01T00:00:00.000Z",
   "environment": "netlify-edge",
   "version": "1.0.0"
 }
@@ -53,26 +69,20 @@ Check if the API is running and healthy.
 
 ---
 
-## Task Management
+### 📋 Task Management
 
-### Get All Tasks
+#### Get All Tasks
 
-Retrieve all tasks or filter by date/period.
+```http
+GET /api/tasks
+```
 
-- **URL**: `/api/tasks`
-- **Method**: `GET`
-- **Query Parameters**:
-  - `date` (optional): Filter by date (YYYY-MM-DD format)
-  - `period` (optional): Filter by period (`morning` or `afternoon`)
+**Query Parameters:**
 
-**Examples**:
+- `date` (optional): Filter by date (YYYY-MM-DD)
+- `period` (optional): Filter by period (`morning` | `afternoon`)
 
-- `/api/tasks` - Get all tasks
-- `/api/tasks?date=2024-01-01` - Get tasks for specific date
-- `/api/tasks?period=morning` - Get morning tasks
-- `/api/tasks?date=2024-01-01&period=afternoon` - Get afternoon tasks for specific date
-
-**Response**:
+**Response:**
 
 ```json
 {
@@ -81,112 +91,109 @@ Retrieve all tasks or filter by date/period.
       "id": "uuid",
       "title": "Task title",
       "description": "Task description",
-      "type": "brain", // or "admin"
-      "period": "morning", // or "afternoon"
-      "status": "todo", // "todo", "in-progress", "completed"
-      "completed": false,
-      "priority": "medium", // "low", "medium", "high"
+      "type": "brain" | "admin",
+      "period": "morning" | "afternoon",
+      "status": "todo" | "in-progress" | "completed",
+      "completed": boolean,
+      "priority": "low" | "medium" | "high",
       "tags": ["tag1", "tag2"],
-      "timeSpent": 0,
-      "pomodoroCount": 0,
-      "scheduledFor": "2024-01-01",
-      "createdAt": "2024-01-01T12:00:00Z",
-      "updatedAt": "2024-01-01T12:00:00Z",
-      "completedAt": null // or timestamp
+      "timeBlock": number,
+      "timeEstimate": number,
+      "timeSpent": number,
+      "pomodoroCount": number,
+      "scheduledFor": "YYYY-MM-DD",
+      "createdAt": "ISO string",
+      "updatedAt": "ISO string",
+      "completedAt": "ISO string" | null
     }
   ],
-  "count": 1
+  "count": number
 }
 ```
 
-### Get Single Task
+#### Get Single Task
 
-Retrieve a specific task by ID.
+```http
+GET /api/tasks/:id
+```
 
-- **URL**: `/api/tasks/:id`
-- **Method**: `GET`
-- **Response**:
+**Response:**
 
 ```json
 {
   "task": {
-    "id": "uuid",
-    "title": "Task title"
-    // ... other task properties
+    // Task object (same as above)
   }
 }
 ```
 
-### Create Task
+#### Create Task
 
-Create a new task.
+```http
+POST /api/tasks
+```
 
-- **URL**: `/api/tasks`
-- **Method**: `POST`
-- **Body**:
+**Request Body:**
 
 ```json
 {
-  "title": "New task title",
-  "description": "Task description",
-  "type": "brain", // or "admin"
-  "period": "morning", // or "afternoon"
-  "priority": "medium", // "low", "medium", "high"
-  "tags": ["tag1", "tag2"],
-  "timeEstimate": 25,
-  "scheduledFor": "2024-01-01"
+  "title": "string (required)",
+  "description": "string (optional)",
+  "type": "brain" | "admin" (required),
+  "period": "morning" | "afternoon" (required),
+  "priority": "low" | "medium" | "high",
+  "tags": ["string"],
+  "timeBlock": number,
+  "timeEstimate": number,
+  "scheduledFor": "YYYY-MM-DD"
 }
 ```
 
-**Response**:
+**Response:**
 
 ```json
 {
   "task": {
-    "id": "generated-uuid",
-    "title": "New task title"
-    // ... other task properties
+    // Created task object
   },
   "message": "Task created successfully"
 }
 ```
 
-### Update Task
+#### Update Task
 
-Update an existing task.
+```http
+PUT /api/tasks/:id
+```
 
-- **URL**: `/api/tasks/:id`
-- **Method**: `PUT`
-- **Body**: (partial task object)
+**Request Body:** (any task fields to update)
 
 ```json
 {
-  "title": "Updated title",
+  "title": "string",
   "status": "completed",
-  "timeSpent": 30
+  "priority": "high"
 }
 ```
 
-**Response**:
+**Response:**
 
 ```json
 {
   "task": {
-    "id": "uuid",
-    "title": "Updated title"
-    // ... other updated properties
+    // Updated task object
   },
   "message": "Task updated successfully"
 }
 ```
 
-### Delete Task
+#### Delete Task
 
-Delete a task.
+```http
+DELETE /api/tasks/:id
+```
 
-- **URL**: `/api/tasks/:id`
-- **Method**: `DELETE`
-- **Response**:
+**Response:**
 
 ```json
 {
@@ -195,178 +202,791 @@ Delete a task.
 }
 ```
 
+### 📋 Bulk Task Operations
+
+#### Create Multiple Tasks
+
+```http
+POST /api/tasks/bulk
+```
+
+**Request Body:**
+
+```json
+{
+  "tasks": [
+    {
+      "title": "Task 1",
+      "type": "brain",
+      "period": "morning"
+    },
+    {
+      "title": "Task 2",
+      "type": "admin",
+      "period": "afternoon"
+    }
+  ]
+}
+```
+
+**Response:**
+
+```json
+{
+  "tasks": [
+    // Array of created task objects
+  ],
+  "count": number,
+  "message": "X tasks created successfully"
+}
+```
+
+#### Update Multiple Tasks
+
+```http
+PUT /api/tasks/bulk
+```
+
+**Request Body:**
+
+```json
+{
+  "taskIds": ["uuid1", "uuid2"],
+  "updates": {
+    "priority": "high",
+    "status": "completed"
+  }
+}
+```
+
+**Response:**
+
+```json
+{
+  "updatedTaskIds": ["uuid1", "uuid2"],
+  "updates": {},
+  "count": number,
+  "message": "X tasks updated successfully"
+}
+```
+
+#### Delete Multiple Tasks
+
+```http
+DELETE /api/tasks/bulk
+```
+
+**Request Body:**
+
+```json
+{
+  "taskIds": ["uuid1", "uuid2"]
+}
+```
+
+**Response:**
+
+```json
+{
+  "deletedTaskIds": ["uuid1", "uuid2"],
+  "count": number,
+  "message": "X tasks deleted successfully"
+}
+```
+
+### 📋 Task Templates
+
+#### Get Task Templates
+
+```http
+GET /api/tasks/templates
+```
+
+**Response:**
+
+```json
+{
+  "templates": [
+    {
+      "id": "uuid",
+      "name": "Template name",
+      "description": "Template description",
+      "type": "brain" | "admin",
+      "period": "morning" | "afternoon",
+      "priority": "low" | "medium" | "high",
+      "tags": ["string"],
+      "timeEstimate": number,
+      "category": "string",
+      "createdAt": "ISO string"
+    }
+  ],
+  "count": number
+}
+```
+
+#### Create Task Template
+
+```http
+POST /api/tasks/templates
+```
+
+**Request Body:**
+
+```json
+{
+  "name": "string (required)",
+  "description": "string",
+  "type": "brain" | "admin" (required),
+  "period": "morning" | "afternoon" (required),
+  "priority": "low" | "medium" | "high",
+  "tags": ["string"],
+  "timeEstimate": number,
+  "category": "string"
+}
+```
+
 ---
 
-## Day Plans
+### 📅 Day Plans
 
-### Get Day Plan
+#### Get Day Plan
 
-Retrieve a day plan for a specific date or today.
+```http
+GET /api/day-plans
+```
 
-- **URL**: `/api/day-plans`
-- **Method**: `GET`
-- **Query Parameters**:
-  - `date` (optional): Specific date (YYYY-MM-DD), defaults to today
+**Query Parameters:**
 
-**Examples**:
+- `date` (optional): Specific date (YYYY-MM-DD), defaults to today
 
-- `/api/day-plans` - Get today's plan
-- `/api/day-plans?date=2024-01-01` - Get plan for specific date
-
-**Response**:
+**Response:**
 
 ```json
 {
   "dayPlan": {
-    "date": "2024-01-01",
+    "date": "YYYY-MM-DD",
     "morningTasks": [
-      /* array of tasks */
+      // Array of task objects
     ],
     "afternoonTasks": [
-      /* array of tasks */
+      // Array of task objects
     ],
-    "completedTasks": 5,
-    "totalTasks": 10,
-    "pomodoroCompleted": 3,
-    "totalFocusTime": 75,
-    "averageFlowScore": 85,
-    "currentStreak": 7,
-    "achievements": []
+    "completedTasks": number,
+    "totalTasks": number,
+    "pomodoroCompleted": number,
+    "totalFocusTime": number,
+    "averageFlowScore": number,
+    "currentStreak": number,
+    "achievements": [
+      // Array of achievement objects
+    ]
   }
 }
 ```
 
 ---
 
-## Pomodoro Sessions
+### 🍅 Pomodoro Sessions
 
-### Create Pomodoro Session
+#### Create Pomodoro Session
 
-Record a new pomodoro session.
+```http
+POST /api/pomodoro/sessions
+```
 
-- **URL**: `/api/pomodoro/sessions`
-- **Method**: `POST`
-- **Body**:
+**Request Body:**
 
 ```json
 {
-  "taskId": "uuid", // optional
-  "startTime": "2024-01-01T12:00:00Z",
-  "endTime": "2024-01-01T12:25:00Z",
-  "completed": true,
-  "type": "focus", // "focus", "shortBreak", "longBreak"
-  "duration": 25,
-  "flowScore": 85,
-  "distractions": 2
+  "taskId": "uuid (optional)",
+  "duration": number,
+  "type": "focus" | "shortBreak" | "longBreak",
+  "completed": boolean,
+  "flowScore": number,
+  "distractions": number,
+  "startTime": "ISO string",
+  "endTime": "ISO string (optional)"
 }
 ```
 
-**Response**:
+**Response:**
 
 ```json
 {
   "session": {
-    "id": "generated-uuid",
-    "taskId": "uuid"
-    // ... other session properties
+    "id": "uuid",
+    "taskId": "uuid",
+    "duration": number,
+    "type": "focus" | "shortBreak" | "longBreak",
+    "completed": boolean,
+    "flowScore": number,
+    "distractions": number,
+    "startTime": "ISO string",
+    "endTime": "ISO string"
   },
   "message": "Pomodoro session created successfully"
 }
 ```
 
-### Get Pomodoro Stats
+#### Get Pomodoro Statistics
 
-Get statistics for pomodoro sessions.
+```http
+GET /api/pomodoro/stats
+```
 
-- **URL**: `/api/pomodoro/stats`
-- **Method**: `GET`
-- **Query Parameters**:
-  - `date` (optional): Specific date (YYYY-MM-DD), defaults to today
+**Query Parameters:**
 
-**Response**:
+- `date` (optional): Specific date (YYYY-MM-DD), defaults to today
+
+**Response:**
 
 ```json
 {
   "stats": {
-    "date": "2024-01-01",
-    "count": 5,
-    "totalTime": 125,
-    "avgFlowScore": 87
+    "date": "YYYY-MM-DD",
+    "count": number,
+    "totalTime": number,
+    "avgFlowScore": number
   }
 }
 ```
 
 ---
 
-## Error Codes
+### 🌊 Flow Tracking
 
-| Status Code | Description           |
-| ----------- | --------------------- |
-| 200         | Success               |
-| 201         | Created               |
-| 400         | Bad Request           |
-| 404         | Not Found             |
-| 405         | Method Not Allowed    |
-| 500         | Internal Server Error |
+#### Get Flow Entries
 
-## Implementation Notes
-
-### Current Implementation
-
-- **Technology**: Netlify Edge Functions (Deno runtime)
-- **Database**: Mock data (for demonstration)
-- **CORS**: Enabled for all origins
-
-### Production Considerations
-
-To use this API in production, you should:
-
-1. **Database Integration**: Replace mock data with actual database calls (Supabase, PostgreSQL, etc.)
-2. **Authentication**: Implement JWT or API key authentication
-3. **Rate Limiting**: Add rate limiting to prevent abuse
-4. **Input Validation**: Add comprehensive input validation
-5. **Error Handling**: Improve error handling and logging
-6. **CORS Configuration**: Restrict CORS to your domain
-7. **Caching**: Implement caching for frequently accessed data
-
-### Frontend Integration
-
-The frontend automatically detects API availability and falls back to localStorage when the API is unavailable:
-
-```typescript
-import { taskApi } from "@/lib/storage-api";
-
-// This will try API first, then fallback to localStorage
-const tasks = await taskApi.getAll();
+```http
+GET /api/flow/entries
 ```
 
-## Testing the API
+**Query Parameters:**
 
-You can test the API using:
+- `days` (optional): Number of days to fetch (default: 7)
+- `date` (optional): Specific date (YYYY-MM-DD)
 
-1. **Built-in Demo Page**: Visit `/api-demo` in your application
-2. **cURL**:
+**Response:**
+
+```json
+{
+  "entries": [
+    {
+      "id": "uuid",
+      "timestamp": "ISO string",
+      "activity": "string",
+      "activityType": "brain" | "admin" | "break" | "other",
+      "flowRating": number,
+      "mood": number,
+      "energyLevel": number,
+      "location": "string",
+      "notes": "string",
+      "tags": ["string"],
+      "duration": number,
+      "createdAt": "ISO string"
+    }
+  ],
+  "count": number,
+  "dateRange": {
+    "days": number,
+    "date": "string"
+  }
+}
+```
+
+#### Create Flow Entry
+
+```http
+POST /api/flow/entries
+```
+
+**Request Body:**
+
+```json
+{
+  "activity": "string (required)",
+  "activityType": "brain" | "admin" | "break" | "other",
+  "flowRating": number, // 1-5 (required)
+  "mood": number, // 1-5 (required)
+  "energyLevel": number, // 1-5 (required)
+  "location": "string",
+  "notes": "string",
+  "tags": ["string"],
+  "duration": number,
+  "timestamp": "ISO string"
+}
+```
+
+**Response:**
+
+```json
+{
+  "entry": {
+    // Created flow entry object
+  },
+  "message": "Flow entry created successfully"
+}
+```
+
+#### Get Flow Analytics
+
+```http
+GET /api/flow/analytics
+```
+
+**Query Parameters:**
+
+- `days` (optional): Number of days for analysis (default: 30)
+
+**Response:**
+
+```json
+{
+  "analytics": {
+    "peakFlowHours": [9, 10, 14, 15],
+    "lowFlowHours": [12, 16, 17],
+    "bestActivitiesForMorning": ["Deep work", "Coding"],
+    "bestActivitiesForAfternoon": ["Meetings", "Admin tasks"],
+    "activitiesToAvoid": ["Social media"],
+    "weeklyTrends": {
+      "Monday": {
+        "day": "Monday",
+        "avgFlow": 3.8,
+        "bestActivity": "Deep work"
+      }
+    },
+    "improvementSuggestions": ["string"]
+  },
+  "dateRange": {
+    "days": number
+  }
+}
+```
+
+#### Get Flow Tracking Settings
+
+```http
+GET /api/flow/settings
+```
+
+**Response:**
+
+```json
+{
+  "settings": {
+    "isEnabled": boolean,
+    "interval": number,
+    "quietHours": {
+      "start": "HH:MM",
+      "end": "HH:MM"
+    },
+    "trackingDays": [1, 2, 3, 4, 5],
+    "autoDetectActivity": boolean,
+    "showFlowInsights": boolean,
+    "minimumEntriesForInsights": number,
+    "promptStyle": "gentle" | "persistent" | "minimal"
+  }
+}
+```
+
+#### Update Flow Tracking Settings
+
+```http
+PUT /api/flow/settings
+```
+
+**Request Body:** (any settings fields to update)
+
+```json
+{
+  "isEnabled": boolean,
+  "interval": number,
+  "quietHours": {
+    "start": "HH:MM",
+    "end": "HH:MM"
+  },
+  "trackingDays": [number]
+}
+```
+
+---
+
+### 📊 Analytics
+
+#### Get Task Analytics
+
+```http
+GET /api/analytics/tasks
+```
+
+**Query Parameters:**
+
+- `range` (optional): Date range (`7d` | `30d` | `90d`)
+
+**Response:**
+
+```json
+{
+  "analytics": {
+    "totalTasks": number,
+    "completedTasks": number,
+    "completionRate": number,
+    "avgTasksPerDay": number,
+    "productivityScore": number,
+    "typeBreakdown": {
+      "brain": number,
+      "admin": number
+    },
+    "periodBreakdown": {
+      "morning": number,
+      "afternoon": number
+    },
+    "tagAnalytics": [
+      {
+        "tag": "string",
+        "count": number,
+        "completionRate": number
+      }
+    ],
+    "timeSpentByType": {
+      "brain": number,
+      "admin": number
+    },
+    "pomodoroEfficiency": number
+  },
+  "dateRange": "string"
+}
+```
+
+#### Get Productivity Insights
+
+```http
+GET /api/analytics/productivity
+```
+
+**Query Parameters:**
+
+- `range` (optional): Date range (`7d` | `30d` | `90d`)
+
+**Response:**
+
+```json
+{
+  "insights": {
+    "overallScore": number,
+    "trends": {
+      "tasksCompleted": {
+        "current": number,
+        "previous": number,
+        "change": number
+      },
+      "focusTime": {
+        "current": number,
+        "previous": number,
+        "change": number
+      },
+      "flowScore": {
+        "current": number,
+        "previous": number,
+        "change": number
+      }
+    },
+    "recommendations": ["string"],
+    "bestPerformingDays": ["string"],
+    "improvementAreas": ["string"]
+  },
+  "dateRange": "string"
+}
+```
+
+#### Get Activity Patterns
+
+```http
+GET /api/analytics/patterns
+```
+
+**Query Parameters:**
+
+- `range` (optional): Date range (`7d` | `30d` | `90d`)
+
+**Response:**
+
+```json
+{
+  "patterns": {
+    "hourlyFlow": [
+      {
+        "hour": number,
+        "avgFlow": number,
+        "taskCount": number
+      }
+    ],
+    "dailyPatterns": {
+      "Monday": {
+        "avgProductivity": number,
+        "bestActivity": "string"
+      }
+    },
+    "activityCorrelations": [
+      {
+        "activity": "string",
+        "bestTime": "string",
+        "avgFlow": number
+      }
+    ]
+  },
+  "dateRange": "string"
+}
+```
+
+#### Get Trend Analysis
+
+```http
+GET /api/analytics/trends
+```
+
+**Query Parameters:**
+
+- `range` (optional): Date range (`7d` | `30d` | `90d`)
+
+**Response:**
+
+```json
+{
+  "trends": {
+    "productivityTrend": "increasing" | "decreasing" | "stable",
+    "weeklyAverage": number,
+    "monthlyGrowth": number,
+    "streakAnalysis": {
+      "currentStreak": number,
+      "avgStreakLength": number,
+      "longestStreak": number
+    },
+    "seasonalPatterns": [
+      {
+        "period": "string",
+        "productivity": number,
+        "trend": "string"
+      }
+    ],
+    "forecastedProductivity": number
+  },
+  "dateRange": "string"
+}
+```
+
+---
+
+### ⚙️ User Settings
+
+#### Get User Settings
+
+```http
+GET /api/settings
+```
+
+**Response:**
+
+```json
+{
+  "settings": {
+    "theme": "light" | "dark",
+    "colorTheme": "vibrant" | "accessible",
+    "focusDuration": number,
+    "shortBreakDuration": number,
+    "longBreakDuration": number,
+    "sessionsBeforeLongBreak": number,
+    "autoStartBreaks": boolean,
+    "autoStartPomodoros": boolean,
+    "notificationsEnabled": boolean,
+    "soundEnabled": boolean,
+    "dailyGoal": number
+  }
+}
+```
+
+#### Update User Settings
+
+```http
+PUT /api/settings
+```
+
+**Request Body:** (any settings fields to update)
+
+```json
+{
+  "theme": "dark",
+  "focusDuration": 25,
+  "notificationsEnabled": true
+}
+```
+
+**Response:**
+
+```json
+{
+  "settings": {
+    // Updated settings object
+  },
+  "message": "Settings updated successfully"
+}
+```
+
+---
+
+### 🏆 Achievements
+
+#### Get User Achievements
+
+```http
+GET /api/achievements
+```
+
+**Response:**
+
+```json
+{
+  "achievements": [
+    {
+      "id": "uuid",
+      "type": "streak" | "completion" | "focus" | "milestone",
+      "title": "string",
+      "description": "string",
+      "icon": "string",
+      "earnedAt": "ISO string",
+      "metadata": {}
+    }
+  ],
+  "count": number
+}
+```
+
+#### Create Achievement
+
+```http
+POST /api/achievements
+```
+
+**Request Body:**
+
+```json
+{
+  "type": "streak" | "completion" | "focus" | "milestone" (required),
+  "title": "string (required)",
+  "description": "string (required)",
+  "icon": "string",
+  "metadata": {}
+}
+```
+
+**Response:**
+
+```json
+{
+  "achievement": {
+    // Created achievement object
+  },
+  "message": "Achievement unlocked!"
+}
+```
+
+---
+
+### 🔥 Streaks
+
+#### Get User Streaks
+
+```http
+GET /api/streaks
+```
+
+**Response:**
+
+```json
+{
+  "streaks": {
+    "currentStreak": number,
+    "longestStreak": number,
+    "lastActivityDate": "YYYY-MM-DD"
+  }
+}
+```
+
+#### Update User Streaks
+
+```http
+PUT /api/streaks
+```
+
+**Request Body:**
+
+```json
+{
+  "currentStreak": number,
+  "longestStreak": number,
+  "lastActivityDate": "YYYY-MM-DD"
+}
+```
+
+**Response:**
+
+```json
+{
+  "streaks": {
+    // Updated streaks object
+  },
+  "message": "Streaks updated successfully"
+}
+```
+
+---
+
+## Testing
+
+### Run API Tests
+
+```bash
+# Test all endpoints
+npm run test:api
+
+# Test against specific environment
+API_BASE_URL=https://your-domain.netlify.app npm run test:api
+
+# Run all tests (unit + API)
+npm run test:all
+```
+
+### Test Individual Endpoints
 
 ```bash
 # Health check
-curl https://your-site.netlify.app/api/health
+curl https://your-domain.netlify.app/api/health
 
-# Get all tasks
-curl https://your-site.netlify.app/api/tasks
+# Get tasks
+curl https://your-domain.netlify.app/api/tasks
 
-# Create a task
-curl -X POST https://your-site.netlify.app/api/tasks \
+# Create task
+curl -X POST https://your-domain.netlify.app/api/tasks \
   -H "Content-Type: application/json" \
-  -d '{"title":"Test Task","type":"brain","period":"morning","priority":"medium"}'
+  -d '{"title":"Test Task","type":"brain","period":"morning"}'
 ```
 
-3. **Postman**: Import the endpoints and test interactively
-4. **Frontend Integration**: The app automatically uses the API when available
+---
 
-## Support
+## Deployment
 
-For questions or issues with the API, please check:
+The API is automatically deployed as Netlify Edge Functions when you deploy your site. The edge functions are configured in `netlify.toml`:
 
-- The built-in demo page at `/api-demo`
-- Console logs for debugging information
-- Network tab in browser developer tools
+```toml
+[[edge_functions]]
+  function = "api"
+  path = "/api/*"
+```
+
+## Rate Limiting
+
+Currently, no rate limiting is implemented. In production, consider adding rate limiting based on your usage patterns.
+
+## Monitoring
+
+Monitor your API usage through the Netlify dashboard. Each edge function call is logged and can be monitored for performance and errors.
