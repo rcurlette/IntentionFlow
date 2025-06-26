@@ -47,7 +47,7 @@ export function usePomodoro() {
   }, [state, settings]);
 
   const startTimer = useCallback(
-    (taskId?: string) => {
+    async (taskId?: string) => {
       const newSession: PomodoroSession = {
         id: generateId(),
         taskId,
@@ -66,19 +66,22 @@ export function usePomodoro() {
 
       // Link task if provided
       if (taskId) {
-        const todayPlan = getTodayPlan();
-        const allTasks = [
-          ...todayPlan.morningTasks,
-          ...todayPlan.afternoonTasks,
-          ...todayPlan.laterBird,
-        ];
-        const task = allTasks.find((t) => t.id === taskId);
-        if (task) {
-          setLinkedTask(task);
+        try {
+          const todayPlan = await getTodayPlan();
+          const allTasks = [
+            ...(todayPlan.morningTasks || []),
+            ...(todayPlan.afternoonTasks || []),
+          ];
+          const task = allTasks.find((t) => t.id === taskId);
+          if (task) {
+            setLinkedTask(task);
+          }
+        } catch (error) {
+          console.error("Error linking task:", error);
         }
       }
     },
-    [settings.focusDuration],
+    [settings],
   );
 
   const pauseTimer = useCallback(() => {
