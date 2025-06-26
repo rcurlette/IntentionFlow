@@ -1003,10 +1003,14 @@ export default function Tasks() {
 
                       <div>
                         <Label>Hard Deadline (Due Date)</Label>
-                        <Popover>
+                        <Popover
+                          open={isDueDateCalendarOpen}
+                          onOpenChange={setIsDueDateCalendarOpen}
+                        >
                           <PopoverTrigger asChild>
                             <Button
                               variant="outline"
+                              type="button"
                               className={cn(
                                 "w-full justify-start text-left font-normal mt-1",
                                 !newTask.dueDate && "text-muted-foreground",
@@ -1018,15 +1022,24 @@ export default function Tasks() {
                                 : "Set deadline (optional)"}
                             </Button>
                           </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0">
+                          <PopoverContent className="w-auto p-0" align="start">
                             <Calendar
                               mode="single"
                               selected={newTask.dueDate || undefined}
                               onSelect={(date) => {
-                                setNewTask((prev) => ({
-                                  ...prev,
-                                  dueDate: date || null,
-                                }));
+                                console.log("Selected due date:", date);
+                                setNewTask((prev) => {
+                                  const updated = {
+                                    ...prev,
+                                    dueDate: date || null,
+                                  };
+                                  console.log(
+                                    "Updated task with due date:",
+                                    updated,
+                                  );
+                                  return updated;
+                                });
+                                setIsDueDateCalendarOpen(false);
                               }}
                               initialFocus
                             />
