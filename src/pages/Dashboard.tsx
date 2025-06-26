@@ -536,8 +536,8 @@ export default function Dashboard() {
                   <span className="text-afternoon">Afternoon Tasks</span>
                   <Zap className="h-4 w-4 text-afternoon animate-pulse" />
                   {currentPeriod === "afternoon" && (
-                    <Badge className="bg-afternoon text-afternoon-foreground animate-pulse-soft">
-                      Active Period
+                    <Badge className="bg-afternoon text-afternoon-foreground animate-pulse-soft px-2 py-1">
+                      <span className="text-xs">🎯</span>
                     </Badge>
                   )}
                 </div>
