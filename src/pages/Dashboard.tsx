@@ -45,6 +45,7 @@ import {
   Flame,
   Coffee,
   Sparkles,
+  Heart,
 } from "lucide-react";
 
 export default function Dashboard() {
