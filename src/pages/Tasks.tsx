@@ -56,6 +56,8 @@ import {
   FileText,
   Clock,
   Sparkles,
+  Sun,
+  Sunset,
 } from "lucide-react";
 
 export default function Tasks() {
@@ -584,48 +586,292 @@ export default function Tasks() {
               totalTaskCount={filteredTasks.length}
             />
 
-            {/* Tasks Display */}
-            <div
-              className={
-                viewMode === "grid"
-                  ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
-                  : "space-y-3"
-              }
-            >
-              {filteredTasks.length === 0 ? (
-                <div className="col-span-full text-center py-12">
-                  <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <h3 className="text-lg font-medium mb-2">No tasks found</h3>
-                  <p className="text-muted-foreground">
-                    {allTasks.length === 0
-                      ? "Create your first task to get started!"
-                      : "Try adjusting your filters or search terms."}
-                  </p>
-                </div>
-              ) : (
-                filteredTasks.map((task) => (
-                  <div key={task.id} className="relative">
-                    <div className="absolute top-2 left-2 z-10">
-                      <Checkbox
-                        checked={selectedTasks.some(
-                          (selectedTask) => selectedTask.id === task.id,
-                        )}
-                        onCheckedChange={(checked) =>
-                          handleTaskSelection(task, !!checked)
+            {/* Two-Box Task View */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Morning Tasks */}
+              <Card className="border-2 border-morning/20 bg-morning/5">
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-3 h-3 bg-morning rounded-full"></div>
+                      <span className="text-morning">Morning Tasks</span>
+                      <Badge
+                        variant="outline"
+                        className="text-morning border-morning"
+                      >
+                        {
+                          filteredTasks.filter(
+                            (task) => task.period === "morning",
+                          ).length
                         }
-                      />
+                      </Badge>
                     </div>
-                    <TaskCard
-                      task={task}
-                      onToggleComplete={handleToggleComplete}
-                      onEdit={handleEditTask}
-                      onDelete={handleDeleteTask}
-                      showPeriod={true}
-                    />
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {filteredTasks.filter((task) => task.period === "morning")
+                      .length === 0 ? (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <div className="text-4xl mb-2">🌅</div>
+                        <p>No morning tasks</p>
+                        <p className="text-sm">
+                          Start your day with intention!
+                        </p>
+                      </div>
+                    ) : (
+                      filteredTasks
+                        .filter((task) => task.period === "morning")
+                        .map((task) => (
+                          <div
+                            key={task.id}
+                            className="flex items-start space-x-3 p-3 bg-background rounded-lg border hover:shadow-sm transition-shadow"
+                          >
+                            <Checkbox
+                              checked={task.completed}
+                              onCheckedChange={() =>
+                                handleToggleComplete(task.id)
+                              }
+                              className="mt-1"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center space-x-2 mb-1">
+                                <div
+                                  className={`p-1 rounded ${task.type === "brain" ? "bg-focus text-focus-foreground" : "bg-admin text-admin-foreground"}`}
+                                >
+                                  {task.type === "brain" ? (
+                                    <Brain className="h-3 w-3" />
+                                  ) : (
+                                    <FileText className="h-3 w-3" />
+                                  )}
+                                </div>
+                                <h3
+                                  className={`font-medium text-sm ${task.completed ? "line-through text-muted-foreground" : ""}`}
+                                >
+                                  {task.title}
+                                </h3>
+                                <Badge variant="outline" className="text-xs">
+                                  {task.priority === "high"
+                                    ? "🔥"
+                                    : task.priority === "medium"
+                                      ? "⚡"
+                                      : "🌱"}
+                                </Badge>
+                              </div>
+                              {task.description && (
+                                <p
+                                  className={`text-xs text-muted-foreground mb-1 ${task.completed ? "line-through" : ""}`}
+                                >
+                                  {task.description}
+                                </p>
+                              )}
+                              <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+                                {task.timeBlock && (
+                                  <div className="flex items-center space-x-1">
+                                    <Clock className="h-3 w-3" />
+                                    <span>{task.timeBlock}m</span>
+                                  </div>
+                                )}
+                                {task.tags && task.tags.length > 0 && (
+                                  <div className="flex flex-wrap gap-1">
+                                    {task.tags.slice(0, 2).map((tag) => (
+                                      <Badge
+                                        key={tag}
+                                        variant="secondary"
+                                        className="text-xs px-1 py-0"
+                                      >
+                                        #{tag}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                    )}
                   </div>
-                ))
-              )}
+                </CardContent>
+              </Card>
+
+              {/* Afternoon Tasks */}
+              <Card className="border-2 border-afternoon/20 bg-afternoon/5">
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-3 h-3 bg-afternoon rounded-full"></div>
+                      <span className="text-afternoon">Afternoon Tasks</span>
+                      <Badge
+                        variant="outline"
+                        className="text-afternoon border-afternoon"
+                      >
+                        {
+                          filteredTasks.filter(
+                            (task) => task.period === "afternoon",
+                          ).length
+                        }
+                      </Badge>
+                    </div>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {filteredTasks.filter((task) => task.period === "afternoon")
+                      .length === 0 ? (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <div className="text-4xl mb-2">🌆</div>
+                        <p>No afternoon tasks</p>
+                        <p className="text-sm">Keep the momentum going!</p>
+                      </div>
+                    ) : (
+                      filteredTasks
+                        .filter((task) => task.period === "afternoon")
+                        .map((task) => (
+                          <div
+                            key={task.id}
+                            className="flex items-start space-x-3 p-3 bg-background rounded-lg border hover:shadow-sm transition-shadow"
+                          >
+                            <Checkbox
+                              checked={task.completed}
+                              onCheckedChange={() =>
+                                handleToggleComplete(task.id)
+                              }
+                              className="mt-1"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center space-x-2 mb-1">
+                                <div
+                                  className={`p-1 rounded ${task.type === "brain" ? "bg-focus text-focus-foreground" : "bg-admin text-admin-foreground"}`}
+                                >
+                                  {task.type === "brain" ? (
+                                    <Brain className="h-3 w-3" />
+                                  ) : (
+                                    <FileText className="h-3 w-3" />
+                                  )}
+                                </div>
+                                <h3
+                                  className={`font-medium text-sm ${task.completed ? "line-through text-muted-foreground" : ""}`}
+                                >
+                                  {task.title}
+                                </h3>
+                                <Badge variant="outline" className="text-xs">
+                                  {task.priority === "high"
+                                    ? "🔥"
+                                    : task.priority === "medium"
+                                      ? "⚡"
+                                      : "🌱"}
+                                </Badge>
+                              </div>
+                              {task.description && (
+                                <p
+                                  className={`text-xs text-muted-foreground mb-1 ${task.completed ? "line-through" : ""}`}
+                                >
+                                  {task.description}
+                                </p>
+                              )}
+                              <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+                                {task.timeBlock && (
+                                  <div className="flex items-center space-x-1">
+                                    <Clock className="h-3 w-3" />
+                                    <span>{task.timeBlock}m</span>
+                                  </div>
+                                )}
+                                {task.tags && task.tags.length > 0 && (
+                                  <div className="flex flex-wrap gap-1">
+                                    {task.tags.slice(0, 2).map((tag) => (
+                                      <Badge
+                                        key={tag}
+                                        variant="secondary"
+                                        className="text-xs px-1 py-0"
+                                      >
+                                        #{tag}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
             </div>
+
+            {/* Advanced Grid/List View (Collapsible) */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between text-sm">
+                  <span>Advanced View</span>
+                  <div className="flex items-center space-x-2">
+                    <div className="flex items-center border rounded-md">
+                      <Button
+                        variant={viewMode === "grid" ? "default" : "ghost"}
+                        size="sm"
+                        className="h-8 w-8 p-0"
+                        onClick={() => setViewMode("grid")}
+                      >
+                        <Grid3X3 className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant={viewMode === "list" ? "default" : "ghost"}
+                        size="sm"
+                        className="h-8 w-8 p-0"
+                        onClick={() => setViewMode("list")}
+                      >
+                        <List className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div
+                  className={
+                    viewMode === "grid"
+                      ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+                      : "space-y-3"
+                  }
+                >
+                  {filteredTasks.length === 0 ? (
+                    <div className="col-span-full text-center py-12">
+                      <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <h3 className="text-lg font-medium mb-2">
+                        No tasks found
+                      </h3>
+                      <p className="text-muted-foreground">
+                        {allTasks.length === 0
+                          ? "Create your first task to get started!"
+                          : "Try adjusting your filters or search terms."}
+                      </p>
+                    </div>
+                  ) : (
+                    filteredTasks.map((task) => (
+                      <div key={task.id} className="relative">
+                        <div className="absolute top-2 left-2 z-10">
+                          <Checkbox
+                            checked={selectedTasks.some(
+                              (selectedTask) => selectedTask.id === task.id,
+                            )}
+                            onCheckedChange={(checked) =>
+                              handleTaskSelection(task, !!checked)
+                            }
+                          />
+                        </div>
+                        <TaskCard
+                          task={task}
+                          onToggleComplete={handleToggleComplete}
+                          onEdit={handleEditTask}
+                          onDelete={handleDeleteTask}
+                          showPeriod={true}
+                        />
+                      </div>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="analytics">
