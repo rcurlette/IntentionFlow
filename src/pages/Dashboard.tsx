@@ -66,17 +66,38 @@ export default function Dashboard() {
   });
 
   useEffect(() => {
-    setDayPlan(getTodayPlan());
+    const loadDayPlan = async () => {
+      try {
+        const plan = await getTodayPlan();
+        setDayPlan(plan);
+      } catch (error) {
+        console.error("Error loading day plan:", error);
+      }
+    };
+    loadDayPlan();
   }, []);
 
-  const handleToggleComplete = (taskId: string) => {
-    updateTask(taskId, { completed: !findTask(taskId)?.completed });
-    setDayPlan(getTodayPlan());
+  const handleToggleComplete = async (taskId: string) => {
+    try {
+      const task = findTask(taskId);
+      if (task) {
+        await updateTask(taskId, { completed: !task.completed });
+        const updatedPlan = await getTodayPlan();
+        setDayPlan(updatedPlan);
+      }
+    } catch (error) {
+      console.error("Error updating task:", error);
+    }
   };
 
-  const handleDeleteTask = (taskId: string) => {
-    deleteTask(taskId);
-    setDayPlan(getTodayPlan());
+  const handleDeleteTask = async (taskId: string) => {
+    try {
+      await deleteTask(taskId);
+      const updatedPlan = await getTodayPlan();
+      setDayPlan(updatedPlan);
+    } catch (error) {
+      console.error("Error deleting task:", error);
+    }
   };
 
   const handleEditTask = (task: Task) => {
