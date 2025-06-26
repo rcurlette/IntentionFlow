@@ -759,32 +759,44 @@ export default function FlowDashboard() {
 
         {/* Flow Transition */}
         {completedCore === coreRituals.length && (
-          <Card className="mt-6 bg-gradient-to-r from-green-500/10 to-blue-500/10 border-green-500/30">
-            <CardContent className="p-6 text-center">
-              <div className="flex items-center justify-center mb-4">
-                <div className="relative">
-                  <CheckCircle2 className="h-12 w-12 text-green-400" />
-                  <Sparkles className="h-6 w-6 text-yellow-300 absolute -top-1 -right-1 animate-bounce" />
+          <div className="mt-6 space-y-6">
+            <Card className="bg-gradient-to-r from-green-500/10 to-blue-500/10 border-green-500/30">
+              <CardContent className="p-6 text-center">
+                <div className="flex items-center justify-center mb-4">
+                  <div className="relative">
+                    <CheckCircle2 className="h-12 w-12 text-green-400" />
+                    <Sparkles className="h-6 w-6 text-yellow-300 absolute -top-1 -right-1 animate-bounce" />
+                  </div>
                 </div>
-              </div>
 
-              <h3 className="text-xl font-semibold text-green-300 mb-2">
-                Flow State Activated ✨
-              </h3>
-              <p className="text-slate-300 mb-4">
-                You've completed your morning flow rituals. You're ready to
-                enter deep work.
-              </p>
+                <h3 className="text-xl font-semibold text-green-300 mb-2">
+                  Flow State Activated ✨
+                </h3>
+                <p className="text-slate-300 mb-4">
+                  Morning rituals complete! Use quick flow actions throughout
+                  the day to maintain your flow state.
+                </p>
 
-              <Button
-                size="lg"
-                className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
-              >
-                <Brain className="h-5 w-5 mr-2" />
-                Begin Flow Work
-              </Button>
-            </CardContent>
-          </Card>
+                <Button
+                  size="lg"
+                  className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
+                >
+                  <Brain className="h-5 w-5 mr-2" />
+                  Begin Flow Work
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Flow Actions Section */}
+            <FlowActions />
+          </div>
+        )}
+
+        {/* Flow Actions Always Available (when rituals not complete) */}
+        {completedCore < coreRituals.length && (
+          <div className="mt-6">
+            <FlowActions />
+          </div>
         )}
       </main>
     </div>
