@@ -224,6 +224,9 @@ export const tasksApi = {
 // Pomodoro Sessions API
 export const pomodoroApi = {
   async create(session: Omit<PomodoroSession, "id">): Promise<PomodoroSession> {
+    if (!isSupabaseConfigured) {
+      throw new Error("Supabase not configured, falling back to localStorage");
+    }
     const dbSession = {
       user_id: TEMP_USER_ID,
       task_id: session.taskId || null,
