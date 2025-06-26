@@ -6,6 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { formatTimeRemaining } from "@/lib/productivity-utils";
 import { TimerState } from "@/hooks/use-pomodoro";
+import { Task } from "@/types";
 import {
   Play,
   Pause,
