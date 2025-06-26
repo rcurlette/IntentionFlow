@@ -182,92 +182,96 @@ export function EnhancedTaskItem({
             )}
           </div>
 
-          {/* Hover Actions */}
-          <div
-            className={cn(
-              "flex items-center space-x-1 transition-all duration-200",
-              isHovered
-                ? "opacity-100 translate-x-0"
-                : "opacity-0 translate-x-2",
-            )}
-          >
-            {/* Quick Add Subtask */}
+          {/* Always Visible Actions */}
+          <div className="flex items-center space-x-1">
+            {/* Always Visible Add Subtask Button */}
             {!task.completed && onCreateSubtask && (
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
-                className="h-6 w-6 p-0 text-muted-foreground hover:text-primary hover:bg-primary/10"
+                className="h-7 px-2 text-xs text-muted-foreground hover:text-primary hover:bg-primary/10 border-dashed"
                 onClick={() =>
                   onCreateSubtask(task.id, { title: "New subtask" })
                 }
                 title="Add Subtask"
               >
-                <Plus className="h-3 w-3" />
+                <Plus className="h-3 w-3 mr-1" />
+                Subtask
               </Button>
             )}
 
-            {!task.completed && onStartPomodoro && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 w-6 p-0 text-focus hover:text-focus hover:bg-focus/10"
-                onClick={() => onStartPomodoro(task)}
-                title="Start Pomodoro Session"
-              >
-                <Play className="h-3 w-3" />
-              </Button>
-            )}
-
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 w-6 p-0 text-muted-foreground hover:text-primary"
-              onClick={() => onEdit(task)}
-              title="Edit Task"
+            {/* Hover Actions */}
+            <div
+              className={cn(
+                "flex items-center space-x-1 transition-all duration-200",
+                isHovered
+                  ? "opacity-100 translate-x-0"
+                  : "opacity-0 translate-x-2",
+              )}
             >
-              <Edit className="h-3 w-3" />
-            </Button>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+              {!task.completed && onStartPomodoro && (
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+                  className="h-6 w-6 p-0 text-focus hover:text-focus hover:bg-focus/10"
+                  onClick={() => onStartPomodoro(task)}
+                  title="Start Pomodoro Session"
                 >
-                  <MoreHorizontal className="h-3 w-3" />
+                  <Play className="h-3 w-3" />
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-40">
-                <DropdownMenuItem onClick={() => onEdit(task)}>
-                  <Edit className="h-3 w-3 mr-2" />
-                  Edit
-                </DropdownMenuItem>
-                {!task.completed && onStartPomodoro && (
-                  <DropdownMenuItem onClick={() => onStartPomodoro(task)}>
-                    <Play className="h-3 w-3 mr-2" />
-                    Start Focus
-                  </DropdownMenuItem>
-                )}
-                {onCreateSubtask && (
-                  <DropdownMenuItem
-                    onClick={() =>
-                      onCreateSubtask(task.id, { title: "New subtask" })
-                    }
+              )}
+
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0 text-muted-foreground hover:text-primary"
+                onClick={() => onEdit(task)}
+                title="Edit Task"
+              >
+                <Edit className="h-3 w-3" />
+              </Button>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
                   >
-                    <Plus className="h-3 w-3 mr-2" />
-                    Add Subtask
+                    <MoreHorizontal className="h-3 w-3" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-40">
+                  <DropdownMenuItem onClick={() => onEdit(task)}>
+                    <Edit className="h-3 w-3 mr-2" />
+                    Edit
                   </DropdownMenuItem>
-                )}
-                <DropdownMenuItem
-                  onClick={() => onDelete(task.id)}
-                  className="text-destructive focus:text-destructive"
-                >
-                  <Trash2 className="h-3 w-3 mr-2" />
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                  {!task.completed && onStartPomodoro && (
+                    <DropdownMenuItem onClick={() => onStartPomodoro(task)}>
+                      <Play className="h-3 w-3 mr-2" />
+                      Start Focus
+                    </DropdownMenuItem>
+                  )}
+                  {onCreateSubtask && (
+                    <DropdownMenuItem
+                      onClick={() =>
+                        onCreateSubtask(task.id, { title: "New subtask" })
+                      }
+                    >
+                      <Plus className="h-3 w-3 mr-2" />
+                      Add Subtask
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem
+                    onClick={() => onDelete(task.id)}
+                    className="text-destructive focus:text-destructive"
+                  >
+                    <Trash2 className="h-3 w-3 mr-2" />
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
         </div>
 
