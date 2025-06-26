@@ -44,7 +44,7 @@ interface FlowState {
 interface FlowRitual {
   id: string;
   name: string;
-  icon: any;
+  icon: React.ComponentType<{ className?: string }>;
   duration: number;
   description: string;
   completed: boolean;
