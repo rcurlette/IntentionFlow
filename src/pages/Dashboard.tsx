@@ -567,37 +567,6 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </div>
-
-        {/* Later Bird Section */}
-        {dayPlan.laterBird.length > 0 && (
-          <Card className="mt-6 border-warning bg-warning/5">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2 text-warning">
-                <TrendingUp className="h-5 w-5" />
-                <span>Later Bird</span>
-                <Badge
-                  variant="outline"
-                  className="text-warning border-warning"
-                >
-                  {dayPlan.laterBird.length} items
-                </Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {dayPlan.laterBird.map((task) => (
-                  <TaskCard
-                    key={task.id}
-                    task={task}
-                    onToggleComplete={handleToggleComplete}
-                    onEdit={handleEditTask}
-                    onDelete={handleDeleteTask}
-                  />
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
       </main>
     </div>
   );
