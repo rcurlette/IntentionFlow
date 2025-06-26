@@ -8,6 +8,7 @@ import {
   updateTask,
   deleteTask,
   getTodayPlan,
+  getAllTasks,
 } from "@/lib/storage";
 import { getTemplates, createTasksFromTemplate } from "@/lib/task-templates";
 import { useTaskFilters } from "@/hooks/use-task-filters";
@@ -546,7 +547,9 @@ export default function Tasks() {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="morning">🌅 Morning</SelectItem>
+                            <SelectItem value="morning">
+                              ���� Morning
+                            </SelectItem>
                             <SelectItem value="afternoon">
                               🌆 Afternoon
                             </SelectItem>
