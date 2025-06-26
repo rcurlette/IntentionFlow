@@ -41,12 +41,7 @@ export function EnhancedTaskItem({
   const [isCompleting, setIsCompleting] = useState(false);
 
   const handleToggleComplete = async () => {
-    setIsCompleting(true);
-    // Add a small delay for animation
-    setTimeout(() => {
-      onToggleComplete(task.id);
-      setIsCompleting(false);
-    }, 300);
+    onToggleComplete(task.id);
   };
 
   const getPriorityEmoji = () => {
