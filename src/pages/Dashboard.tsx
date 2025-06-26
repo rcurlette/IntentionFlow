@@ -15,6 +15,7 @@ import {
 } from "@/lib/productivity-utils";
 import { Navigation } from "@/components/app/Navigation";
 import { TaskCard } from "@/components/app/TaskCard";
+import { QuickStart } from "@/components/app/QuickStart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -162,6 +163,23 @@ export default function Dashboard() {
 
   const stats = getStats();
   const currentPeriod = getTimeOfDay();
+  const hasAnyTasks =
+    dayPlan.morningTasks.length > 0 || dayPlan.afternoonTasks.length > 0;
+
+  const handleQuickStartTask = (
+    type: "brain" | "admin",
+    period: "morning" | "afternoon",
+  ) => {
+    setNewTask({
+      title: "",
+      description: "",
+      type,
+      period,
+      priority: "medium",
+      timeBlock: 25,
+    });
+    setIsAddTaskOpen(true);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -256,6 +274,13 @@ export default function Dashboard() {
             </Card>
           </div>
         </div>
+
+        {/* Quick Start for New Users */}
+        {!hasAnyTasks && (
+          <div className="mb-8">
+            <QuickStart onAddFirstTask={handleQuickStartTask} />
+          </div>
+        )}
 
         {/* Task Sections */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
