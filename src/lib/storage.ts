@@ -67,6 +67,21 @@ export async function getAllTasks(): Promise<Task[]> {
 }
 
 export async function saveTask(task: Task): Promise<void> {
+  if (!isSupabaseConfigured) {
+    console.log("Supabase not configured, using localStorage");
+    const tasks = await getAllTasks();
+    const existingIndex = tasks.findIndex((t) => t.id === task.id);
+
+    if (existingIndex >= 0) {
+      tasks[existingIndex] = { ...task, updatedAt: new Date() };
+    } else {
+      tasks.push(task);
+    }
+
+    setToStorage(STORAGE_KEYS.TASKS, tasks);
+    return;
+  }
+
   try {
     if (task.id && (await tasksApi.getById(task.id))) {
       await tasksApi.update(task.id, task);
