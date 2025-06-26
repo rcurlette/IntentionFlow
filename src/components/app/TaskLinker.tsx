@@ -113,17 +113,32 @@ export function TaskLinker({
   return (
     <Card className="border-dashed border-2 border-primary/20 bg-primary/5">
       <CardHeader className="pb-4">
-        <CardTitle className="flex items-center space-x-2 text-sm">
-          <Link className="h-4 w-4" />
-          <span>Link to Task</span>
-          {linkedTask && (
-            <Badge
-              variant="outline"
-              className="ml-auto bg-success text-success-foreground"
+        <CardTitle className="flex items-center justify-between text-sm">
+          <div className="flex items-center space-x-2">
+            <Link className="h-4 w-4" />
+            <span>Link to Task</span>
+            {linkedTask && (
+              <Badge
+                variant="outline"
+                className="bg-success text-success-foreground"
+              >
+                <CheckCircle2 className="h-3 w-3 mr-1" />
+                Linked
+              </Badge>
+            )}
+          </div>
+          {!linkedTask && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={loadTasks}
+              disabled={isLoading}
+              className="h-6 w-6 p-0"
             >
-              <CheckCircle2 className="h-3 w-3 mr-1" />
-              Linked
-            </Badge>
+              <RefreshCw
+                className={cn("h-3 w-3", isLoading && "animate-spin")}
+              />
+            </Button>
           )}
         </CardTitle>
       </CardHeader>
