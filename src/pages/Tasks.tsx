@@ -426,6 +426,199 @@ export default function Tasks() {
     }
   };
 
+  // Subtask handlers
+  const handleCreateSubtask = async (
+    parentId: string,
+    subtaskData: Partial<Task>,
+  ) => {
+    try {
+      const parentTask = allTasks.find((t) => t.id === parentId);
+      if (!parentTask) return;
+
+      const subtask = {
+        ...subtaskData,
+        id: generateId(),
+        parentTaskId: parentId,
+        type: parentTask.type,
+        period: parentTask.period,
+        priority: subtaskData.priority || "medium",
+        depth: (parentTask.depth || 0) + 1,
+        isSubtask: true,
+        status: "todo" as const,
+        completed: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        tags: subtaskData.tags || [],
+        contextTags: subtaskData.contextTags || [],
+      };
+
+      await addTask(subtask);
+
+      // Update parent task's subtask references
+      const currentSubtaskIds = parentTask.subtaskIds || [];
+      await updateTask(parentId, {
+        subtaskIds: [...currentSubtaskIds, subtask.id],
+        updatedAt: new Date(),
+      });
+
+      // Reload tasks
+      const tasks = await getAllTasks();
+      setAllTasks(tasks);
+    } catch (error) {
+      console.error("Error creating subtask:", error);
+    }
+  };
+
+  const handleUpdateSubtask = async (
+    subtaskId: string,
+    updates: Partial<Task>,
+  ) => {
+    try {
+      await updateTask(subtaskId, {
+        ...updates,
+        updatedAt: new Date(),
+      });
+
+      // Update local state
+      setAllTasks((prev) =>
+        prev.map((task) =>
+          task.id === subtaskId ? { ...task, ...updates } : task,
+        ),
+      );
+    } catch (error) {
+      console.error("Error updating subtask:", error);
+    }
+  };
+
+  const handleDeleteSubtask = async (subtaskId: string) => {
+    try {
+      const subtask = allTasks.find((t) => t.id === subtaskId);
+      if (!subtask?.parentTaskId) return;
+
+      // Remove from parent's subtask list
+      const parentTask = allTasks.find((t) => t.id === subtask.parentTaskId);
+      if (parentTask) {
+        const updatedSubtaskIds = (parentTask.subtaskIds || []).filter(
+          (id) => id !== subtaskId,
+        );
+        await updateTask(parentTask.id, {
+          subtaskIds: updatedSubtaskIds,
+          updatedAt: new Date(),
+        });
+      }
+
+      // Delete the subtask
+      await deleteTask(subtaskId);
+
+      // Update local state
+      setAllTasks((prev) => prev.filter((task) => task.id !== subtaskId));
+    } catch (error) {
+      console.error("Error deleting subtask:", error);
+    }
+  };
+
+  const handleToggleSubtask = async (subtaskId: string) => {
+    const subtask = allTasks.find((t) => t.id === subtaskId);
+    if (subtask) {
+      try {
+        const newCompleted = !subtask.completed;
+        const newStatus = newCompleted ? "completed" : "todo";
+
+        await updateTask(subtaskId, {
+          completed: newCompleted,
+          status: newStatus,
+          completedAt: newCompleted ? new Date() : undefined,
+          updatedAt: new Date(),
+        });
+
+        setAllTasks((prev) =>
+          prev.map((t) =>
+            t.id === subtaskId
+              ? {
+                  ...t,
+                  completed: newCompleted,
+                  status: newStatus,
+                  completedAt: newCompleted ? new Date() : undefined,
+                }
+              : t,
+          ),
+        );
+
+        // Check if parent task should be auto-completed
+        if (subtask.parentTaskId) {
+          const parentTask = allTasks.find(
+            (t) => t.id === subtask.parentTaskId,
+          );
+          if (parentTask) {
+            const siblingSubtasks = allTasks.filter(
+              (t) => t.parentTaskId === parentTask.id,
+            );
+            const allSiblingsCompleted = siblingSubtasks.every((s) =>
+              s.id === subtaskId ? newCompleted : s.completed,
+            );
+
+            if (allSiblingsCompleted && siblingSubtasks.length > 0) {
+              await updateTask(parentTask.id, {
+                completed: true,
+                status: "completed",
+                completedAt: new Date(),
+                updatedAt: new Date(),
+              });
+
+              setAllTasks((prev) =>
+                prev.map((t) =>
+                  t.id === parentTask.id
+                    ? {
+                        ...t,
+                        completed: true,
+                        status: "completed" as const,
+                        completedAt: new Date(),
+                      }
+                    : t,
+                ),
+              );
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error toggling subtask:", error);
+      }
+    }
+  };
+
+  const handleReorderSubtasks = async (
+    parentId: string,
+    subtaskIds: string[],
+  ) => {
+    try {
+      await updateTask(parentId, {
+        subtaskIds,
+        updatedAt: new Date(),
+      });
+
+      // Update sort orders for subtasks
+      for (let i = 0; i < subtaskIds.length; i++) {
+        await updateTask(subtaskIds[i], {
+          sortOrder: i,
+          updatedAt: new Date(),
+        });
+      }
+
+      // Reload tasks
+      const tasks = await getAllTasks();
+      setAllTasks(tasks);
+    } catch (error) {
+      console.error("Error reordering subtasks:", error);
+    }
+  };
+
+  // Get subtasks for a given parent task
+  const getSubtasks = (parentId: string): Task[] => {
+    return allTasks
+      .filter((task) => task.parentTaskId === parentId)
+      .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+  };
+
   const handleStartPomodoro = (task: Task) => {
     // Navigate to Pomodoro page with task linked
     navigate("/pomodoro", { state: { linkedTask: task } });
