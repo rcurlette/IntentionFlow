@@ -129,29 +129,74 @@ export function PomodoroTimer({
           <span>{stateInfo.title}</span>
         </CardTitle>
         {linkedTask && (
-          <div className="mt-3 p-3 bg-background/50 rounded-lg border border-primary/20">
-            <div className="flex items-center justify-center space-x-2 text-sm">
+          <div
+            className={cn(
+              "mt-3 p-4 rounded-lg border transition-all duration-300",
+              state === "running"
+                ? "bg-focus/10 border-focus/30 shadow-focus/10 shadow-md"
+                : "bg-background/50 border-primary/20",
+              state === "running" && "animate-pulse-soft",
+            )}
+          >
+            <div className="flex items-center justify-center space-x-2 text-sm mb-2">
               <div
                 className={cn(
-                  "p-1 rounded",
+                  "p-1.5 rounded transition-all duration-200",
                   linkedTask.type === "brain"
                     ? "bg-focus text-focus-foreground"
                     : "bg-admin text-admin-foreground",
+                  state === "running" && "shadow-sm",
                 )}
               >
                 {linkedTask.type === "brain" ? (
-                  <Brain className="h-3 w-3" />
+                  <Brain className="h-4 w-4" />
                 ) : (
-                  <FileText className="h-3 w-3" />
+                  <FileText className="h-4 w-4" />
                 )}
               </div>
-              <span className="font-medium text-foreground truncate max-w-48">
+              <span
+                className={cn(
+                  "font-semibold truncate max-w-64 transition-colors duration-200",
+                  state === "running" ? "text-focus" : "text-foreground",
+                )}
+              >
                 {linkedTask.title}
               </span>
             </div>
-            <div className="text-xs text-muted-foreground mt-1">
-              Working on: {linkedTask.period} • {linkedTask.priority} priority
+            <div className="flex items-center justify-center space-x-3 text-xs text-muted-foreground">
+              <span className="flex items-center space-x-1">
+                <span>📅</span>
+                <span className="capitalize">{linkedTask.period}</span>
+              </span>
+              <span className="flex items-center space-x-1">
+                <span>
+                  {linkedTask.priority === "high"
+                    ? "🔥"
+                    : linkedTask.priority === "medium"
+                      ? "⚡"
+                      : "🌱"}
+                </span>
+                <span className="capitalize">
+                  {linkedTask.priority} priority
+                </span>
+              </span>
+              {linkedTask.timeBlock && (
+                <span className="flex items-center space-x-1">
+                  <span>⏱️</span>
+                  <span>{linkedTask.timeBlock}m</span>
+                </span>
+              )}
             </div>
+            {state === "running" && (
+              <div className="mt-2 text-center">
+                <Badge
+                  variant="outline"
+                  className="bg-focus/10 text-focus border-focus/30 text-xs"
+                >
+                  🎯 Active Focus Session
+                </Badge>
+              </div>
+            )}
           </div>
         )}
       </CardHeader>
