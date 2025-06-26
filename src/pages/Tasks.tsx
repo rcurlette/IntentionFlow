@@ -688,126 +688,22 @@ export default function Tasks() {
               </Dialog>
             </div>
 
-            {/* Two-Box Task View - Mobile Responsive */}
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-              {/* Morning Tasks */}
-              <Card className="border-2 border-morning/20 bg-morning/5">
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-3 h-3 bg-morning rounded-full"></div>
-                      <span className="text-morning">Morning Tasks</span>
-                      <Badge
-                        variant="outline"
-                        className="text-morning border-morning"
-                      >
-                        {
-                          filteredTasks.filter(
-                            (task) => task.period === "morning",
-                          ).length
-                        }
-                      </Badge>
-                    </div>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {filteredTasks.filter((task) => task.period === "morning")
-                      .length === 0 ? (
-                      <TasksEmptyState
-                        period="morning"
-                        onAddTask={() => {
-                          setNewTask((prev) => ({
-                            ...prev,
-                            period: "morning",
-                          }));
-                          setIsCreateTaskOpen(true);
-                        }}
-                      />
-                    ) : (
-                      filteredTasks
-                        .filter((task) => task.period === "morning")
-                        .map((task) => {
-                          if (!task.id) {
-                            console.warn("Task missing ID:", task);
-                            return null;
-                          }
-                          return (
-                            <EnhancedTaskItem
-                              key={task.id}
-                              task={task}
-                              onToggleComplete={handleToggleComplete}
-                              onEdit={handleEditTask}
-                              onDelete={handleDeleteTask}
-                              onStartPomodoro={handleStartPomodoro}
-                            />
-                          );
-                        })
-                        .filter(Boolean)
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Afternoon Tasks */}
-              <Card className="border-2 border-afternoon/20 bg-afternoon/5">
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-3 h-3 bg-afternoon rounded-full"></div>
-                      <span className="text-afternoon">Afternoon Tasks</span>
-                      <Badge
-                        variant="outline"
-                        className="text-afternoon border-afternoon"
-                      >
-                        {
-                          filteredTasks.filter(
-                            (task) => task.period === "afternoon",
-                          ).length
-                        }
-                      </Badge>
-                    </div>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {filteredTasks.filter((task) => task.period === "afternoon")
-                      .length === 0 ? (
-                      <TasksEmptyState
-                        period="afternoon"
-                        onAddTask={() => {
-                          setNewTask((prev) => ({
-                            ...prev,
-                            period: "afternoon",
-                          }));
-                          setIsCreateTaskOpen(true);
-                        }}
-                      />
-                    ) : (
-                      filteredTasks
-                        .filter((task) => task.period === "afternoon")
-                        .map((task) => {
-                          if (!task.id) {
-                            console.warn("Task missing ID:", task);
-                            return null;
-                          }
-                          return (
-                            <EnhancedTaskItem
-                              key={task.id}
-                              task={task}
-                              onToggleComplete={handleToggleComplete}
-                              onEdit={handleEditTask}
-                              onDelete={handleDeleteTask}
-                              onStartPomodoro={handleStartPomodoro}
-                            />
-                          );
-                        })
-                        .filter(Boolean)
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            {/* Drag & Drop Task Manager */}
+            <DragDropTaskManager
+              tasks={filteredTasks}
+              onUpdateTask={updateTask}
+              onToggleComplete={handleToggleComplete}
+              onEditTask={handleEditTask}
+              onDeleteTask={handleDeleteTask}
+              onStartPomodoro={handleStartPomodoro}
+              onAddTask={(period) => {
+                setNewTask((prev) => ({
+                  ...prev,
+                  period,
+                }));
+                setIsCreateTaskOpen(true);
+              }}
+            />
 
             {/* Filter Panel - Moved Below Tasks */}
             <Card>
