@@ -50,9 +50,17 @@ export default function Pomodoro() {
   const [totalFocusTime, setTotalFocusTime] = useState(0);
 
   useEffect(() => {
-    const todayPlan = getTodayPlan();
-    setTodayPomodoroCount(todayPlan.pomodoroCompleted);
-    setTotalFocusTime(todayPlan.pomodoroCompleted * settings.focusDuration);
+    const loadTodayPlan = async () => {
+      try {
+        const todayPlan = await getTodayPlan();
+        setTodayPomodoroCount(todayPlan.pomodoroCompleted);
+        setTotalFocusTime(todayPlan.pomodoroCompleted * settings.focusDuration);
+      } catch (error) {
+        console.error("Error loading today plan:", error);
+      }
+    };
+
+    loadTodayPlan();
   }, [sessionsCompleted, settings.focusDuration]);
 
   // Handle linked task from navigation
