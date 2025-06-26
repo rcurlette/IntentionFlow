@@ -245,7 +245,7 @@ export default function Dashboard() {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-morning-foreground">
+                    <p className="text-sm font-medium text-orange-800 dark:text-orange-700">
                       Morning
                     </p>
                     <p className="text-2xl font-bold text-morning">
