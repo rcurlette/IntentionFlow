@@ -1003,48 +1003,49 @@ export default function Tasks() {
 
                       <div>
                         <Label>Hard Deadline (Due Date)</Label>
-                        <Popover
-                          open={isDueDateCalendarOpen}
-                          onOpenChange={setIsDueDateCalendarOpen}
-                        >
-                          <PopoverTrigger asChild>
-                            <Button
-                              variant="outline"
-                              type="button"
-                              className={cn(
-                                "w-full justify-start text-left font-normal mt-1",
-                                !newTask.dueDate && "text-muted-foreground",
-                              )}
-                            >
-                              <CalendarIcon className="mr-2 h-4 w-4" />
-                              {newTask.dueDate
-                                ? format(newTask.dueDate, "PPP")
-                                : "Set deadline (optional)"}
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar
-                              mode="single"
-                              selected={newTask.dueDate || undefined}
-                              onSelect={(date) => {
-                                console.log("Selected due date:", date);
+                        <div className="mt-1">
+                          <Input
+                            type="date"
+                            value={
+                              newTask.dueDate
+                                ? format(newTask.dueDate, "yyyy-MM-dd")
+                                : ""
+                            }
+                            onChange={(e) => {
+                              console.log(
+                                "Date input changed:",
+                                e.target.value,
+                              );
+                              if (e.target.value) {
+                                const selectedDate = new Date(
+                                  e.target.value + "T00:00:00",
+                                );
+                                console.log("Parsed date:", selectedDate);
                                 setNewTask((prev) => {
                                   const updated = {
                                     ...prev,
-                                    dueDate: date || null,
+                                    dueDate: selectedDate,
                                   };
-                                  console.log(
-                                    "Updated task with due date:",
-                                    updated,
-                                  );
+                                  console.log("Updated newTask:", updated);
                                   return updated;
                                 });
-                                setIsDueDateCalendarOpen(false);
-                              }}
-                              initialFocus
-                            />
-                          </PopoverContent>
-                        </Popover>
+                              } else {
+                                setNewTask((prev) => ({
+                                  ...prev,
+                                  dueDate: null,
+                                }));
+                              }
+                            }}
+                            className="w-full"
+                            placeholder="Select deadline..."
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Current due date:{" "}
+                            {newTask.dueDate
+                              ? newTask.dueDate.toString()
+                              : "None"}
+                          </p>
+                        </div>
                       </div>
                     </div>
 
