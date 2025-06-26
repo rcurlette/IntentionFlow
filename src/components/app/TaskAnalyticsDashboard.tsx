@@ -49,15 +49,48 @@ export function TaskAnalyticsDashboard({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadAnalytics = () => {
-      setLoading(true);
-      const now = new Date();
-      const days = dateRange === "7d" ? 7 : dateRange === "30d" ? 30 : 90;
-      const from = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+    const loadAnalytics = async () => {
+      try {
+        setLoading(true);
+        const now = new Date();
+        const days = dateRange === "7d" ? 7 : dateRange === "30d" ? 30 : 90;
+        const from = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
 
-      const analyticsData = calculateTaskAnalytics({ from, to: now });
-      setAnalytics(analyticsData);
-      setLoading(false);
+        const analyticsData = await calculateTaskAnalytics({ from, to: now });
+        setAnalytics(analyticsData);
+      } catch (error) {
+        console.error("Error loading analytics:", error);
+        // Set fallback analytics data
+        setAnalytics({
+          completionRate: 0,
+          averageTasksPerDay: 0,
+          totalTasksCompleted: 0,
+          totalFocusTime: 0,
+          typeBreakdown: {
+            brain: { total: 0, completed: 0 },
+            admin: { total: 0, completed: 0 },
+          },
+          priorityBreakdown: {
+            high: { total: 0, completed: 0 },
+            medium: { total: 0, completed: 0 },
+            low: { total: 0, completed: 0 },
+          },
+          periodBreakdown: {
+            morning: { total: 0, completed: 0 },
+            afternoon: { total: 0, completed: 0 },
+          },
+          weeklyTrends: [],
+          mostUsedTags: [],
+          averageCompletionTime: 0,
+          streakData: {
+            currentStreak: 0,
+            longestStreak: 0,
+            streakDates: [],
+          },
+        });
+      } finally {
+        setLoading(false);
+      }
     };
 
     loadAnalytics();
