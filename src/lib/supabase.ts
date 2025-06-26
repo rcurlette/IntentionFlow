@@ -6,6 +6,12 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 // Check if Supabase is configured
 export const isSupabaseConfigured = !!(supabaseUrl && supabaseAnonKey);
 
+if (!isSupabaseConfigured) {
+  console.log(
+    "🏠 FlowTracker is running in localStorage mode. To enable cloud sync, set up Supabase environment variables. See SUPABASE_SETUP.md for instructions.",
+  );
+}
+
 // Create a mock client for when Supabase isn't configured
 const createMockClient = () => ({
   from: () => ({
