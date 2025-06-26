@@ -330,14 +330,14 @@ export function CalendarView({
 
           {/* Tasks Grid */}
           <div className="grid grid-cols-7 flex-1">
-            {weekDays.map((day) => {
+            {weekDays.map((day, columnIndex) => {
               const dayTasks = getTasksForDay(day);
               const dateStr = format(day, "yyyy-MM-dd");
               const isAddingTask = addingTaskToDate === dateStr;
 
               return (
                 <div
-                  key={day.toISOString()}
+                  key={`tasks-column-${day.toISOString()}`}
                   className="border-r border-gray-200 last:border-r-0 p-4 min-h-[600px] bg-white"
                 >
                   {/* Add Task Button */}
