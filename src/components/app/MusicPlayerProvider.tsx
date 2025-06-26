@@ -1,6 +1,7 @@
 import { useMusicPlayer } from "@/hooks/use-music-player";
 import { YouTubePlayer } from "./YouTubePlayer";
 import { MusicSidebar } from "./MusicSidebar";
+import { MusicPlayerTest } from "./MusicPlayerTest";
 
 export function MusicPlayerProvider({
   children,
@@ -30,6 +31,9 @@ export function MusicPlayerProvider({
 
       {/* Music Sidebar */}
       <MusicSidebar />
+
+      {/* Music Player Test (for debugging) */}
+      <MusicPlayerTest />
     </>
   );
 }
