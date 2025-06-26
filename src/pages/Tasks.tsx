@@ -34,6 +34,9 @@ import { TaskFilterPanel } from "@/components/app/TaskFilterPanel";
 import { TaskTemplatesPanel } from "@/components/app/TaskTemplatesPanel";
 import { TaskBulkOperations } from "@/components/app/TaskBulkOperations";
 import { TaskAnalyticsDashboard } from "@/components/app/TaskAnalyticsDashboard";
+import { QuickAddWithNLP } from "@/components/app/QuickAddWithNLP";
+import { DragDropTaskManager } from "@/components/app/DragDropTaskManager";
+import { FloatingActionButton } from "@/components/app/FloatingActionButton";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
