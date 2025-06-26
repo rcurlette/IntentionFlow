@@ -75,7 +75,7 @@ export default function FlowDashboard() {
     startDate: new Date(),
   });
 
-  const [rituals, setRituals] = useState<FlowRitual[]>([
+  const [rituals, setRituals] = useState<FlowRitualLocal[]>([
     {
       id: "meditation",
       name: "Mindful Presence",
