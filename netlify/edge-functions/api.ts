@@ -46,6 +46,88 @@ interface PomodoroSession {
   distractions?: number;
 }
 
+interface FlowEntry {
+  id: string;
+  userId?: string;
+  timestamp: string;
+  activity: string;
+  activityType: "brain" | "admin" | "break" | "other";
+  flowRating: number; // 1-5 scale
+  mood: number; // 1-5 scale
+  energyLevel: number; // 1-5 scale
+  location?: string;
+  notes?: string;
+  tags?: string[];
+  duration?: number; // in minutes
+  createdAt: string;
+}
+
+interface FlowAnalytics {
+  peakFlowHours: number[];
+  lowFlowHours: number[];
+  bestActivitiesForMorning: string[];
+  bestActivitiesForAfternoon: string[];
+  activitiesToAvoid: string[];
+  weeklyTrends: {
+    [key: string]: { day: string; avgFlow: number; bestActivity: string };
+  };
+  improvementSuggestions: string[];
+}
+
+interface FlowTrackingSettings {
+  isEnabled: boolean;
+  interval: number; // minutes between prompts
+  quietHours: { start: string; end: string };
+  trackingDays: number[]; // 0-6, days of week
+  autoDetectActivity: boolean;
+  showFlowInsights: boolean;
+  minimumEntriesForInsights: number;
+  promptStyle: "gentle" | "persistent" | "minimal";
+}
+
+interface UserSettings {
+  theme: "light" | "dark";
+  colorTheme: "vibrant" | "accessible";
+  focusDuration: number;
+  shortBreakDuration: number;
+  longBreakDuration: number;
+  sessionsBeforeLongBreak: number;
+  autoStartBreaks: boolean;
+  autoStartPomodoros: boolean;
+  notificationsEnabled: boolean;
+  soundEnabled: boolean;
+  dailyGoal: number;
+}
+
+interface Achievement {
+  id: string;
+  type: "streak" | "completion" | "focus" | "milestone";
+  title: string;
+  description: string;
+  icon: string;
+  earnedAt: string;
+  metadata?: any;
+}
+
+interface UserStreak {
+  currentStreak: number;
+  longestStreak: number;
+  lastActivityDate?: string;
+}
+
+interface TaskAnalytics {
+  totalTasks: number;
+  completedTasks: number;
+  completionRate: number;
+  avgTasksPerDay: number;
+  productivityScore: number;
+  typeBreakdown: { brain: number; admin: number };
+  periodBreakdown: { morning: number; afternoon: number };
+  tagAnalytics: { tag: string; count: number; completionRate: number }[];
+  timeSpentByType: { brain: number; admin: number };
+  pomodoroEfficiency: number;
+}
+
 // Helper functions
 function corsHeaders() {
   return {
@@ -87,7 +169,10 @@ async function handleTasks(request: Request, context: Context) {
       });
 
     case "GET":
-      if (taskId) {
+      if (taskId === "templates") {
+        // GET /api/tasks/templates
+        return await getTaskTemplates(context);
+      } else if (taskId) {
         // GET /api/tasks/:id
         return await getTask(taskId, context);
       } else {
@@ -101,24 +186,44 @@ async function handleTasks(request: Request, context: Context) {
       }
 
     case "POST":
-      // POST /api/tasks
-      const taskData = await request.json();
-      return await createTask(taskData, context);
+      if (taskId === "bulk") {
+        // POST /api/tasks/bulk
+        const bulkData = await request.json();
+        return await createBulkTasks(bulkData, context);
+      } else if (taskId === "templates") {
+        // POST /api/tasks/templates
+        const templateData = await request.json();
+        return await createTaskTemplate(templateData, context);
+      } else {
+        // POST /api/tasks
+        const taskData = await request.json();
+        return await createTask(taskData, context);
+      }
 
     case "PUT":
-      if (!taskId) {
+      if (taskId === "bulk") {
+        // PUT /api/tasks/bulk
+        const bulkUpdate = await request.json();
+        return await updateBulkTasks(bulkUpdate, context);
+      } else if (!taskId) {
         return errorResponse("Task ID is required for updates");
+      } else {
+        // PUT /api/tasks/:id
+        const updates = await request.json();
+        return await updateTask(taskId, updates, context);
       }
-      // PUT /api/tasks/:id
-      const updates = await request.json();
-      return await updateTask(taskId, updates, context);
 
     case "DELETE":
-      if (!taskId) {
+      if (taskId === "bulk") {
+        // DELETE /api/tasks/bulk
+        const bulkDelete = await request.json();
+        return await deleteBulkTasks(bulkDelete, context);
+      } else if (!taskId) {
         return errorResponse("Task ID is required for deletion");
+      } else {
+        // DELETE /api/tasks/:id
+        return await deleteTask(taskId, context);
       }
-      // DELETE /api/tasks/:id
-      return await deleteTask(taskId, context);
 
     default:
       return errorResponse("Method not allowed", 405);
@@ -351,6 +456,195 @@ async function deleteTask(taskId: string, context: Context) {
   }
 }
 
+// Bulk Operations Implementation Functions
+async function createBulkTasks(
+  bulkData: { tasks: Partial<Task>[] },
+  context: Context,
+) {
+  try {
+    const { tasks } = bulkData;
+
+    if (!tasks || !Array.isArray(tasks)) {
+      return errorResponse("Invalid bulk data: tasks array is required");
+    }
+
+    const createdTasks: Task[] = [];
+
+    for (const taskData of tasks) {
+      if (!taskData.title || !taskData.type || !taskData.period) {
+        continue; // Skip invalid tasks
+      }
+
+      const newTask: Task = {
+        id: crypto.randomUUID(),
+        title: taskData.title,
+        description: taskData.description || "",
+        type: taskData.type,
+        period: taskData.period,
+        status: taskData.status || "todo",
+        completed: (taskData.status || "todo") === "completed",
+        priority: taskData.priority || "medium",
+        tags: taskData.tags || [],
+        timeSpent: taskData.timeSpent || 0,
+        pomodoroCount: taskData.pomodoroCount || 0,
+        timeBlock: taskData.timeBlock,
+        timeEstimate: taskData.timeEstimate,
+        scheduledFor:
+          taskData.scheduledFor || new Date().toISOString().split("T")[0],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      createdTasks.push(newTask);
+    }
+
+    return jsonResponse(
+      {
+        tasks: createdTasks,
+        count: createdTasks.length,
+        message: `${createdTasks.length} tasks created successfully`,
+      },
+      201,
+    );
+  } catch (error) {
+    return errorResponse("Failed to create bulk tasks", 500);
+  }
+}
+
+async function updateBulkTasks(
+  bulkUpdate: { taskIds: string[]; updates: Partial<Task> },
+  context: Context,
+) {
+  try {
+    const { taskIds, updates } = bulkUpdate;
+
+    if (!taskIds || !Array.isArray(taskIds) || taskIds.length === 0) {
+      return errorResponse("Invalid bulk update: taskIds array is required");
+    }
+
+    // In production, update multiple tasks in your database
+    const updatedTasks = taskIds.map((id) => ({
+      id,
+      ...updates,
+      updatedAt: new Date().toISOString(),
+    }));
+
+    return jsonResponse({
+      updatedTaskIds: taskIds,
+      updates,
+      count: taskIds.length,
+      message: `${taskIds.length} tasks updated successfully`,
+    });
+  } catch (error) {
+    return errorResponse("Failed to update bulk tasks", 500);
+  }
+}
+
+async function deleteBulkTasks(
+  bulkDelete: { taskIds: string[] },
+  context: Context,
+) {
+  try {
+    const { taskIds } = bulkDelete;
+
+    if (!taskIds || !Array.isArray(taskIds) || taskIds.length === 0) {
+      return errorResponse("Invalid bulk delete: taskIds array is required");
+    }
+
+    // In production, delete multiple tasks from your database
+
+    return jsonResponse({
+      deletedTaskIds: taskIds,
+      count: taskIds.length,
+      message: `${taskIds.length} tasks deleted successfully`,
+    });
+  } catch (error) {
+    return errorResponse("Failed to delete bulk tasks", 500);
+  }
+}
+
+// Task Templates Implementation Functions
+async function getTaskTemplates(context: Context) {
+  try {
+    // Mock templates - in production, query from your database
+    const templates = [
+      {
+        id: crypto.randomUUID(),
+        name: "Daily Planning",
+        description: "Standard morning planning routine",
+        type: "brain",
+        period: "morning",
+        priority: "high",
+        tags: ["planning", "daily"],
+        timeEstimate: 30,
+        category: "Planning",
+      },
+      {
+        id: crypto.randomUUID(),
+        name: "Email Processing",
+        description: "Process and respond to emails",
+        type: "admin",
+        period: "afternoon",
+        priority: "medium",
+        tags: ["email", "communication"],
+        timeEstimate: 45,
+        category: "Communication",
+      },
+      {
+        id: crypto.randomUUID(),
+        name: "Deep Work Session",
+        description: "Focused work on important projects",
+        type: "brain",
+        period: "morning",
+        priority: "high",
+        tags: ["deep-work", "focus"],
+        timeEstimate: 120,
+        category: "Focus Work",
+      },
+    ];
+
+    return jsonResponse({
+      templates,
+      count: templates.length,
+    });
+  } catch (error) {
+    return errorResponse("Failed to fetch task templates", 500);
+  }
+}
+
+async function createTaskTemplate(templateData: any, context: Context) {
+  try {
+    if (!templateData.name || !templateData.type || !templateData.period) {
+      return errorResponse("Missing required fields: name, type, period");
+    }
+
+    const newTemplate = {
+      id: crypto.randomUUID(),
+      name: templateData.name,
+      description: templateData.description || "",
+      type: templateData.type,
+      period: templateData.period,
+      priority: templateData.priority || "medium",
+      tags: templateData.tags || [],
+      timeEstimate: templateData.timeEstimate,
+      category: templateData.category || "General",
+      createdAt: new Date().toISOString(),
+    };
+
+    // In production, save to your database
+
+    return jsonResponse(
+      {
+        template: newTemplate,
+        message: "Task template created successfully",
+      },
+      201,
+    );
+  } catch (error) {
+    return errorResponse("Failed to create task template", 500);
+  }
+}
+
 async function getDayPlan(date: string, context: Context) {
   try {
     // Mock day plan - in production, aggregate from your database
@@ -419,6 +713,612 @@ async function getPomodoroStats(date: string, context: Context) {
   }
 }
 
+// Flow Tracking Implementation Functions
+async function getFlowEntries(
+  days: number,
+  date: string | null,
+  context: Context,
+) {
+  try {
+    // Mock flow entries - in production, query your database
+    const mockEntries: FlowEntry[] = [
+      {
+        id: crypto.randomUUID(),
+        timestamp: new Date().toISOString(),
+        activity: "Deep work on project",
+        activityType: "brain",
+        flowRating: 4,
+        mood: 4,
+        energyLevel: 3,
+        location: "Office",
+        notes: "Great focus session",
+        tags: ["coding", "focused"],
+        duration: 60,
+        createdAt: new Date().toISOString(),
+      },
+      {
+        id: crypto.randomUUID(),
+        timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+        activity: "Email processing",
+        activityType: "admin",
+        flowRating: 2,
+        mood: 3,
+        energyLevel: 2,
+        location: "Office",
+        notes: "Too many interruptions",
+        tags: ["email", "admin"],
+        duration: 30,
+        createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+      },
+    ];
+
+    return jsonResponse({
+      entries: mockEntries,
+      count: mockEntries.length,
+      dateRange: { days, date },
+    });
+  } catch (error) {
+    return errorResponse("Failed to fetch flow entries", 500);
+  }
+}
+
+async function createFlowEntry(
+  entryData: Partial<FlowEntry>,
+  context: Context,
+) {
+  try {
+    if (
+      !entryData.activity ||
+      !entryData.flowRating ||
+      !entryData.mood ||
+      !entryData.energyLevel
+    ) {
+      return errorResponse(
+        "Missing required fields: activity, flowRating, mood, energyLevel",
+      );
+    }
+
+    const newEntry: FlowEntry = {
+      id: crypto.randomUUID(),
+      timestamp: entryData.timestamp || new Date().toISOString(),
+      activity: entryData.activity,
+      activityType: entryData.activityType || "other",
+      flowRating: entryData.flowRating,
+      mood: entryData.mood,
+      energyLevel: entryData.energyLevel,
+      location: entryData.location,
+      notes: entryData.notes,
+      tags: entryData.tags || [],
+      duration: entryData.duration,
+      createdAt: new Date().toISOString(),
+    };
+
+    // In production, save to your database here
+
+    return jsonResponse(
+      {
+        entry: newEntry,
+        message: "Flow entry created successfully",
+      },
+      201,
+    );
+  } catch (error) {
+    return errorResponse("Failed to create flow entry", 500);
+  }
+}
+
+async function getFlowAnalytics(days: number, context: Context) {
+  try {
+    // Mock analytics - in production, calculate from your database
+    const analytics: FlowAnalytics = {
+      peakFlowHours: [9, 10, 14, 15],
+      lowFlowHours: [12, 16, 17],
+      bestActivitiesForMorning: ["Deep work", "Coding", "Writing"],
+      bestActivitiesForAfternoon: ["Meetings", "Planning", "Admin tasks"],
+      activitiesToAvoid: ["Social media", "Unnecessary meetings"],
+      weeklyTrends: {
+        Monday: { day: "Monday", avgFlow: 3.8, bestActivity: "Deep work" },
+        Tuesday: { day: "Tuesday", avgFlow: 4.1, bestActivity: "Coding" },
+        Wednesday: { day: "Wednesday", avgFlow: 3.6, bestActivity: "Planning" },
+        Thursday: { day: "Thursday", avgFlow: 3.9, bestActivity: "Writing" },
+        Friday: { day: "Friday", avgFlow: 3.2, bestActivity: "Admin tasks" },
+      },
+      improvementSuggestions: [
+        "Schedule your most important work between 9-10 AM when your flow is highest",
+        "Avoid demanding tasks during 12-1 PM when energy typically dips",
+        "Mornings are great for deep work and coding",
+        "Consider batching admin tasks for Friday afternoons",
+      ],
+    };
+
+    return jsonResponse({ analytics, dateRange: { days } });
+  } catch (error) {
+    return errorResponse("Failed to fetch flow analytics", 500);
+  }
+}
+
+async function getFlowSettings(context: Context) {
+  try {
+    // Mock settings - in production, query from your database
+    const settings: FlowTrackingSettings = {
+      isEnabled: true,
+      interval: 60,
+      quietHours: { start: "22:00", end: "08:00" },
+      trackingDays: [1, 2, 3, 4, 5],
+      autoDetectActivity: false,
+      showFlowInsights: true,
+      minimumEntriesForInsights: 10,
+      promptStyle: "gentle",
+    };
+
+    return jsonResponse({ settings });
+  } catch (error) {
+    return errorResponse("Failed to fetch flow settings", 500);
+  }
+}
+
+async function updateFlowSettings(
+  settingsData: Partial<FlowTrackingSettings>,
+  context: Context,
+) {
+  try {
+    // In production, update in your database
+    const updatedSettings: FlowTrackingSettings = {
+      isEnabled: settingsData.isEnabled ?? true,
+      interval: settingsData.interval ?? 60,
+      quietHours: settingsData.quietHours ?? { start: "22:00", end: "08:00" },
+      trackingDays: settingsData.trackingDays ?? [1, 2, 3, 4, 5],
+      autoDetectActivity: settingsData.autoDetectActivity ?? false,
+      showFlowInsights: settingsData.showFlowInsights ?? true,
+      minimumEntriesForInsights: settingsData.minimumEntriesForInsights ?? 10,
+      promptStyle: settingsData.promptStyle ?? "gentle",
+    };
+
+    return jsonResponse({
+      settings: updatedSettings,
+      message: "Flow settings updated successfully",
+    });
+  } catch (error) {
+    return errorResponse("Failed to update flow settings", 500);
+  }
+}
+
+// Analytics Implementation Functions
+async function getTaskAnalytics(dateRange: string, context: Context) {
+  try {
+    // Mock analytics - in production, calculate from your database
+    const analytics: TaskAnalytics = {
+      totalTasks: 45,
+      completedTasks: 38,
+      completionRate: 84,
+      avgTasksPerDay: 3.2,
+      productivityScore: 87,
+      typeBreakdown: { brain: 28, admin: 17 },
+      periodBreakdown: { morning: 22, afternoon: 23 },
+      tagAnalytics: [
+        { tag: "coding", count: 12, completionRate: 92 },
+        { tag: "planning", count: 8, completionRate: 75 },
+        { tag: "admin", count: 15, completionRate: 80 },
+        { tag: "research", count: 6, completionRate: 67 },
+      ],
+      timeSpentByType: { brain: 850, admin: 420 },
+      pomodoroEfficiency: 78,
+    };
+
+    return jsonResponse({ analytics, dateRange });
+  } catch (error) {
+    return errorResponse("Failed to fetch task analytics", 500);
+  }
+}
+
+async function getProductivityInsights(dateRange: string, context: Context) {
+  try {
+    const insights = {
+      overallScore: 85,
+      trends: {
+        tasksCompleted: { current: 38, previous: 32, change: 18.8 },
+        focusTime: { current: 850, previous: 720, change: 18.1 },
+        flowScore: { current: 4.2, previous: 3.8, change: 10.5 },
+      },
+      recommendations: [
+        "Your productivity has increased 18% this period - great work!",
+        "Consider scheduling more brain tasks in the morning when your flow is highest",
+        "You're completing admin tasks efficiently - maintain this rhythm",
+      ],
+      bestPerformingDays: ["Tuesday", "Wednesday"],
+      improvementAreas: ["Friday afternoon energy management"],
+    };
+
+    return jsonResponse({ insights, dateRange });
+  } catch (error) {
+    return errorResponse("Failed to fetch productivity insights", 500);
+  }
+}
+
+async function getActivityPatterns(dateRange: string, context: Context) {
+  try {
+    const patterns = {
+      hourlyFlow: [
+        { hour: 8, avgFlow: 3.2, taskCount: 5 },
+        { hour: 9, avgFlow: 4.5, taskCount: 8 },
+        { hour: 10, avgFlow: 4.3, taskCount: 7 },
+        { hour: 11, avgFlow: 3.8, taskCount: 6 },
+        { hour: 14, avgFlow: 4.1, taskCount: 7 },
+        { hour: 15, avgFlow: 3.9, taskCount: 5 },
+        { hour: 16, avgFlow: 3.2, taskCount: 4 },
+      ],
+      dailyPatterns: {
+        Monday: { avgProductivity: 82, bestActivity: "Planning" },
+        Tuesday: { avgProductivity: 89, bestActivity: "Deep work" },
+        Wednesday: { avgProductivity: 85, bestActivity: "Coding" },
+        Thursday: { avgProductivity: 78, bestActivity: "Meetings" },
+        Friday: { avgProductivity: 71, bestActivity: "Admin tasks" },
+      },
+      activityCorrelations: [
+        { activity: "Deep work", bestTime: "9-11 AM", avgFlow: 4.4 },
+        { activity: "Admin tasks", bestTime: "2-4 PM", avgFlow: 3.1 },
+        { activity: "Planning", bestTime: "8-9 AM", avgFlow: 3.8 },
+      ],
+    };
+
+    return jsonResponse({ patterns, dateRange });
+  } catch (error) {
+    return errorResponse("Failed to fetch activity patterns", 500);
+  }
+}
+
+async function getTrendAnalysis(dateRange: string, context: Context) {
+  try {
+    const trends = {
+      productivityTrend: "increasing", // increasing, decreasing, stable
+      weeklyAverage: 87,
+      monthlyGrowth: 12.5,
+      streakAnalysis: {
+        currentStreak: 7,
+        avgStreakLength: 5.2,
+        longestStreak: 14,
+      },
+      seasonalPatterns: [
+        { period: "Morning", productivity: 89, trend: "stable" },
+        { period: "Afternoon", productivity: 76, trend: "improving" },
+        { period: "Evening", productivity: 45, trend: "declining" },
+      ],
+      forecastedProductivity: 89, // next week prediction
+    };
+
+    return jsonResponse({ trends, dateRange });
+  } catch (error) {
+    return errorResponse("Failed to fetch trend analysis", 500);
+  }
+}
+
+// User Settings Implementation Functions
+async function getUserSettings(context: Context) {
+  try {
+    // Mock settings - in production, query from your database
+    const settings: UserSettings = {
+      theme: "dark",
+      colorTheme: "vibrant",
+      focusDuration: 25,
+      shortBreakDuration: 5,
+      longBreakDuration: 15,
+      sessionsBeforeLongBreak: 4,
+      autoStartBreaks: false,
+      autoStartPomodoros: false,
+      notificationsEnabled: true,
+      soundEnabled: true,
+      dailyGoal: 5,
+    };
+
+    return jsonResponse({ settings });
+  } catch (error) {
+    return errorResponse("Failed to fetch user settings", 500);
+  }
+}
+
+async function updateUserSettings(
+  settingsData: Partial<UserSettings>,
+  context: Context,
+) {
+  try {
+    // In production, update in your database
+    const updatedSettings: UserSettings = {
+      theme: settingsData.theme || "dark",
+      colorTheme: settingsData.colorTheme || "vibrant",
+      focusDuration: settingsData.focusDuration || 25,
+      shortBreakDuration: settingsData.shortBreakDuration || 5,
+      longBreakDuration: settingsData.longBreakDuration || 15,
+      sessionsBeforeLongBreak: settingsData.sessionsBeforeLongBreak || 4,
+      autoStartBreaks: settingsData.autoStartBreaks || false,
+      autoStartPomodoros: settingsData.autoStartPomodoros || false,
+      notificationsEnabled: settingsData.notificationsEnabled ?? true,
+      soundEnabled: settingsData.soundEnabled ?? true,
+      dailyGoal: settingsData.dailyGoal || 5,
+    };
+
+    return jsonResponse({
+      settings: updatedSettings,
+      message: "Settings updated successfully",
+    });
+  } catch (error) {
+    return errorResponse("Failed to update settings", 500);
+  }
+}
+
+// Achievements Implementation Functions
+async function getUserAchievements(context: Context) {
+  try {
+    // Mock achievements - in production, query from your database
+    const achievements: Achievement[] = [
+      {
+        id: crypto.randomUUID(),
+        type: "streak",
+        title: "Week Warrior",
+        description: "Completed tasks for 7 days in a row",
+        icon: "🔥",
+        earnedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        metadata: { streakLength: 7 },
+      },
+      {
+        id: crypto.randomUUID(),
+        type: "completion",
+        title: "Century Club",
+        description: "Completed 100 tasks",
+        icon: "💯",
+        earnedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+        metadata: { taskCount: 100 },
+      },
+      {
+        id: crypto.randomUUID(),
+        type: "focus",
+        title: "Flow Master",
+        description: "Achieved 10 high-flow sessions",
+        icon: "🌊",
+        earnedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+        metadata: { flowSessions: 10 },
+      },
+    ];
+
+    return jsonResponse({ achievements, count: achievements.length });
+  } catch (error) {
+    return errorResponse("Failed to fetch achievements", 500);
+  }
+}
+
+async function createAchievement(
+  achievementData: Partial<Achievement>,
+  context: Context,
+) {
+  try {
+    if (
+      !achievementData.type ||
+      !achievementData.title ||
+      !achievementData.description
+    ) {
+      return errorResponse("Missing required fields: type, title, description");
+    }
+
+    const newAchievement: Achievement = {
+      id: crypto.randomUUID(),
+      type: achievementData.type,
+      title: achievementData.title,
+      description: achievementData.description,
+      icon: achievementData.icon || "🏆",
+      earnedAt: new Date().toISOString(),
+      metadata: achievementData.metadata || {},
+    };
+
+    // In production, save to your database here
+
+    return jsonResponse(
+      {
+        achievement: newAchievement,
+        message: "Achievement unlocked!",
+      },
+      201,
+    );
+  } catch (error) {
+    return errorResponse("Failed to create achievement", 500);
+  }
+}
+
+// Streaks Implementation Functions
+async function getUserStreaks(context: Context) {
+  try {
+    // Mock streak data - in production, query from your database
+    const streaks: UserStreak = {
+      currentStreak: 7,
+      longestStreak: 14,
+      lastActivityDate: new Date().toISOString().split("T")[0],
+    };
+
+    return jsonResponse({ streaks });
+  } catch (error) {
+    return errorResponse("Failed to fetch user streaks", 500);
+  }
+}
+
+async function updateUserStreaks(
+  streakData: Partial<UserStreak>,
+  context: Context,
+) {
+  try {
+    // In production, update in your database
+    const updatedStreaks: UserStreak = {
+      currentStreak: streakData.currentStreak || 0,
+      longestStreak: streakData.longestStreak || 0,
+      lastActivityDate:
+        streakData.lastActivityDate || new Date().toISOString().split("T")[0],
+    };
+
+    return jsonResponse({
+      streaks: updatedStreaks,
+      message: "Streaks updated successfully",
+    });
+  } catch (error) {
+    return errorResponse("Failed to update streaks", 500);
+  }
+}
+
+async function handleFlow(request: Request, context: Context) {
+  const url = new URL(request.url);
+  const method = request.method;
+  const pathParts = url.pathname.split("/").filter(Boolean);
+  const subRoute = pathParts[2]; // entries, analytics, settings
+
+  switch (method) {
+    case "OPTIONS":
+      return new Response(null, {
+        status: 204,
+        headers: corsHeaders(),
+      });
+
+    case "GET":
+      if (subRoute === "entries") {
+        // GET /api/flow/entries?days=7&date=2024-01-01
+        const days = parseInt(url.searchParams.get("days") || "7");
+        const date = url.searchParams.get("date");
+        return await getFlowEntries(days, date, context);
+      } else if (subRoute === "analytics") {
+        // GET /api/flow/analytics?days=30
+        const days = parseInt(url.searchParams.get("days") || "30");
+        return await getFlowAnalytics(days, context);
+      } else if (subRoute === "settings") {
+        // GET /api/flow/settings
+        return await getFlowSettings(context);
+      }
+      return errorResponse("Invalid flow endpoint", 400);
+
+    case "POST":
+      if (subRoute === "entries") {
+        // POST /api/flow/entries
+        const entryData = await request.json();
+        return await createFlowEntry(entryData, context);
+      }
+      return errorResponse("Invalid flow endpoint", 400);
+
+    case "PUT":
+      if (subRoute === "settings") {
+        // PUT /api/flow/settings
+        const settingsData = await request.json();
+        return await updateFlowSettings(settingsData, context);
+      }
+      return errorResponse("Invalid flow endpoint", 400);
+
+    default:
+      return errorResponse("Method not allowed", 405);
+  }
+}
+
+async function handleAnalytics(request: Request, context: Context) {
+  const url = new URL(request.url);
+  const method = request.method;
+  const pathParts = url.pathname.split("/").filter(Boolean);
+  const subRoute = pathParts[2]; // tasks, productivity, patterns, trends
+
+  switch (method) {
+    case "OPTIONS":
+      return new Response(null, {
+        status: 204,
+        headers: corsHeaders(),
+      });
+
+    case "GET":
+      const dateRange = url.searchParams.get("range") || "30d";
+      const date = url.searchParams.get("date");
+
+      if (subRoute === "tasks") {
+        // GET /api/analytics/tasks?range=30d
+        return await getTaskAnalytics(dateRange, context);
+      } else if (subRoute === "productivity") {
+        // GET /api/analytics/productivity?range=7d
+        return await getProductivityInsights(dateRange, context);
+      } else if (subRoute === "patterns") {
+        // GET /api/analytics/patterns?range=30d
+        return await getActivityPatterns(dateRange, context);
+      } else if (subRoute === "trends") {
+        // GET /api/analytics/trends?range=90d
+        return await getTrendAnalysis(dateRange, context);
+      }
+      return errorResponse("Invalid analytics endpoint", 400);
+
+    default:
+      return errorResponse("Method not allowed", 405);
+  }
+}
+
+async function handleSettings(request: Request, context: Context) {
+  const method = request.method;
+
+  switch (method) {
+    case "OPTIONS":
+      return new Response(null, {
+        status: 204,
+        headers: corsHeaders(),
+      });
+
+    case "GET":
+      // GET /api/settings
+      return await getUserSettings(context);
+
+    case "PUT":
+      // PUT /api/settings
+      const settingsData = await request.json();
+      return await updateUserSettings(settingsData, context);
+
+    default:
+      return errorResponse("Method not allowed", 405);
+  }
+}
+
+async function handleAchievements(request: Request, context: Context) {
+  const method = request.method;
+
+  switch (method) {
+    case "OPTIONS":
+      return new Response(null, {
+        status: 204,
+        headers: corsHeaders(),
+      });
+
+    case "GET":
+      // GET /api/achievements
+      return await getUserAchievements(context);
+
+    case "POST":
+      // POST /api/achievements
+      const achievementData = await request.json();
+      return await createAchievement(achievementData, context);
+
+    default:
+      return errorResponse("Method not allowed", 405);
+  }
+}
+
+async function handleStreaks(request: Request, context: Context) {
+  const method = request.method;
+
+  switch (method) {
+    case "OPTIONS":
+      return new Response(null, {
+        status: 204,
+        headers: corsHeaders(),
+      });
+
+    case "GET":
+      // GET /api/streaks
+      return await getUserStreaks(context);
+
+    case "PUT":
+      // PUT /api/streaks
+      const streakData = await request.json();
+      return await updateUserStreaks(streakData, context);
+
+    default:
+      return errorResponse("Method not allowed", 405);
+  }
+}
+
 async function handleHealth(request: Request, context: Context) {
   return jsonResponse({
     status: "healthy",
@@ -443,6 +1343,16 @@ export default async function handler(request: Request, context: Context) {
       return await handleDayPlans(request, context);
     case "pomodoro":
       return await handlePomodoro(request, context);
+    case "flow":
+      return await handleFlow(request, context);
+    case "analytics":
+      return await handleAnalytics(request, context);
+    case "settings":
+      return await handleSettings(request, context);
+    case "achievements":
+      return await handleAchievements(request, context);
+    case "streaks":
+      return await handleStreaks(request, context);
     case "health":
       return await handleHealth(request, context);
     default:

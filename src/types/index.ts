@@ -12,10 +12,39 @@ export interface Task {
   pomodoroCount?: number;
   priority: "low" | "medium" | "high";
   tags?: string[];
-  scheduledFor?: string; // YYYY-MM-DD
-  createdAt: Date;
-  updatedAt: Date;
-  completedAt?: Date;
+
+  // GTD Date/Time Management
+  createdAt: Date; // When task was created
+  updatedAt: Date; // When task was last modified
+  scheduledFor?: string; // YYYY-MM-DD - when task is planned to be done
+  dueDate?: Date; // Hard deadline (different from scheduled)
+  dueTime?: string; // HH:MM format for specific time
+  startedAt?: Date; // When work on task actually began
+  completedAt?: Date; // When task was actually finished
+
+  // Task Organization & Ordering
+  sortOrder?: number; // For custom ordering within periods
+  projectId?: string; // For future project grouping
+  contextTags?: string[]; // GTD contexts (@calls, @computer, etc.)
+
+  // Subtask Support
+  parentTaskId?: string; // Reference to parent task
+  subtasks?: Task[]; // Child tasks (for nested structure)
+  subtaskIds?: string[]; // Array of subtask IDs (for flat structure)
+  depth?: number; // Nesting level (0 = root task, 1 = first level subtask, etc.)
+  isSubtask?: boolean; // Quick check if this is a subtask
+
+  // Enhanced Tracking
+  isRecurring?: boolean;
+  recurringPattern?: {
+    type: "daily" | "weekly" | "monthly";
+    interval: number;
+    endDate?: Date;
+  };
+  delegatedTo?: string; // For delegation tracking
+  waitingFor?: string; // For tracking what you're waiting for
+  energy?: "low" | "medium" | "high"; // Energy level required
+  focus?: "shallow" | "deep"; // Focus level required
 }
 
 export interface DayPlan {

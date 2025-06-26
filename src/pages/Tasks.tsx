@@ -24,6 +24,7 @@ import {
   downloadFile,
   getExportFilename,
 } from "@/lib/task-export";
+import { cn } from "@/lib/utils";
 
 import { Navigation } from "@/components/app/Navigation";
 import { TaskCard } from "@/components/app/TaskCard";
@@ -33,6 +34,9 @@ import { TaskFilterPanel } from "@/components/app/TaskFilterPanel";
 import { TaskTemplatesPanel } from "@/components/app/TaskTemplatesPanel";
 import { TaskBulkOperations } from "@/components/app/TaskBulkOperations";
 import { TaskAnalyticsDashboard } from "@/components/app/TaskAnalyticsDashboard";
+import { QuickAddWithNLP } from "@/components/app/QuickAddWithNLP";
+import { DragDropTaskManager } from "@/components/app/DragDropTaskManager";
+import { FloatingActionButton } from "@/components/app/FloatingActionButton";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -72,7 +76,15 @@ import {
   FileText,
   Clock,
   Sparkles,
+  CalendarIcon,
 } from "lucide-react";
+import { format, addDays } from "date-fns";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 export default function Tasks() {
   const [allTasks, setAllTasks] = useState<Task[]>([]);
@@ -81,6 +93,8 @@ export default function Tasks() {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [smartSuggestions, setSmartSuggestions] = useState<any>(null);
   const [recentTags, setRecentTags] = useState<string[]>([]);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [isDueDateCalendarOpen, setIsDueDateCalendarOpen] = useState(false);
 
   const navigate = useNavigate();
 
@@ -92,6 +106,9 @@ export default function Tasks() {
     priority: "medium" as Task["priority"],
     timeBlock: 25,
     tags: [] as string[],
+    scheduledFor: "",
+    dueDate: null as Date | null,
+    dueTime: "",
   });
 
   const templates = getTemplates();
@@ -99,6 +116,15 @@ export default function Tasks() {
   // Keyboard shortcuts
   useKeyboardShortcuts({
     onNewTask: () => setIsCreateTaskOpen(true),
+    onQuickAdd: () => {
+      // Focus on the quick add input
+      const quickAddInput = document.querySelector(
+        '[placeholder*="natural language"]',
+      ) as HTMLInputElement;
+      if (quickAddInput) {
+        quickAddInput.focus();
+      }
+    },
     onEscape: () => {
       setIsCreateTaskOpen(false);
       setEditingTask(null);
@@ -148,6 +174,9 @@ export default function Tasks() {
         priority: newTask.priority,
         timeBlock: newTask.timeBlock,
         tags: newTask.tags,
+        scheduledFor: newTask.scheduledFor || undefined,
+        dueDate: newTask.dueDate || undefined,
+        dueTime: newTask.dueTime || undefined,
         completed: false,
       };
 
@@ -170,6 +199,9 @@ export default function Tasks() {
         priority: "medium",
         timeBlock: 25,
         tags: [],
+        scheduledFor: "",
+        dueDate: null,
+        dueTime: "",
       });
       setIsCreateTaskOpen(false);
       setEditingTask(null);
@@ -188,6 +220,9 @@ export default function Tasks() {
       priority: task.priority,
       timeBlock: task.timeBlock || 25,
       tags: task.tags || [],
+      scheduledFor: task.scheduledFor || "",
+      dueDate: task.dueDate ? new Date(task.dueDate) : null,
+      dueTime: task.dueTime || "",
     });
     setIsCreateTaskOpen(true);
   };
@@ -255,103 +290,133 @@ export default function Tasks() {
   };
 
   // Bulk operations
-  const handleBulkComplete = (taskIds: string[]) => {
-    taskIds.forEach((id) => {
-      updateTask(id, { completed: true });
-    });
-    setAllTasks((prev) =>
-      prev.map((task) =>
-        taskIds.includes(task.id) ? { ...task, completed: true } : task,
-      ),
-    );
-    setSelectedTasks([]);
+  const handleBulkComplete = async (taskIds: string[]) => {
+    try {
+      // Update all tasks in parallel
+      await Promise.all(
+        taskIds.map((id) =>
+          updateTask(id, { completed: true, status: "completed" }),
+        ),
+      );
+
+      // Update local state
+      setAllTasks((prev) =>
+        prev.map((task) =>
+          taskIds.includes(task.id)
+            ? { ...task, completed: true, status: "completed" as const }
+            : task,
+        ),
+      );
+      setSelectedTasks([]);
+    } catch (error) {
+      console.error("Error completing tasks:", error);
+    }
   };
 
-  const handleBulkDelete = (taskIds: string[]) => {
-    taskIds.forEach((id) => {
-      deleteTask(id);
-    });
-    setAllTasks((prev) => prev.filter((task) => !taskIds.includes(task.id)));
-    setSelectedTasks([]);
+  const handleBulkDelete = async (taskIds: string[]) => {
+    try {
+      // Delete all tasks in parallel
+      await Promise.all(taskIds.map((id) => deleteTask(id)));
+
+      // Update local state
+      setAllTasks((prev) => prev.filter((task) => !taskIds.includes(task.id)));
+      setSelectedTasks([]);
+    } catch (error) {
+      console.error("Error deleting tasks:", error);
+    }
   };
 
-  const handleBulkUpdatePeriod = (
+  const handleBulkUpdatePeriod = async (
     taskIds: string[],
     period: "morning" | "afternoon",
   ) => {
-    taskIds.forEach((id) => {
-      updateTask(id, { period });
-    });
-    setAllTasks((prev) =>
-      prev.map((task) =>
-        taskIds.includes(task.id) ? { ...task, period } : task,
-      ),
-    );
+    try {
+      // Update all tasks in parallel
+      await Promise.all(taskIds.map((id) => updateTask(id, { period })));
+
+      // Update local state
+      setAllTasks((prev) =>
+        prev.map((task) =>
+          taskIds.includes(task.id) ? { ...task, period } : task,
+        ),
+      );
+      setSelectedTasks([]);
+    } catch (error) {
+      console.error("Error updating task periods:", error);
+    }
   };
 
-  const handleBulkUpdatePriority = (
+  const handleBulkUpdatePriority = async (
     taskIds: string[],
     priority: Task["priority"],
   ) => {
-    taskIds.forEach((id) => {
-      updateTask(id, { priority });
-    });
-    setAllTasks((prev) =>
-      prev.map((task) =>
-        taskIds.includes(task.id) ? { ...task, priority } : task,
-      ),
-    );
+    try {
+      // Update all tasks in parallel
+      await Promise.all(taskIds.map((id) => updateTask(id, { priority })));
+
+      // Update local state
+      setAllTasks((prev) =>
+        prev.map((task) =>
+          taskIds.includes(task.id) ? { ...task, priority } : task,
+        ),
+      );
+      setSelectedTasks([]);
+    } catch (error) {
+      console.error("Error updating task priorities:", error);
+    }
   };
 
-  const handleBulkAddTags = (taskIds: string[], tags: string[]) => {
-    taskIds.forEach((id) => {
-      const task = allTasks.find((t) => t.id === id);
-      if (task) {
-        const existingTags = task.tags || [];
-        const newTags = [...new Set([...existingTags, ...tags])];
-        updateTask(id, { tags: newTags });
-      }
-    });
-    // Reload tasks to get updated tags
-    const dayPlans = getDayPlans();
-    const tasks: Task[] = [];
-    dayPlans.forEach((plan) => {
-      tasks.push(
-        ...plan.morningTasks,
-        ...plan.afternoonTasks,
-        ...plan.laterBird,
+  const handleBulkAddTags = async (taskIds: string[], tags: string[]) => {
+    try {
+      // Update all tasks in parallel
+      await Promise.all(
+        taskIds.map(async (id) => {
+          const task = allTasks.find((t) => t.id === id);
+          if (task) {
+            const existingTags = task.tags || [];
+            const newTags = [...new Set([...existingTags, ...tags])];
+            return updateTask(id, { tags: newTags });
+          }
+        }),
       );
-    });
-    setAllTasks(tasks);
+
+      // Reload tasks to get updated tags
+      const tasks = await getAllTasks();
+      setAllTasks(tasks);
+      setSelectedTasks([]);
+    } catch (error) {
+      console.error("Error adding tags to tasks:", error);
+    }
   };
 
-  const handleBulkDuplicate = (taskIds: string[]) => {
-    taskIds.forEach((id) => {
-      const task = allTasks.find((t) => t.id === id);
-      if (task) {
-        addTask({
-          title: `${task.title} (Copy)`,
-          description: task.description,
-          type: task.type,
-          period: task.period,
-          priority: task.priority,
-          timeBlock: task.timeBlock,
-          tags: task.tags,
-          completed: false,
-        });
-      }
-    });
-    // Reload tasks
-    const dayPlans = getDayPlans();
-    const tasks: Task[] = [];
-    dayPlans.forEach((plan) => {
-      tasks.push(
-        ...plan.morningTasks,
-        ...plan.afternoonTasks,
-        ...plan.laterBird,
+  const handleBulkDuplicate = async (taskIds: string[]) => {
+    try {
+      // Create duplicates in parallel
+      await Promise.all(
+        taskIds.map(async (id) => {
+          const task = allTasks.find((t) => t.id === id);
+          if (task) {
+            return addTask({
+              title: `${task.title} (Copy)`,
+              description: task.description,
+              type: task.type,
+              period: task.period,
+              priority: task.priority,
+              timeBlock: task.timeBlock,
+              tags: task.tags,
+              completed: false,
+            });
+          }
+        }),
       );
-    });
-    setAllTasks(tasks);
+
+      // Reload tasks
+      const tasks = await getAllTasks();
+      setAllTasks(tasks);
+      setSelectedTasks([]);
+    } catch (error) {
+      console.error("Error duplicating tasks:", error);
+    }
   };
 
   const handleTagInput = (value: string) => {
@@ -381,6 +446,199 @@ export default function Tasks() {
     } else {
       setSmartSuggestions(null);
     }
+  };
+
+  // Subtask handlers
+  const handleCreateSubtask = async (
+    parentId: string,
+    subtaskData: Partial<Task>,
+  ) => {
+    try {
+      const parentTask = allTasks.find((t) => t.id === parentId);
+      if (!parentTask) return;
+
+      const subtask = {
+        ...subtaskData,
+        id: generateId(),
+        parentTaskId: parentId,
+        type: parentTask.type,
+        period: parentTask.period,
+        priority: subtaskData.priority || "medium",
+        depth: (parentTask.depth || 0) + 1,
+        isSubtask: true,
+        status: "todo" as const,
+        completed: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        tags: subtaskData.tags || [],
+        contextTags: subtaskData.contextTags || [],
+      };
+
+      await addTask(subtask);
+
+      // Update parent task's subtask references
+      const currentSubtaskIds = parentTask.subtaskIds || [];
+      await updateTask(parentId, {
+        subtaskIds: [...currentSubtaskIds, subtask.id],
+        updatedAt: new Date(),
+      });
+
+      // Reload tasks
+      const tasks = await getAllTasks();
+      setAllTasks(tasks);
+    } catch (error) {
+      console.error("Error creating subtask:", error);
+    }
+  };
+
+  const handleUpdateSubtask = async (
+    subtaskId: string,
+    updates: Partial<Task>,
+  ) => {
+    try {
+      await updateTask(subtaskId, {
+        ...updates,
+        updatedAt: new Date(),
+      });
+
+      // Update local state
+      setAllTasks((prev) =>
+        prev.map((task) =>
+          task.id === subtaskId ? { ...task, ...updates } : task,
+        ),
+      );
+    } catch (error) {
+      console.error("Error updating subtask:", error);
+    }
+  };
+
+  const handleDeleteSubtask = async (subtaskId: string) => {
+    try {
+      const subtask = allTasks.find((t) => t.id === subtaskId);
+      if (!subtask?.parentTaskId) return;
+
+      // Remove from parent's subtask list
+      const parentTask = allTasks.find((t) => t.id === subtask.parentTaskId);
+      if (parentTask) {
+        const updatedSubtaskIds = (parentTask.subtaskIds || []).filter(
+          (id) => id !== subtaskId,
+        );
+        await updateTask(parentTask.id, {
+          subtaskIds: updatedSubtaskIds,
+          updatedAt: new Date(),
+        });
+      }
+
+      // Delete the subtask
+      await deleteTask(subtaskId);
+
+      // Update local state
+      setAllTasks((prev) => prev.filter((task) => task.id !== subtaskId));
+    } catch (error) {
+      console.error("Error deleting subtask:", error);
+    }
+  };
+
+  const handleToggleSubtask = async (subtaskId: string) => {
+    const subtask = allTasks.find((t) => t.id === subtaskId);
+    if (subtask) {
+      try {
+        const newCompleted = !subtask.completed;
+        const newStatus = newCompleted ? "completed" : "todo";
+
+        await updateTask(subtaskId, {
+          completed: newCompleted,
+          status: newStatus,
+          completedAt: newCompleted ? new Date() : undefined,
+          updatedAt: new Date(),
+        });
+
+        setAllTasks((prev) =>
+          prev.map((t) =>
+            t.id === subtaskId
+              ? {
+                  ...t,
+                  completed: newCompleted,
+                  status: newStatus,
+                  completedAt: newCompleted ? new Date() : undefined,
+                }
+              : t,
+          ),
+        );
+
+        // Check if parent task should be auto-completed
+        if (subtask.parentTaskId) {
+          const parentTask = allTasks.find(
+            (t) => t.id === subtask.parentTaskId,
+          );
+          if (parentTask) {
+            const siblingSubtasks = allTasks.filter(
+              (t) => t.parentTaskId === parentTask.id,
+            );
+            const allSiblingsCompleted = siblingSubtasks.every((s) =>
+              s.id === subtaskId ? newCompleted : s.completed,
+            );
+
+            if (allSiblingsCompleted && siblingSubtasks.length > 0) {
+              await updateTask(parentTask.id, {
+                completed: true,
+                status: "completed",
+                completedAt: new Date(),
+                updatedAt: new Date(),
+              });
+
+              setAllTasks((prev) =>
+                prev.map((t) =>
+                  t.id === parentTask.id
+                    ? {
+                        ...t,
+                        completed: true,
+                        status: "completed" as const,
+                        completedAt: new Date(),
+                      }
+                    : t,
+                ),
+              );
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error toggling subtask:", error);
+      }
+    }
+  };
+
+  const handleReorderSubtasks = async (
+    parentId: string,
+    subtaskIds: string[],
+  ) => {
+    try {
+      await updateTask(parentId, {
+        subtaskIds,
+        updatedAt: new Date(),
+      });
+
+      // Update sort orders for subtasks
+      for (let i = 0; i < subtaskIds.length; i++) {
+        await updateTask(subtaskIds[i], {
+          sortOrder: i,
+          updatedAt: new Date(),
+        });
+      }
+
+      // Reload tasks
+      const tasks = await getAllTasks();
+      setAllTasks(tasks);
+    } catch (error) {
+      console.error("Error reordering subtasks:", error);
+    }
+  };
+
+  // Get subtasks for a given parent task
+  const getSubtasks = (parentId: string): Task[] => {
+    return allTasks
+      .filter((task) => task.parentTaskId === parentId)
+      .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
   };
 
   const handleStartPomodoro = (task: Task) => {
@@ -447,6 +705,17 @@ export default function Tasks() {
           </TabsList>
 
           <TabsContent value="manage" className="space-y-6">
+            {/* AI-Powered Quick Add */}
+            <div className="max-w-4xl mx-auto">
+              <QuickAddWithNLP
+                onCreateTask={async (taskData) => {
+                  await addTask(taskData);
+                  const tasks = await getAllTasks();
+                  setAllTasks(tasks);
+                }}
+              />
+            </div>
+
             {/* Big New Task Button */}
             <div className="flex justify-center">
               <Dialog
@@ -463,6 +732,9 @@ export default function Tasks() {
                       priority: "medium",
                       timeBlock: 25,
                       tags: [],
+                      scheduledFor: "",
+                      dueDate: null,
+                      dueTime: "",
                     });
                   }
                 }}
@@ -549,9 +821,7 @@ export default function Tasks() {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="morning">
-                              ���� Morning
-                            </SelectItem>
+                            <SelectItem value="morning">🌅 Morning</SelectItem>
                             <SelectItem value="afternoon">
                               🌆 Afternoon
                             </SelectItem>
@@ -598,6 +868,120 @@ export default function Tasks() {
                         />
                       </div>
                     </div>
+
+                    {/* Scheduling Section */}
+                    <div className="space-y-4">
+                      <Label className="text-base font-medium">
+                        Scheduling
+                      </Label>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label>Scheduled Date</Label>
+                          <div className="space-y-2 mt-1">
+                            <div className="flex flex-wrap gap-2">
+                              {[
+                                {
+                                  label: "Today",
+                                  value: format(new Date(), "yyyy-MM-dd"),
+                                },
+                                {
+                                  label: "Tomorrow",
+                                  value: format(
+                                    addDays(new Date(), 1),
+                                    "yyyy-MM-dd",
+                                  ),
+                                },
+                                {
+                                  label: "Next Week",
+                                  value: format(
+                                    addDays(new Date(), 7),
+                                    "yyyy-MM-dd",
+                                  ),
+                                },
+                              ].map((option) => (
+                                <Button
+                                  key={option.value}
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() =>
+                                    setNewTask((prev) => ({
+                                      ...prev,
+                                      scheduledFor: option.value,
+                                    }))
+                                  }
+                                  className={cn(
+                                    "h-7 text-xs",
+                                    newTask.scheduledFor === option.value &&
+                                      "border-primary bg-primary/10",
+                                  )}
+                                >
+                                  {option.label}
+                                </Button>
+                              ))}
+                            </div>
+                            <Input
+                              type="date"
+                              value={newTask.scheduledFor}
+                              onChange={(e) => {
+                                setNewTask((prev) => ({
+                                  ...prev,
+                                  scheduledFor: e.target.value,
+                                }));
+                              }}
+                              className="w-full"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <Label>Due Time</Label>
+                          <Input
+                            type="time"
+                            value={newTask.dueTime}
+                            onChange={(e) =>
+                              setNewTask((prev) => ({
+                                ...prev,
+                                dueTime: e.target.value,
+                              }))
+                            }
+                            className="mt-1"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label>Hard Deadline (Due Date)</Label>
+                        <Input
+                          type="date"
+                          value={
+                            newTask.dueDate
+                              ? format(newTask.dueDate, "yyyy-MM-dd")
+                              : ""
+                          }
+                          onChange={(e) => {
+                            if (e.target.value) {
+                              const selectedDate = new Date(
+                                e.target.value + "T00:00:00",
+                              );
+                              setNewTask((prev) => ({
+                                ...prev,
+                                dueDate: selectedDate,
+                              }));
+                            } else {
+                              setNewTask((prev) => ({
+                                ...prev,
+                                dueDate: null,
+                              }));
+                            }
+                          }}
+                          className="w-full mt-1"
+                          placeholder="Select deadline..."
+                        />
+                      </div>
+                    </div>
+
                     <div>
                       <Label htmlFor="tags">Tags (comma-separated)</Label>
                       <Input
@@ -605,6 +989,7 @@ export default function Tasks() {
                         value={newTask.tags.join(", ")}
                         onChange={(e) => handleTagInput(e.target.value)}
                         placeholder="coding, urgent, research..."
+                        className="mt-1"
                       />
                       {recentTags.length > 0 && (
                         <div className="mt-2">
@@ -634,6 +1019,7 @@ export default function Tasks() {
                         </div>
                       )}
                     </div>
+
                     <Button onClick={handleCreateTask} className="w-full">
                       <Sparkles className="h-4 w-4 mr-2" />
                       {editingTask ? "Update Task" : "Create Task"}
@@ -643,126 +1029,22 @@ export default function Tasks() {
               </Dialog>
             </div>
 
-            {/* Two-Box Task View - Mobile Responsive */}
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-              {/* Morning Tasks */}
-              <Card className="border-2 border-morning/20 bg-morning/5">
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-3 h-3 bg-morning rounded-full"></div>
-                      <span className="text-morning">Morning Tasks</span>
-                      <Badge
-                        variant="outline"
-                        className="text-morning border-morning"
-                      >
-                        {
-                          filteredTasks.filter(
-                            (task) => task.period === "morning",
-                          ).length
-                        }
-                      </Badge>
-                    </div>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {filteredTasks.filter((task) => task.period === "morning")
-                      .length === 0 ? (
-                      <TasksEmptyState
-                        period="morning"
-                        onAddTask={() => {
-                          setNewTask((prev) => ({
-                            ...prev,
-                            period: "morning",
-                          }));
-                          setIsCreateTaskOpen(true);
-                        }}
-                      />
-                    ) : (
-                      filteredTasks
-                        .filter((task) => task.period === "morning")
-                        .map((task) => {
-                          if (!task.id) {
-                            console.warn("Task missing ID:", task);
-                            return null;
-                          }
-                          return (
-                            <EnhancedTaskItem
-                              key={task.id}
-                              task={task}
-                              onToggleComplete={handleToggleComplete}
-                              onEdit={handleEditTask}
-                              onDelete={handleDeleteTask}
-                              onStartPomodoro={handleStartPomodoro}
-                            />
-                          );
-                        })
-                        .filter(Boolean)
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Afternoon Tasks */}
-              <Card className="border-2 border-afternoon/20 bg-afternoon/5">
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-3 h-3 bg-afternoon rounded-full"></div>
-                      <span className="text-afternoon">Afternoon Tasks</span>
-                      <Badge
-                        variant="outline"
-                        className="text-afternoon border-afternoon"
-                      >
-                        {
-                          filteredTasks.filter(
-                            (task) => task.period === "afternoon",
-                          ).length
-                        }
-                      </Badge>
-                    </div>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {filteredTasks.filter((task) => task.period === "afternoon")
-                      .length === 0 ? (
-                      <TasksEmptyState
-                        period="afternoon"
-                        onAddTask={() => {
-                          setNewTask((prev) => ({
-                            ...prev,
-                            period: "afternoon",
-                          }));
-                          setIsCreateTaskOpen(true);
-                        }}
-                      />
-                    ) : (
-                      filteredTasks
-                        .filter((task) => task.period === "afternoon")
-                        .map((task) => {
-                          if (!task.id) {
-                            console.warn("Task missing ID:", task);
-                            return null;
-                          }
-                          return (
-                            <EnhancedTaskItem
-                              key={task.id}
-                              task={task}
-                              onToggleComplete={handleToggleComplete}
-                              onEdit={handleEditTask}
-                              onDelete={handleDeleteTask}
-                              onStartPomodoro={handleStartPomodoro}
-                            />
-                          );
-                        })
-                        .filter(Boolean)
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            {/* Drag & Drop Task Manager */}
+            <DragDropTaskManager
+              tasks={filteredTasks.filter((task) => !task.isSubtask)}
+              onUpdateTask={updateTask}
+              onToggleComplete={handleToggleComplete}
+              onEditTask={handleEditTask}
+              onDeleteTask={handleDeleteTask}
+              onStartPomodoro={handleStartPomodoro}
+              onAddTask={(period) => {
+                setNewTask((prev) => ({
+                  ...prev,
+                  period,
+                }));
+                setIsCreateTaskOpen(true);
+              }}
+            />
 
             {/* Filter Panel - Moved Below Tasks */}
             <Card>
@@ -816,6 +1098,96 @@ export default function Tasks() {
               </CardContent>
             </Card>
 
+            {/* All Tasks List */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <span>All Tasks</span>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      checked={
+                        selectedTasks.length === filteredTasks.length &&
+                        filteredTasks.length > 0
+                      }
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          handleSelectAll();
+                        } else {
+                          handleDeselectAll();
+                        }
+                      }}
+                    />
+                    <Badge variant="outline">
+                      {filteredTasks.length} tasks
+                    </Badge>
+                  </div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {filteredTasks.length === 0 ? (
+                  <div className="text-center text-muted-foreground py-8">
+                    <p>No tasks found matching your filters.</p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={resetFilters}
+                      className="mt-2"
+                    >
+                      Clear Filters
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {filteredTasks
+                      .filter((task) => !task.isSubtask)
+                      .map((task) => {
+                        if (!task.id) {
+                          console.warn("Task missing ID:", task);
+                          return null;
+                        }
+                        const isSelected = selectedTasks.some(
+                          (selectedTask) => selectedTask.id === task.id,
+                        );
+                        return (
+                          <div
+                            key={task.id}
+                            className={cn(
+                              "relative",
+                              isSelected && "ring-2 ring-primary/20 rounded-lg",
+                            )}
+                          >
+                            <div className="absolute left-2 top-2 z-10">
+                              <Checkbox
+                                checked={isSelected}
+                                onCheckedChange={(checked) =>
+                                  handleTaskSelection(task, !!checked)
+                                }
+                                className="bg-background"
+                              />
+                            </div>
+                            <div className="pl-8">
+                              <EnhancedTaskItem
+                                task={task}
+                                subtasks={getSubtasks(task.id)}
+                                onToggleComplete={handleToggleComplete}
+                                onEdit={handleEditTask}
+                                onDelete={handleDeleteTask}
+                                onStartPomodoro={handleStartPomodoro}
+                                onCreateSubtask={handleCreateSubtask}
+                                onUpdateSubtask={handleUpdateSubtask}
+                                onDeleteSubtask={handleDeleteSubtask}
+                                onToggleSubtask={handleToggleSubtask}
+                                onReorderSubtasks={handleReorderSubtasks}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
             {/* Bulk Operations */}
             <TaskBulkOperations
               selectedTasks={selectedTasks}
@@ -836,6 +1208,15 @@ export default function Tasks() {
           </TabsContent>
         </Tabs>
       </main>
+
+      {/* Floating Action Button for Quick Add */}
+      <FloatingActionButton
+        onCreateTask={async (taskData) => {
+          await addTask(taskData);
+          const tasks = await getAllTasks();
+          setAllTasks(tasks);
+        }}
+      />
     </div>
   );
 }

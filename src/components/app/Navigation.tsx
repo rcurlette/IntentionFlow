@@ -10,13 +10,15 @@ import {
   Brain,
   Zap,
   BookOpen,
+  Sparkles,
+  Calendar,
 } from "lucide-react";
 
 const navItems = [
   {
     href: "/",
-    label: "Dashboard",
-    icon: Home,
+    label: "Flow",
+    icon: Brain,
   },
   {
     href: "/tasks",
@@ -24,14 +26,29 @@ const navItems = [
     icon: Target,
   },
   {
+    href: "/calendar",
+    label: "Calendar",
+    icon: Calendar,
+  },
+  {
     href: "/pomodoro",
     label: "Focus",
     icon: Clock,
   },
   {
+    href: "/dashboard",
+    label: "Analytics",
+    icon: Home,
+  },
+  {
     href: "/analytics",
     label: "Progress",
     icon: BarChart3,
+  },
+  {
+    href: "/ai-features",
+    label: "AI Features",
+    icon: Sparkles,
   },
   {
     href: "/settings",

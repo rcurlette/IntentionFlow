@@ -2,12 +2,14 @@ import { useEffect } from "react";
 
 interface KeyboardShortcutsOptions {
   onNewTask?: () => void;
+  onQuickAdd?: () => void;
   onEscape?: () => void;
   onFlowTracker?: () => void;
 }
 
 export function useKeyboardShortcuts({
   onNewTask,
+  onQuickAdd,
   onEscape,
   onFlowTracker,
 }: KeyboardShortcutsOptions) {
@@ -17,6 +19,12 @@ export function useKeyboardShortcuts({
       if (event.ctrlKey && event.key === "n" && onNewTask) {
         event.preventDefault();
         onNewTask();
+      }
+
+      // Quick add shortcut: Ctrl+K (similar to command palette)
+      if (event.ctrlKey && event.key === "k" && onQuickAdd) {
+        event.preventDefault();
+        onQuickAdd();
       }
 
       // Flow tracker shortcut: Ctrl+F
@@ -37,5 +45,5 @@ export function useKeyboardShortcuts({
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [onNewTask, onEscape, onFlowTracker]);
+  }, [onNewTask, onQuickAdd, onEscape, onFlowTracker]);
 }

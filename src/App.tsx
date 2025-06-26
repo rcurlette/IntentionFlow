@@ -15,6 +15,9 @@ import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
 import About from "./pages/About";
 import ApiDemo from "./pages/ApiDemo";
+import AIFeatures from "./pages/AIFeatures";
+import Calendar from "./pages/Calendar";
+import FlowDashboard from "./pages/FlowDashboard";
 import FlowTrackerPopupPage from "./pages/FlowTrackerPopupPage";
 import NotFound from "./pages/NotFound";
 
@@ -54,12 +57,16 @@ const App = () => (
           <FlowTracker />
           <BrowserRouter>
             <Routes>
-              <Route path="/" element={<Dashboard />} />
+              <Route path="/" element={<FlowDashboard />} />
+              <Route path="/flow" element={<FlowDashboard />} />
+              <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/tasks" element={<Tasks />} />
+              <Route path="/calendar" element={<Calendar />} />
               <Route path="/pomodoro" element={<Pomodoro />} />
               <Route path="/analytics" element={<Analytics />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/about" element={<About />} />
+              <Route path="/ai-features" element={<AIFeatures />} />
               <Route path="/api-demo" element={<ApiDemo />} />
               <Route
                 path="/flow-tracker-popup"

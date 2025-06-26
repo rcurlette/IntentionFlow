@@ -3,6 +3,7 @@ import { Task } from "@/types";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import {
   Brain,
@@ -12,6 +13,9 @@ import {
   Trash2,
   Play,
   MoreHorizontal,
+  Plus,
+  ChevronRight,
+  Target,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -19,34 +23,56 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { SubtaskManager } from "./SubtaskManager";
 
 interface EnhancedTaskItemProps {
   task: Task;
+  subtasks?: Task[];
   onToggleComplete: (taskId: string) => void;
   onEdit: (task: Task) => void;
   onDelete: (taskId: string) => void;
   onStartPomodoro?: (task: Task) => void;
+  onCreateSubtask?: (
+    parentId: string,
+    subtaskData: Partial<Task>,
+  ) => Promise<void>;
+  onUpdateSubtask?: (
+    subtaskId: string,
+    updates: Partial<Task>,
+  ) => Promise<void>;
+  onDeleteSubtask?: (subtaskId: string) => Promise<void>;
+  onToggleSubtask?: (subtaskId: string) => Promise<void>;
+  onReorderSubtasks?: (parentId: string, subtaskIds: string[]) => Promise<void>;
   className?: string;
 }
 
 export function EnhancedTaskItem({
   task,
+  subtasks = [],
   onToggleComplete,
   onEdit,
   onDelete,
   onStartPomodoro,
+  onCreateSubtask,
+  onUpdateSubtask,
+  onDeleteSubtask,
+  onToggleSubtask,
+  onReorderSubtasks,
   className,
 }: EnhancedTaskItemProps) {
   const [isHovered, setIsHovered] = useState(false);
-  const [isCompleting, setIsCompleting] = useState(false);
+  const [showSubtasks, setShowSubtasks] = useState(true);
+
+  // Calculate subtask progress
+  const completedSubtasks = subtasks.filter(
+    (subtask) => subtask.completed,
+  ).length;
+  const totalSubtasks = subtasks.length;
+  const subtaskProgress =
+    totalSubtasks > 0 ? (completedSubtasks / totalSubtasks) * 100 : 0;
 
   const handleToggleComplete = async () => {
-    setIsCompleting(true);
-    // Add a small delay for animation
-    setTimeout(() => {
-      onToggleComplete(task.id);
-      setIsCompleting(false);
-    }, 300);
+    onToggleComplete(task.id);
   };
 
   const getPriorityEmoji = () => {
@@ -65,9 +91,8 @@ export function EnhancedTaskItem({
   return (
     <div
       className={cn(
-        "flex items-start space-x-3 p-3 bg-background rounded-lg border hover:shadow-md transition-all duration-200 group",
-        task.completed && "opacity-75",
-        isCompleting && "animate-celebration",
+        "flex items-start space-x-3 p-3 bg-background rounded-lg border hover:shadow-md transition-all duration-200 group focus-within:ring-2 focus-within:ring-primary/20",
+        task.completed && "bg-success/10 border-success/20",
         className,
       )}
       onMouseEnter={() => setIsHovered(true)}
@@ -77,7 +102,7 @@ export function EnhancedTaskItem({
         checked={task.completed}
         onCheckedChange={handleToggleComplete}
         className={cn(
-          "mt-1 transition-all duration-200",
+          "mt-1 transition-all duration-200 focus:ring-2 focus:ring-primary/20",
           task.completed && "data-[state=checked]:bg-success",
         )}
       />
@@ -130,6 +155,18 @@ export function EnhancedTaskItem({
                 <span>{task.timeBlock}m</span>
               </div>
             )}
+
+            {/* Subtask Progress */}
+            {totalSubtasks > 0 && (
+              <div className="flex items-center space-x-1">
+                <Target className="h-3 w-3" />
+                <span>
+                  {completedSubtasks}/{totalSubtasks}
+                </span>
+                <Progress value={subtaskProgress} className="w-12 h-1" />
+              </div>
+            )}
+
             {task.tags && task.tags.length > 0 && (
               <div className="flex flex-wrap gap-1">
                 {task.tags.slice(0, 2).map((tag, index) => (
@@ -145,76 +182,116 @@ export function EnhancedTaskItem({
             )}
           </div>
 
-          {/* Hover Actions */}
-          <div
-            className={cn(
-              "flex items-center space-x-1 transition-all duration-200",
-              isHovered
-                ? "opacity-100 translate-x-0"
-                : "opacity-0 translate-x-2",
-            )}
-          >
-            {!task.completed && onStartPomodoro && (
+          {/* Always Visible Actions */}
+          <div className="flex items-center space-x-1">
+            {/* Always Visible Add Subtask Button */}
+            {!task.completed && onCreateSubtask && (
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
-                className="h-6 w-6 p-0 text-focus hover:text-focus hover:bg-focus/10"
-                onClick={() => onStartPomodoro(task)}
-                title="Start Pomodoro Session"
+                className="h-7 px-2 text-xs text-muted-foreground hover:text-primary hover:bg-primary/10 border-dashed"
+                onClick={() =>
+                  onCreateSubtask(task.id, { title: "New subtask" })
+                }
+                title="Add Subtask"
               >
-                <Play className="h-3 w-3" />
+                <Plus className="h-3 w-3 mr-1" />
+                Subtask
               </Button>
             )}
 
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 w-6 p-0 text-muted-foreground hover:text-primary"
-              onClick={() => onEdit(task)}
-              title="Edit Task"
+            {/* Hover Actions */}
+            <div
+              className={cn(
+                "flex items-center space-x-1 transition-all duration-200",
+                isHovered
+                  ? "opacity-100 translate-x-0"
+                  : "opacity-0 translate-x-2",
+              )}
             >
-              <Edit className="h-3 w-3" />
-            </Button>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+              {!task.completed && onStartPomodoro && (
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+                  className="h-6 w-6 p-0 text-focus hover:text-focus hover:bg-focus/10"
+                  onClick={() => onStartPomodoro(task)}
+                  title="Start Pomodoro Session"
                 >
-                  <MoreHorizontal className="h-3 w-3" />
+                  <Play className="h-3 w-3" />
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-40">
-                <DropdownMenuItem onClick={() => onEdit(task)}>
-                  <Edit className="h-3 w-3 mr-2" />
-                  Edit
-                </DropdownMenuItem>
-                {!task.completed && onStartPomodoro && (
-                  <DropdownMenuItem onClick={() => onStartPomodoro(task)}>
-                    <Play className="h-3 w-3 mr-2" />
-                    Start Focus
+              )}
+
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0 text-muted-foreground hover:text-primary"
+                onClick={() => onEdit(task)}
+                title="Edit Task"
+              >
+                <Edit className="h-3 w-3" />
+              </Button>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+                  >
+                    <MoreHorizontal className="h-3 w-3" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-40">
+                  <DropdownMenuItem onClick={() => onEdit(task)}>
+                    <Edit className="h-3 w-3 mr-2" />
+                    Edit
                   </DropdownMenuItem>
-                )}
-                <DropdownMenuItem
-                  onClick={() => onDelete(task.id)}
-                  className="text-destructive focus:text-destructive"
-                >
-                  <Trash2 className="h-3 w-3 mr-2" />
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                  {!task.completed && onStartPomodoro && (
+                    <DropdownMenuItem onClick={() => onStartPomodoro(task)}>
+                      <Play className="h-3 w-3 mr-2" />
+                      Start Focus
+                    </DropdownMenuItem>
+                  )}
+                  {onCreateSubtask && (
+                    <DropdownMenuItem
+                      onClick={() =>
+                        onCreateSubtask(task.id, { title: "New subtask" })
+                      }
+                    >
+                      <Plus className="h-3 w-3 mr-2" />
+                      Add Subtask
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem
+                    onClick={() => onDelete(task.id)}
+                    className="text-destructive focus:text-destructive"
+                  >
+                    <Trash2 className="h-3 w-3 mr-2" />
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
         </div>
 
-        {/* Completion Animation */}
-        {task.completed && (
-          <div className="flex items-center space-x-1 text-success mt-1 animate-pulse-soft">
-            <div className="text-xs font-medium">✨ Completed!</div>
-          </div>
-        )}
+        {/* Subtask Manager */}
+        {onCreateSubtask &&
+          onUpdateSubtask &&
+          onDeleteSubtask &&
+          onToggleSubtask && (
+            <SubtaskManager
+              parentTask={task}
+              subtasks={subtasks}
+              onCreateSubtask={onCreateSubtask}
+              onUpdateSubtask={onUpdateSubtask}
+              onDeleteSubtask={onDeleteSubtask}
+              onToggleSubtask={onToggleSubtask}
+              onReorderSubtasks={onReorderSubtasks || (async () => {})}
+              depth={task.depth || 0}
+              maxDepth={3}
+            />
+          )}
       </div>
     </div>
   );
