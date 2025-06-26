@@ -127,6 +127,32 @@ export function PomodoroTimer({
           {stateInfo.icon}
           <span>{stateInfo.title}</span>
         </CardTitle>
+        {linkedTask && (
+          <div className="mt-3 p-3 bg-background/50 rounded-lg border border-primary/20">
+            <div className="flex items-center justify-center space-x-2 text-sm">
+              <div
+                className={cn(
+                  "p-1 rounded",
+                  linkedTask.type === "brain"
+                    ? "bg-focus text-focus-foreground"
+                    : "bg-admin text-admin-foreground",
+                )}
+              >
+                {linkedTask.type === "brain" ? (
+                  <Brain className="h-3 w-3" />
+                ) : (
+                  <Zap className="h-3 w-3" />
+                )}
+              </div>
+              <span className="font-medium text-foreground truncate max-w-48">
+                {linkedTask.title}
+              </span>
+            </div>
+            <div className="text-xs text-muted-foreground mt-1">
+              Working on: {linkedTask.period} • {linkedTask.priority} priority
+            </div>
+          </div>
+        )}
       </CardHeader>
 
       <CardContent className="text-center space-y-6">
