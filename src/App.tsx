@@ -14,6 +14,7 @@ import Pomodoro from "./pages/Pomodoro";
 import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
 import About from "./pages/About";
+import ApiDemo from "./pages/ApiDemo";
 import FlowTrackerPopupPage from "./pages/FlowTrackerPopupPage";
 import NotFound from "./pages/NotFound";
 
