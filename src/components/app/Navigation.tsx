@@ -35,6 +35,11 @@ const navItems = [
     icon: BarChart3,
   },
   {
+    href: "/ai-features",
+    label: "AI Features",
+    icon: Sparkles,
+  },
+  {
     href: "/settings",
     label: "Settings",
     icon: Settings,
