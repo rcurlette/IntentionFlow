@@ -40,6 +40,7 @@ export function TaskLinker({
 }: TaskLinkerProps) {
   const [availableTasks, setAvailableTasks] = useState<Task[]>([]);
   const [selectedTaskId, setSelectedTaskId] = useState<string>("");
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const loadTasks = async () => {
