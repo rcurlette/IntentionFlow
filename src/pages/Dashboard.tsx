@@ -78,7 +78,12 @@ export default function Dashboard() {
     try {
       const task = findTask(taskId);
       if (task) {
-        await updateTask(taskId, { completed: !task.completed });
+        const newStatus = task.status === "completed" ? "todo" : "completed";
+        await updateTask(taskId, {
+          status: newStatus,
+          completed: newStatus === "completed",
+          completedAt: newStatus === "completed" ? new Date() : undefined,
+        });
         const updatedPlan = await getTodayPlan();
         setDayPlan(updatedPlan);
       }
