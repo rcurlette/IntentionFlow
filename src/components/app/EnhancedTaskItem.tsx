@@ -3,6 +3,7 @@ import { Task } from "@/types";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import {
   Brain,
@@ -12,6 +13,9 @@ import {
   Trash2,
   Play,
   MoreHorizontal,
+  Plus,
+  ChevronRight,
+  Target,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -19,6 +23,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { SubtaskManager } from "./SubtaskManager";
 
 interface EnhancedTaskItemProps {
   task: Task;
