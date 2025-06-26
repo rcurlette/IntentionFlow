@@ -109,29 +109,76 @@ export function DragDropTaskManager({
         period: "morning",
         completed: false,
         status: "todo",
+        updatedAt: new Date(),
       });
     } else if (overId === "afternoon-section") {
       await onUpdateTask(activeTask.id, {
         period: "afternoon",
         completed: false,
         status: "todo",
+        updatedAt: new Date(),
       });
     } else if (overId === "completed-section") {
       await onUpdateTask(activeTask.id, {
         completed: true,
         status: "completed",
         completedAt: new Date(),
+        updatedAt: new Date(),
       });
       onToggleComplete(activeTask.id);
     } else {
       // Handle reordering within the same section
       const overTask = tasks.find((t) => t.id === overId);
-      if (overTask && activeTask.period === overTask.period) {
-        // For now, we'll just update the task to maintain the same period
-        // In a full implementation, you might want to handle task ordering
-        await onUpdateTask(activeTask.id, { period: activeTask.period });
+      if (overTask) {
+        // If dropping on a task in the same period, reorder
+        if (activeTask.period === overTask.period) {
+          await handleReorderTasks(activeTask, overTask);
+        } else {
+          // If dropping on a task in different period, move to that period
+          await onUpdateTask(activeTask.id, {
+            period: overTask.period,
+            completed: overTask.completed,
+            status: overTask.completed ? "completed" : "todo",
+            updatedAt: new Date(),
+          });
+        }
       }
     }
+  };
+
+  const handleReorderTasks = async (activeTask: Task, overTask: Task) => {
+    const samePeriodTasks = tasks.filter(
+      (task) => task.period === activeTask.period && !task.completed,
+    );
+
+    const activeIndex = samePeriodTasks.findIndex(
+      (t) => t.id === activeTask.id,
+    );
+    const overIndex = samePeriodTasks.findIndex((t) => t.id === overTask.id);
+
+    if (activeIndex === -1 || overIndex === -1) return;
+
+    // Calculate new sort order
+    let newSortOrder: number;
+
+    if (overIndex === 0) {
+      // Moving to the top
+      newSortOrder = (samePeriodTasks[0]?.sortOrder || 0) - 1;
+    } else if (overIndex === samePeriodTasks.length - 1) {
+      // Moving to the bottom
+      newSortOrder =
+        (samePeriodTasks[samePeriodTasks.length - 1]?.sortOrder || 0) + 1;
+    } else {
+      // Moving between tasks
+      const prevSort = samePeriodTasks[overIndex - 1]?.sortOrder || 0;
+      const nextSort = samePeriodTasks[overIndex + 1]?.sortOrder || 0;
+      newSortOrder = (prevSort + nextSort) / 2;
+    }
+
+    await onUpdateTask(activeTask.id, {
+      sortOrder: newSortOrder,
+      updatedAt: new Date(),
+    });
   };
 
   const getSectionTitle = (period: TaskPeriod, count: number) => {
