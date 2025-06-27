@@ -1,6 +1,15 @@
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Home,
   Target,
@@ -12,6 +21,9 @@ import {
   BookOpen,
   Sparkles,
   Calendar,
+  User,
+  LogOut,
+  CreditCard,
 } from "lucide-react";
 
 const navItems = [
@@ -69,6 +81,15 @@ const navItems = [
 
 export function Navigation() {
   const location = useLocation();
+  const { user, userProfile, signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.error("Sign out error:", error);
+    }
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -118,6 +139,95 @@ export function Navigation() {
                 </Button>
               );
             })}
+
+            {/* User Profile Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="relative h-8 w-8 rounded-full ml-2"
+                >
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage
+                      src={
+                        userProfile?.avatar_url ||
+                        user?.user_metadata?.avatar_url
+                      }
+                      alt={userProfile?.full_name || user?.email || "User"}
+                    />
+                    <AvatarFallback className="bg-primary text-primary-foreground">
+                      {(userProfile?.full_name || user?.email || "U")
+                        .charAt(0)
+                        .toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                className="w-56 bg-slate-800 border-slate-700"
+                align="end"
+              >
+                <div className="flex items-center justify-start gap-2 p-2">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage
+                      src={
+                        userProfile?.avatar_url ||
+                        user?.user_metadata?.avatar_url
+                      }
+                      alt={userProfile?.full_name || user?.email || "User"}
+                    />
+                    <AvatarFallback className="bg-primary text-primary-foreground">
+                      {(userProfile?.full_name || user?.email || "U")
+                        .charAt(0)
+                        .toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium text-slate-200">
+                      {userProfile?.full_name || "FlowTracker User"}
+                    </p>
+                    <p className="text-xs text-slate-400">{user?.email}</p>
+                  </div>
+                </div>
+                <DropdownMenuSeparator className="bg-slate-600" />
+                <DropdownMenuItem asChild>
+                  <Link
+                    to="/profile"
+                    className="text-slate-200 focus:bg-slate-700"
+                  >
+                    <User className="mr-2 h-4 w-4" />
+                    Profile
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link
+                    to="/billing"
+                    className="text-slate-200 focus:bg-slate-700"
+                  >
+                    <CreditCard className="mr-2 h-4 w-4" />
+                    Billing & Costs
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link
+                    to="/settings"
+                    className="text-slate-200 focus:bg-slate-700"
+                  >
+                    <Settings className="mr-2 h-4 w-4" />
+                    Settings
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator className="bg-slate-600" />
+                <DropdownMenuItem
+                  onClick={handleSignOut}
+                  className="text-red-400 focus:bg-slate-700 focus:text-red-400"
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Sign Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>
