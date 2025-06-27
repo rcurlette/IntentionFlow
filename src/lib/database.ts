@@ -1,7 +1,5 @@
 import {
   supabase,
-  isSupabaseConfigured,
-  TEMP_USER_ID,
   type DatabaseTask,
   type DatabasePomodoroSession,
   type DatabaseUserSettings,
