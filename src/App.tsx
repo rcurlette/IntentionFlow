@@ -4,6 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/lib/theme-context";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { MusicPlayerProvider } from "@/components/app/MusicPlayerProvider";
 import { FlowTrackingPrompt } from "@/components/app/FlowTrackingPrompt";
 import { useFlowTracking } from "@/hooks/use-flow-tracking";
@@ -51,35 +53,39 @@ function FlowTracker() {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
-      <MusicPlayerProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <FlowTracker />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<FlowDashboard />} />
-              <Route path="/flow" element={<FlowDashboard />} />
-              <Route path="/flow-coach" element={<FlowCoach />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/tasks" element={<Tasks />} />
-              <Route path="/calendar" element={<Calendar />} />
-              <Route path="/pomodoro" element={<Pomodoro />} />
-              <Route path="/analytics" element={<Analytics />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/ai-features" element={<AIFeatures />} />
-              <Route path="/api-demo" element={<ApiDemo />} />
-              <Route
-                path="/flow-tracker-popup"
-                element={<FlowTrackerPopupPage />}
-              />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </MusicPlayerProvider>
+      <AuthProvider>
+        <ProtectedRoute>
+          <MusicPlayerProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <FlowTracker />
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/" element={<FlowDashboard />} />
+                  <Route path="/flow" element={<FlowDashboard />} />
+                  <Route path="/flow-coach" element={<FlowCoach />} />
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/tasks" element={<Tasks />} />
+                  <Route path="/calendar" element={<Calendar />} />
+                  <Route path="/pomodoro" element={<Pomodoro />} />
+                  <Route path="/analytics" element={<Analytics />} />
+                  <Route path="/settings" element={<Settings />} />
+                  <Route path="/about" element={<About />} />
+                  <Route path="/ai-features" element={<AIFeatures />} />
+                  <Route path="/api-demo" element={<ApiDemo />} />
+                  <Route
+                    path="/flow-tracker-popup"
+                    element={<FlowTrackerPopupPage />}
+                  />
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </BrowserRouter>
+            </TooltipProvider>
+          </MusicPlayerProvider>
+        </ProtectedRoute>
+      </AuthProvider>
     </ThemeProvider>
   </QueryClientProvider>
 );
