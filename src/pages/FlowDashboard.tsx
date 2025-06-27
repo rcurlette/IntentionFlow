@@ -44,6 +44,7 @@ import {
   Clock,
   Calendar,
   Activity,
+  Loader2,
 } from "lucide-react";
 
 interface FlowState {
