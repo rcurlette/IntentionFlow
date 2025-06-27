@@ -42,6 +42,7 @@ import {
   Leaf,
   Clock,
   Calendar,
+  Activity,
 } from "lucide-react";
 
 interface FlowState {
