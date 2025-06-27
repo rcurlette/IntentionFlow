@@ -14,6 +14,9 @@ import type {
   DayPlan,
 } from "../types";
 
+// Temporary fallback for old code (will be replaced by proper auth)
+const TEMP_USER_ID = "temp-user-id";
+
 // Helper function to get current user ID
 const getCurrentUserId = async (): Promise<string> => {
   const {
