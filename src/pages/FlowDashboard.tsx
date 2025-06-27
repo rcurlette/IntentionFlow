@@ -203,7 +203,7 @@ export default function FlowDashboard() {
         setVisionBoard(savedVisionBoard);
       }
     }
-  }, []);
+  }, [user]);
 
   // Save session when data changes
   useEffect(() => {
