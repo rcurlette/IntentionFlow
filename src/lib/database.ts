@@ -14,9 +14,20 @@ import type {
   DayPlan,
 } from "../types";
 
+// Helper function to get current user ID
+const getCurrentUserId = async (): Promise<string> => {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("User not authenticated");
+  return user.id;
+};
+
 // Helper function to check if Supabase is configured
 const requireSupabase = () => {
-  if (!isSupabaseConfigured) {
+  try {
+    return !!supabase;
+  } catch {
     throw new Error("Supabase not configured, falling back to localStorage");
   }
 };
