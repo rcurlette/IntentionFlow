@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { Navigation } from "@/components/app/Navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { format, differenceInDays } from "date-fns";
 import {
@@ -15,7 +17,8 @@ import {
   getFlowInsights,
 } from "@/lib/flow-storage";
 import { FlowActions } from "@/components/app/FlowActions";
-import { FlowCoaching } from "@/components/app/FlowCoaching";
+import { MorningSection } from "@/components/app/MorningSection";
+import { EveningSection } from "@/components/app/EveningSection";
 import {
   Sunrise,
   Brain,
@@ -34,6 +37,7 @@ import {
   Clock,
   Calendar,
   Activity,
+  Moon,
 } from "lucide-react";
 
 interface FlowState {
@@ -390,382 +394,317 @@ export default function FlowDashboard() {
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-4 gap-6">
-          {/* Flow Coaching */}
-          <FlowCoaching
-            currentDay={flowIdentity.daysLiving}
-            currentPhase={flowIdentity.currentPhase}
-            completedRituals={completedRituals}
-            totalRituals={totalRituals}
-            streak={flowIdentity.streak}
-          />
-
-          {/* Flow State Assessment */}
-          <Card className="bg-slate-800/50 border-slate-700">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2 text-slate-100">
-                <Heart className="h-5 w-5 text-pink-400" />
-                <span>Current Flow State</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Energy Level */}
-              <div>
-                <label className="text-sm font-medium text-slate-300 mb-2 block">
-                  Energy Level
-                </label>
-                <div className="flex space-x-2">
-                  {["low", "medium", "high"].map((level) => (
-                    <Button
-                      key={level}
-                      size="sm"
-                      variant={
-                        flowState.energy === level ? "default" : "outline"
-                      }
-                      onClick={() =>
-                        setFlowState((prev) => ({
-                          ...prev,
-                          energy: level as any,
-                        }))
-                      }
-                      className="flex-1 h-8"
-                    >
-                      {getEnergyIcon(level)}
-                      <span className="ml-1 capitalize">{level}</span>
-                    </Button>
-                  ))}
+        {/* Quick Coach Access */}
+        <Card className="mb-6 bg-gradient-to-r from-purple-500/10 to-blue-500/10 border-purple-500/30">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="relative">
+                  <Brain className="h-8 w-8 text-purple-400 animate-pulse-soft" />
+                  <Sparkles className="h-4 w-4 text-yellow-300 absolute -top-1 -right-1 animate-bounce" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-purple-300">Flow Coach</h3>
+                  <p className="text-sm text-slate-400">
+                    Get personalized guidance for your flow journey
+                  </p>
                 </div>
               </div>
-
-              {/* Focus Quality */}
-              <div>
-                <label className="text-sm font-medium text-slate-300 mb-2 block">
-                  Mental Focus
-                </label>
-                <div className="flex space-x-2">
-                  {["scattered", "calm", "sharp"].map((level) => (
-                    <Button
-                      key={level}
-                      size="sm"
-                      variant={
-                        flowState.focus === level ? "default" : "outline"
-                      }
-                      onClick={() =>
-                        setFlowState((prev) => ({
-                          ...prev,
-                          focus: level as any,
-                        }))
-                      }
-                      className="flex-1 h-8"
-                    >
-                      {getFocusIcon(level)}
-                      <span className="ml-1 capitalize">{level}</span>
-                    </Button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Mood */}
-              <div>
-                <label className="text-sm font-medium text-slate-300 mb-2 block">
-                  Inner State
-                </label>
-                <div className="flex space-x-2">
-                  {["challenged", "neutral", "inspired"].map((mood) => (
-                    <Button
-                      key={mood}
-                      size="sm"
-                      variant={flowState.mood === mood ? "default" : "outline"}
-                      onClick={() =>
-                        setFlowState((prev) => ({ ...prev, mood: mood as any }))
-                      }
-                      className="flex-1 h-8 text-xs"
-                    >
-                      <span className="capitalize">{mood}</span>
-                    </Button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Complete Assessment */}
-              <Button
-                className="w-full mt-4"
-                onClick={() => toggleRitual("energy")}
-                disabled={rituals.find((r) => r.id === "energy")?.completed}
-              >
-                <CheckCircle2 className="h-4 w-4 mr-2" />
-                {rituals.find((r) => r.id === "energy")?.completed
-                  ? "Assessment Complete"
-                  : "Complete Assessment"}
+              <Button asChild className="bg-purple-500 hover:bg-purple-600">
+                <Link to="/flow-coach">
+                  <Brain className="h-4 w-4 mr-2" />
+                  Open Coach
+                </Link>
               </Button>
-            </CardContent>
-          </Card>
+            </div>
+          </CardContent>
+        </Card>
 
-          {/* Flow Rituals */}
-          <Card className="bg-slate-800/50 border-slate-700">
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between text-slate-100">
-                <div className="flex items-center space-x-2">
-                  <Sparkles className="h-5 w-5 text-purple-400" />
-                  <span>Morning Flow Rituals</span>
-                </div>
-                <Badge variant="outline" className="text-xs">
-                  {completedCore}/{coreRituals.length} Core
-                </Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {rituals.map((ritual) => (
-                <div
-                  key={ritual.id}
-                  className={cn(
-                    "flex items-center space-x-3 p-3 rounded-lg border transition-all",
-                    ritual.completed
-                      ? "bg-green-500/10 border-green-500/30"
-                      : "bg-slate-700/30 border-slate-600 hover:border-slate-500",
-                  )}
-                >
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => {
-                      if (ritual.id === "meditation" && !ritual.completed) {
-                        // Show meditation timer options
-                        return;
-                      }
-                      toggleRitual(ritual.id);
-                    }}
-                    className="h-8 w-8 p-0"
-                  >
-                    {ritual.completed ? (
-                      <CheckCircle2 className="h-4 w-4 text-green-400" />
-                    ) : (
-                      <Circle className="h-4 w-4 text-slate-400" />
-                    )}
-                  </Button>
+        {/* Main Tabs */}
+        <Tabs defaultValue="morning" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-3 bg-slate-800 border-slate-700">
+            <TabsTrigger
+              value="morning"
+              className="data-[state=active]:bg-orange-500 data-[state=active]:text-white"
+            >
+              <Sunrise className="h-4 w-4 mr-2" />
+              Morning
+            </TabsTrigger>
+            <TabsTrigger
+              value="evening"
+              className="data-[state=active]:bg-indigo-500 data-[state=active]:text-white"
+            >
+              <Moon className="h-4 w-4 mr-2" />
+              Evening
+            </TabsTrigger>
+            <TabsTrigger
+              value="flow"
+              className="data-[state=active]:bg-purple-500 data-[state=active]:text-white"
+            >
+              <Brain className="h-4 w-4 mr-2" />
+              Flow State
+            </TabsTrigger>
+          </TabsList>
 
-                  <ritual.icon
-                    className={cn(
-                      "h-4 w-4",
-                      ritual.completed ? "text-green-400" : "text-slate-400",
-                    )}
-                  />
+          {/* Morning Tab */}
+          <TabsContent value="morning" className="space-y-6">
+            <MorningSection
+              rituals={rituals}
+              onToggleRitual={toggleRitual}
+              onStartMeditationTimer={startMeditationTimer}
+              meditationTimer={meditationTimer}
+              isTimerActive={isTimerActive}
+            />
+          </TabsContent>
 
-                  <div className="flex-1">
-                    <h4
-                      className={cn(
-                        "font-medium text-sm",
-                        ritual.completed ? "text-green-300" : "text-slate-200",
-                      )}
-                    >
-                      {ritual.name}
-                      {ritual.isCore && (
-                        <Badge variant="secondary" className="ml-2 text-xs">
-                          Core
-                        </Badge>
-                      )}
-                    </h4>
-                    <p className="text-xs text-slate-400">
-                      {ritual.description}
-                    </p>
-                  </div>
+          {/* Evening Tab */}
+          <TabsContent value="evening" className="space-y-6">
+            <EveningSection />
+          </TabsContent>
 
-                  <div className="text-xs text-slate-400">
-                    {ritual.duration}m
-                  </div>
-                </div>
-              ))}
-
-              {/* Meditation Timer */}
-              {!rituals.find((r) => r.id === "meditation")?.completed && (
-                <div className="mt-4 p-3 bg-slate-700/30 rounded-lg border border-slate-600">
-                  <h4 className="text-sm font-medium text-slate-200 mb-2">
-                    Quick Meditation Timer
-                  </h4>
-                  {!isTimerActive ? (
+          {/* Flow State Tab */}
+          <TabsContent value="flow" className="space-y-6">
+            <div className="grid lg:grid-cols-2 gap-6">
+              {/* Flow State Assessment */}
+              <Card className="bg-slate-800/50 border-slate-700">
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2 text-slate-100">
+                    <Heart className="h-5 w-5 text-pink-400" />
+                    <span>Current Flow State</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Energy Level */}
+                  <div>
+                    <label className="text-base font-medium text-slate-300 mb-3 block">
+                      Energy Level
+                    </label>
                     <div className="flex space-x-2">
-                      {[2, 5, 10].map((minutes) => (
+                      {["low", "medium", "high"].map((level) => (
                         <Button
-                          key={minutes}
-                          size="sm"
-                          variant="outline"
-                          onClick={() => startMeditationTimer(minutes)}
-                          className="flex-1"
+                          key={level}
+                          size="default"
+                          variant={
+                            flowState.energy === level ? "default" : "outline"
+                          }
+                          onClick={() =>
+                            setFlowState((prev) => ({
+                              ...prev,
+                              energy: level as any,
+                            }))
+                          }
+                          className="flex-1 h-10"
                         >
-                          {minutes}m
+                          {getEnergyIcon(level)}
+                          <span className="ml-1 capitalize">{level}</span>
                         </Button>
                       ))}
                     </div>
-                  ) : (
-                    <div className="text-center">
-                      <div className="text-2xl font-mono text-blue-400 mb-2">
-                        {formatTime(meditationTimer)}
-                      </div>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          setIsTimerActive(false);
-                          setMeditationTimer(0);
-                        }}
-                      >
-                        Stop
-                      </Button>
+                  </div>
+
+                  {/* Focus Quality */}
+                  <div>
+                    <label className="text-base font-medium text-slate-300 mb-3 block">
+                      Mental Focus
+                    </label>
+                    <div className="flex space-x-2">
+                      {["scattered", "calm", "sharp"].map((level) => (
+                        <Button
+                          key={level}
+                          size="default"
+                          variant={
+                            flowState.focus === level ? "default" : "outline"
+                          }
+                          onClick={() =>
+                            setFlowState((prev) => ({
+                              ...prev,
+                              focus: level as any,
+                            }))
+                          }
+                          className="flex-1 h-10"
+                        >
+                          {getFocusIcon(level)}
+                          <span className="ml-1 capitalize">{level}</span>
+                        </Button>
+                      ))}
                     </div>
-                  )}
-                </div>
-              )}
+                  </div>
 
-              {/* Overall Progress */}
-              <div className="mt-4 pt-4 border-t border-slate-600">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-slate-300">
-                    Morning Progress
-                  </span>
-                  <span className="text-sm text-slate-400">
-                    {completedRituals}/{totalRituals}
-                  </span>
-                </div>
-                <Progress
-                  value={(completedRituals / totalRituals) * 100}
-                  className="h-2"
-                />
-              </div>
-            </CardContent>
-          </Card>
+                  {/* Mood */}
+                  <div>
+                    <label className="text-base font-medium text-slate-300 mb-3 block">
+                      Inner State
+                    </label>
+                    <div className="flex space-x-2">
+                      {["challenged", "neutral", "inspired"].map((mood) => (
+                        <Button
+                          key={mood}
+                          size="default"
+                          variant={
+                            flowState.mood === mood ? "default" : "outline"
+                          }
+                          onClick={() =>
+                            setFlowState((prev) => ({
+                              ...prev,
+                              mood: mood as any,
+                            }))
+                          }
+                          className="flex-1 h-10 text-sm"
+                        >
+                          <span className="capitalize">{mood}</span>
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
 
-          {/* Flow Intention */}
-          <Card className="bg-slate-800/50 border-slate-700">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2 text-slate-100">
-                <Target className="h-5 w-5 text-amber-400" />
-                <span>Today's Flow Intention</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <label className="text-sm font-medium text-slate-300 mb-2 block">
-                  How do you want to show up today?
-                </label>
-                <Textarea
-                  value={morningIntention}
-                  onChange={(e) => setMorningIntention(e.target.value)}
-                  placeholder="I intend to flow with deep focus and creative energy..."
-                  className="bg-slate-700/50 border-slate-600 text-slate-100 min-h-[100px]"
-                />
-              </div>
-
-              <div className="space-y-3">
-                <h4 className="text-sm font-medium text-slate-300">
-                  Suggested Flow Intentions
-                </h4>
-                {[
-                  "Deep work with sustained attention",
-                  "Creative exploration with playful energy",
-                  "Calm productivity with gentle focus",
-                  "Bold action with confident momentum",
-                ].map((suggestion, index) => (
+                  {/* Complete Assessment */}
                   <Button
-                    key={index}
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setMorningIntention(suggestion)}
-                    className="w-full text-left justify-start h-auto py-2 px-3 text-xs"
+                    className="w-full mt-4"
+                    onClick={() => toggleRitual("energy")}
+                    disabled={rituals.find((r) => r.id === "energy")?.completed}
                   >
-                    {suggestion}
+                    <CheckCircle2 className="h-4 w-4 mr-2" />
+                    {rituals.find((r) => r.id === "energy")?.completed
+                      ? "Assessment Complete"
+                      : "Complete Assessment"}
                   </Button>
-                ))}
-              </div>
+                </CardContent>
+              </Card>
 
-              <Button
-                className="w-full"
-                onClick={() => toggleRitual("intention")}
-                disabled={
-                  !morningIntention.trim() ||
-                  rituals.find((r) => r.id === "intention")?.completed
-                }
-              >
-                <Target className="h-4 w-4 mr-2" />
-                {rituals.find((r) => r.id === "intention")?.completed
-                  ? "Intention Set"
-                  : "Set Intention"}
-              </Button>
+              {/* Flow Intention */}
+              <Card className="bg-slate-800/50 border-slate-700">
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2 text-slate-100">
+                    <Target className="h-5 w-5 text-amber-400" />
+                    <span>Today's Flow Intention</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <label className="text-base font-medium text-slate-300 mb-3 block">
+                      How do you want to show up today?
+                    </label>
+                    <Textarea
+                      value={morningIntention}
+                      onChange={(e) => setMorningIntention(e.target.value)}
+                      placeholder="I intend to flow with deep focus and creative energy..."
+                      className="bg-slate-700/50 border-slate-600 text-slate-100 min-h-[100px]"
+                    />
+                  </div>
 
-              {/* Vision Board Section */}
-              <div className="mt-6 pt-4 border-t border-slate-600">
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-sm font-medium text-slate-300">
-                    Vision Board
-                  </h4>
-                  <Badge
-                    variant={
-                      rituals.find((r) => r.id === "vision")?.completed
-                        ? "default"
-                        : "outline"
+                  <div className="space-y-3">
+                    <h4 className="text-sm font-medium text-slate-300">
+                      Suggested Flow Intentions
+                    </h4>
+                    {[
+                      "Deep work with sustained attention",
+                      "Creative exploration with playful energy",
+                      "Calm productivity with gentle focus",
+                      "Bold action with confident momentum",
+                    ].map((suggestion, index) => (
+                      <Button
+                        key={index}
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setMorningIntention(suggestion)}
+                        className="w-full text-left justify-start h-auto py-2 px-3 text-xs"
+                      >
+                        {suggestion}
+                      </Button>
+                    ))}
+                  </div>
+
+                  <Button
+                    className="w-full"
+                    onClick={() => toggleRitual("intention")}
+                    disabled={
+                      !morningIntention.trim() ||
+                      rituals.find((r) => r.id === "intention")?.completed
                     }
-                    className="text-xs"
                   >
-                    {rituals.find((r) => r.id === "vision")?.completed
-                      ? "Connected"
-                      : "Optional"}
-                  </Badge>
-                </div>
+                    <Target className="h-4 w-4 mr-2" />
+                    {rituals.find((r) => r.id === "intention")?.completed
+                      ? "Intention Set"
+                      : "Set Intention"}
+                  </Button>
 
-                {visionBoard ? (
-                  <div className="space-y-3">
-                    <div className="relative group">
-                      <img
-                        src={visionBoard}
-                        alt="Vision Board"
-                        className="w-full h-32 object-cover rounded-lg border border-slate-600"
-                      />
-                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={removeVisionBoard}
-                        >
-                          Remove
-                        </Button>
+                  {/* Vision Board Section */}
+                  <div className="mt-6 pt-4 border-t border-slate-600">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-base font-medium text-slate-300">
+                        Vision Board
+                      </h4>
+                      <Badge
+                        variant={
+                          rituals.find((r) => r.id === "vision")?.completed
+                            ? "default"
+                            : "outline"
+                        }
+                        className="text-xs"
+                      >
+                        {rituals.find((r) => r.id === "vision")?.completed
+                          ? "Connected"
+                          : "Optional"}
+                      </Badge>
+                    </div>
+
+                    {visionBoard ? (
+                      <div className="space-y-3">
+                        <div className="relative group">
+                          <img
+                            src={visionBoard}
+                            alt="Vision Board"
+                            className="w-full h-32 object-cover rounded-lg border border-slate-600"
+                          />
+                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={removeVisionBoard}
+                            >
+                              Remove
+                            </Button>
+                          </div>
+                        </div>
+                        <p className="text-xs text-slate-400 text-center">
+                          Your vision anchors your flow intention
+                        </p>
                       </div>
-                    </div>
-                    <p className="text-xs text-slate-400 text-center">
-                      Your vision anchors your flow intention
-                    </p>
+                    ) : (
+                      <div className="space-y-3">
+                        <div className="border-2 border-dashed border-slate-600 rounded-lg p-6 text-center hover:border-slate-500 transition-colors">
+                          <Heart className="h-8 w-8 text-slate-400 mx-auto mb-2" />
+                          <p className="text-sm text-slate-400 mb-3">
+                            Upload your vision board to anchor your flow
+                          </p>
+                          <label className="cursor-pointer">
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={handleVisionBoardUpload}
+                              className="hidden"
+                            />
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="pointer-events-none"
+                            >
+                              <Sparkles className="h-4 w-4 mr-2" />
+                              Upload Vision Board
+                            </Button>
+                          </label>
+                        </div>
+                        <p className="text-xs text-slate-500 text-center">
+                          Goals, dreams, or visual inspiration to fuel your flow
+                        </p>
+                      </div>
+                    )}
                   </div>
-                ) : (
-                  <div className="space-y-3">
-                    <div className="border-2 border-dashed border-slate-600 rounded-lg p-6 text-center hover:border-slate-500 transition-colors">
-                      <Heart className="h-8 w-8 text-slate-400 mx-auto mb-2" />
-                      <p className="text-sm text-slate-400 mb-3">
-                        Upload your vision board to anchor your flow
-                      </p>
-                      <label className="cursor-pointer">
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleVisionBoardUpload}
-                          className="hidden"
-                        />
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="pointer-events-none"
-                        >
-                          <Sparkles className="h-4 w-4 mr-2" />
-                          Upload Vision Board
-                        </Button>
-                      </label>
-                    </div>
-                    <p className="text-xs text-slate-500 text-center">
-                      Goals, dreams, or visual inspiration to fuel your flow
-                    </p>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+        </Tabs>
 
         {/* Flow Transition */}
         {completedCore === coreRituals.length && (
