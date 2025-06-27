@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { format, differenceInDays } from "date-fns";
 import {
@@ -16,6 +17,8 @@ import {
   getFlowInsights,
 } from "@/lib/flow-storage";
 import { FlowActions } from "@/components/app/FlowActions";
+import { MorningSection } from "@/components/app/MorningSection";
+import { EveningSection } from "@/components/app/EveningSection";
 import {
   Sunrise,
   Brain,
@@ -34,6 +37,7 @@ import {
   Clock,
   Calendar,
   Activity,
+  Moon,
 } from "lucide-react";
 
 interface FlowState {
@@ -401,9 +405,7 @@ export default function FlowDashboard() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-purple-300">Flow Coach</h3>
-                  <p className="text-sm text-slate-400">
-                    Get personalized guidance for your flow journey
-                  </p>
+                  <p className="text-sm text-slate-400">Get personalized guidance for your flow journey</p>
                 </div>
               </div>
               <Button asChild className="bg-purple-500 hover:bg-purple-600">
@@ -416,7 +418,51 @@ export default function FlowDashboard() {
           </CardContent>
         </Card>
 
-        <div className="grid lg:grid-cols-3 gap-6">
+        {/* Main Tabs */}
+        <Tabs defaultValue="morning" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-3 bg-slate-800 border-slate-700">
+            <TabsTrigger
+              value="morning"
+              className="data-[state=active]:bg-orange-500 data-[state=active]:text-white"
+            >
+              <Sunrise className="h-4 w-4 mr-2" />
+              Morning
+            </TabsTrigger>
+            <TabsTrigger
+              value="evening"
+              className="data-[state=active]:bg-indigo-500 data-[state=active]:text-white"
+            >
+              <Moon className="h-4 w-4 mr-2" />
+              Evening
+            </TabsTrigger>
+            <TabsTrigger
+              value="flow"
+              className="data-[state=active]:bg-purple-500 data-[state=active]:text-white"
+            >
+              <Brain className="h-4 w-4 mr-2" />
+              Flow State
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Morning Tab */}
+          <TabsContent value="morning" className="space-y-6">
+            <MorningSection
+              rituals={rituals}
+              onToggleRitual={toggleRitual}
+              onStartMeditationTimer={startMeditationTimer}
+              meditationTimer={meditationTimer}
+              isTimerActive={isTimerActive}
+            />
+          </TabsContent>
+
+          {/* Evening Tab */}
+          <TabsContent value="evening" className="space-y-6">
+            <EveningSection />
+          </TabsContent>
+
+          {/* Flow State Tab */}
+          <TabsContent value="flow" className="space-y-6">
+            <div className="grid lg:grid-cols-2 gap-6">
           {/* Flow State Assessment */}
           <Card className="bg-slate-800/50 border-slate-700">
             <CardHeader>
@@ -779,9 +825,11 @@ export default function FlowDashboard() {
                     </p>
                   </div>
                 )}
-              </div>
-            </CardContent>
+            </div>
           </Card>
+            </div>
+          </TabsContent>
+        </Tabs>
         </div>
 
         {/* Flow Transition */}
