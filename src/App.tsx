@@ -21,6 +21,7 @@ import AIFeatures from "./pages/AIFeatures";
 import Calendar from "./pages/Calendar";
 import FlowDashboard from "./pages/FlowDashboard";
 import FlowTrackerPopupPage from "./pages/FlowTrackerPopupPage";
+import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
