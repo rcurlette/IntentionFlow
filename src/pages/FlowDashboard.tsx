@@ -197,46 +197,68 @@ export default function FlowDashboard() {
       loadData();
     }
   }, [user]);
-      // Load vision board
-      const savedVisionBoard = localStorage.getItem("flow-vision-board");
-      if (savedVisionBoard) {
-        setVisionBoard(savedVisionBoard);
+        }
+      } catch (error) {
+        console.error("Error loading flow data:", error);
+      } finally {
+        setLoading(false);
       }
+    };
+
+    if (user) {
+      loadData();
     }
   }, [user]);
 
   // Save session when data changes
   useEffect(() => {
-    if (flowIdentity.daysLiving > 0) {
-      const saveSession = () => {
-        const today = new Date().toISOString().split("T")[0];
-        saveFlowSession({
-          date: today,
-          rituals: rituals.map((r) => ({
-            id: r.id,
-            name: r.name,
-            duration: r.duration,
-            description: r.description,
-            completed: r.completed,
-            completedAt: r.completed ? new Date() : undefined,
-            isCore: r.isCore,
-          })),
-          flowState: {
-            ...flowState,
-            assessedAt: new Date(),
-          },
-          intention: morningIntention,
-          completedAt: rituals.filter((r) => r.isCore).every((r) => r.completed)
-            ? new Date()
-            : undefined,
-        });
+    if (flowIdentity.daysLiving > 0 && !loading) {
+      const saveSession = async () => {
+        try {
+          const today = new Date().toISOString().split("T")[0];
+          const daysSinceStart = Math.floor(
+            (new Date().getTime() - flowIdentity.startDate.getTime()) / (1000 * 60 * 60 * 24)
+          ) + 1;
+
+          let phase: "foundation" | "building" | "mastery" = "foundation";
+          if (daysSinceStart > 66) {
+            phase = "mastery";
+          } else if (daysSinceStart > 21) {
+            phase = "building";
+          }
+
+          await upsertTodayFlowSession({
+            date: today,
+            rituals: rituals.map((r) => ({
+              id: r.id,
+              name: r.name,
+              duration: r.duration,
+              description: r.description,
+              completed: r.completed,
+              completedAt: r.completed ? new Date() : undefined,
+              isCore: r.isCore,
+            })),
+            flowState: {
+              ...flowState,
+              assessedAt: new Date(),
+            },
+            intention: morningIntention,
+            completedAt: rituals.filter((r) => r.isCore).every((r) => r.completed)
+              ? new Date()
+              : undefined,
+            phase,
+            dayNumber: daysSinceStart,
+          });
+        } catch (error) {
+          console.error("Error saving flow session:", error);
+        }
       };
 
       // Debounce saves
       const timeoutId = setTimeout(saveSession, 1000);
       return () => clearTimeout(timeoutId);
     }
-  }, [rituals, flowState, morningIntention, flowIdentity.daysLiving]);
+  }, [rituals, flowState, morningIntention, flowIdentity.daysLiving, flowIdentity.startDate, loading]);
 
   const completedRituals = rituals.filter((r) => r.completed).length;
   const totalRituals = rituals.length;
