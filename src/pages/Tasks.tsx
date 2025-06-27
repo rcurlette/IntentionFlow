@@ -2,14 +2,13 @@ import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Task } from "@/types";
 import {
-  getDayPlans,
-  saveDayPlan,
-  addTask,
+  createTask,
+  getAllTasks,
   updateTask,
   deleteTask,
-  getTodayPlan,
-  getAllTasks,
-} from "@/lib/storage";
+  getSubtasks,
+} from "@/lib/api/tasks";
+import { useAuth } from "@/lib/auth-context";
 import { getTemplates, createTasksFromTemplate } from "@/lib/task-templates";
 import { useTaskFilters } from "@/hooks/use-task-filters";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
