@@ -8,11 +8,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import {
-  getFlowProgress,
   getTodayFlowSession,
-  saveFlowSession,
-  initializeFlowJourney,
-} from "@/lib/flow-storage";
+  upsertTodayFlowSession,
+  getUserFlowStats,
+} from "@/lib/api/flow-sessions";
+import { getCurrentProfile, initializeUserFlow } from "@/lib/api/profiles";
+import { useAuth } from "@/lib/auth-context";
 
 type FlowRitualLocal = {
   id: string;
