@@ -62,6 +62,8 @@ interface FlowIdentity {
 }
 
 export default function FlowDashboard() {
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
   const [flowState, setFlowState] = useState<FlowState>({
     energy: "medium",
     focus: "calm",
