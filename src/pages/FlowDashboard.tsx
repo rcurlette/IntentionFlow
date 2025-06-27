@@ -12,7 +12,10 @@ import {
   upsertTodayFlowSession,
   getUserFlowStats,
 } from "@/lib/api/flow-sessions";
-import { getCurrentProfile, initializeUserFlow } from "@/lib/api/profiles";
+import {
+  getCurrentProfile,
+  initializeUserFlow,
+} from "@/lib/api/profiles";
 import { useAuth } from "@/lib/auth-context";
 
 type FlowRitualLocal = {
@@ -135,52 +138,65 @@ export default function FlowDashboard() {
 
   // Load flow data on mount
   useEffect(() => {
-    const flowData = getFlowProgress();
+    const loadData = async () => {
+      try {
+        setLoading(true);
 
-    if (!flowData) {
-      // First time user - initialize with default archetype
-      setIsFirstTime(true);
-      const identity = initializeFlowJourney("Deep Worker");
-      setFlowIdentity({
-        archetype: identity.archetype,
-        daysLiving: 1,
-        currentPhase: identity.currentPhase,
-        streak: identity.currentStreak,
-        startDate: identity.startDate,
-      });
-    } else {
-      // Load existing data
-      const daysSinceStart =
-        Math.floor(
-          (new Date().getTime() - flowData.identity.startDate.getTime()) /
-            (1000 * 60 * 60 * 24),
-        ) + 1;
+        // Get user profile
+        const profile = await getCurrentProfile();
 
-      setFlowIdentity({
-        archetype: flowData.identity.archetype,
-        daysLiving: daysSinceStart,
-        currentPhase: flowData.identity.currentPhase,
-        streak: flowData.identity.currentStreak,
-        startDate: flowData.identity.startDate,
-      });
+        if (!profile || !profile.flowStartDate) {
+          // First time user - initialize with default archetype
+          setIsFirstTime(true);
+          await initializeUserFlow("Deep Worker");
 
-      // Load today's session if it exists
-      const todaySession = getTodayFlowSession();
-      if (todaySession) {
-        setFlowState(todaySession.flowState);
-        setMorningIntention(todaySession.intention);
-        setRituals((prev) =>
-          prev.map((ritual) => {
-            const todayRitual = todaySession.rituals.find(
-              (r) => r.id === ritual.id,
-            );
-            return todayRitual
-              ? { ...ritual, completed: todayRitual.completed }
-              : ritual;
-          }),
-        );
+          setFlowIdentity({
+            archetype: "Deep Worker",
+            daysLiving: 1,
+            currentPhase: "foundation",
+            streak: 0,
+            startDate: new Date(),
+          });
+        } else {
+          // Load existing data
+          const startDate = new Date(profile.flowStartDate);
+          const daysSinceStart = Math.floor(
+            (new Date().getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
+          ) + 1;
+
+          // Get flow stats
+          const stats = await getUserFlowStats();
+
+          setFlowIdentity({
+            archetype: profile.flowArchetype || "Deep Worker",
+            daysLiving: daysSinceStart,
+            currentPhase: stats.currentPhase as "foundation" | "building" | "mastery",
+            streak: stats.currentStreak,
+            startDate: startDate,
+          });
+
+          // Load today's session if it exists
+          const todaySession = await getTodayFlowSession();
+          if (todaySession) {
+            setFlowState(todaySession.flowState);
+            setMorningIntention(todaySession.intention);
+            setRituals(prev => prev.map(ritual => {
+              const todayRitual = todaySession.rituals.find((r: any) => r.id === ritual.id);
+              return todayRitual ? { ...ritual, completed: todayRitual.completed } : ritual;
+            }));
+          }
+        }
+      } catch (error) {
+        console.error("Error loading flow data:", error);
+      } finally {
+        setLoading(false);
       }
+    };
 
+    if (user) {
+      loadData();
+    }
+  }, [user]);
       // Load vision board
       const savedVisionBoard = localStorage.getItem("flow-vision-board");
       if (savedVisionBoard) {
