@@ -12,10 +12,7 @@ import {
   upsertTodayFlowSession,
   getUserFlowStats,
 } from "@/lib/api/flow-sessions";
-import {
-  getCurrentProfile,
-  initializeUserFlow,
-} from "@/lib/api/profiles";
+import { getCurrentProfile, initializeUserFlow } from "@/lib/api/profiles";
 import { useAuth } from "@/lib/auth-context";
 
 type FlowRitualLocal = {
@@ -160,9 +157,11 @@ export default function FlowDashboard() {
         } else {
           // Load existing data
           const startDate = new Date(profile.flowStartDate);
-          const daysSinceStart = Math.floor(
-            (new Date().getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
-          ) + 1;
+          const daysSinceStart =
+            Math.floor(
+              (new Date().getTime() - startDate.getTime()) /
+                (1000 * 60 * 60 * 24),
+            ) + 1;
 
           // Get flow stats
           const stats = await getUserFlowStats();
@@ -170,7 +169,10 @@ export default function FlowDashboard() {
           setFlowIdentity({
             archetype: profile.flowArchetype || "Deep Worker",
             daysLiving: daysSinceStart,
-            currentPhase: stats.currentPhase as "foundation" | "building" | "mastery",
+            currentPhase: stats.currentPhase as
+              | "foundation"
+              | "building"
+              | "mastery",
             streak: stats.currentStreak,
             startDate: startDate,
           });
@@ -180,23 +182,17 @@ export default function FlowDashboard() {
           if (todaySession) {
             setFlowState(todaySession.flowState);
             setMorningIntention(todaySession.intention);
-            setRituals(prev => prev.map(ritual => {
-              const todayRitual = todaySession.rituals.find((r: any) => r.id === ritual.id);
-              return todayRitual ? { ...ritual, completed: todayRitual.completed } : ritual;
-            }));
+            setRituals((prev) =>
+              prev.map((ritual) => {
+                const todayRitual = todaySession.rituals.find(
+                  (r: any) => r.id === ritual.id,
+                );
+                return todayRitual
+                  ? { ...ritual, completed: todayRitual.completed }
+                  : ritual;
+              }),
+            );
           }
-        }
-      } catch (error) {
-        console.error("Error loading flow data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (user) {
-      loadData();
-    }
-  }, [user]);
         }
       } catch (error) {
         console.error("Error loading flow data:", error);
@@ -216,9 +212,11 @@ export default function FlowDashboard() {
       const saveSession = async () => {
         try {
           const today = new Date().toISOString().split("T")[0];
-          const daysSinceStart = Math.floor(
-            (new Date().getTime() - flowIdentity.startDate.getTime()) / (1000 * 60 * 60 * 24)
-          ) + 1;
+          const daysSinceStart =
+            Math.floor(
+              (new Date().getTime() - flowIdentity.startDate.getTime()) /
+                (1000 * 60 * 60 * 24),
+            ) + 1;
 
           let phase: "foundation" | "building" | "mastery" = "foundation";
           if (daysSinceStart > 66) {
@@ -243,7 +241,9 @@ export default function FlowDashboard() {
               assessedAt: new Date(),
             },
             intention: morningIntention,
-            completedAt: rituals.filter((r) => r.isCore).every((r) => r.completed)
+            completedAt: rituals
+              .filter((r) => r.isCore)
+              .every((r) => r.completed)
               ? new Date()
               : undefined,
             phase,
@@ -258,7 +258,14 @@ export default function FlowDashboard() {
       const timeoutId = setTimeout(saveSession, 1000);
       return () => clearTimeout(timeoutId);
     }
-  }, [rituals, flowState, morningIntention, flowIdentity.daysLiving, flowIdentity.startDate, loading]);
+  }, [
+    rituals,
+    flowState,
+    morningIntention,
+    flowIdentity.daysLiving,
+    flowIdentity.startDate,
+    loading,
+  ]);
 
   const completedRituals = rituals.filter((r) => r.completed).length;
   const totalRituals = rituals.length;
