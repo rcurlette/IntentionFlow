@@ -9,6 +9,7 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 // Import pages that exist
 import FlowDashboard from "./pages/FlowDashboard";
 import FlowCoach from "./pages/FlowCoach";
+import Debug from "./pages/Debug";
 
 const queryClient = new QueryClient();
 
@@ -45,6 +46,7 @@ const App = () => (
                   </ProtectedRoute>
                 }
               />
+              <Route path="/debug" element={<Debug />} />
               <Route path="*" element={<div>Page not found</div>} />
             </Routes>
           </BrowserRouter>
