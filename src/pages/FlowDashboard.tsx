@@ -14,16 +14,6 @@ import {
 } from "@/lib/api/flow-sessions";
 import { getCurrentProfile, initializeUserFlow } from "@/lib/api/profiles";
 import { useAuth } from "@/lib/auth-context";
-
-type FlowRitualLocal = {
-  id: string;
-  name: string;
-  icon: React.ComponentType<{ className?: string }>;
-  duration: number;
-  description: string;
-  completed: boolean;
-  isCore: boolean;
-};
 import { FlowActions } from "@/components/app/FlowActions";
 import { FlowCoaching } from "@/components/app/FlowCoaching";
 import {
@@ -47,7 +37,17 @@ import {
   Loader2,
 } from "lucide-react";
 
-interface FlowState {
+type FlowRitualLocal = {
+  id: string;
+  name: string;
+  icon: React.ComponentType<{ className?: string }>;
+  duration: number;
+  description: string;
+  completed: boolean;
+  isCore: boolean;
+};
+
+interface FlowStateLocal {
   energy: "low" | "medium" | "high";
   focus: "scattered" | "calm" | "sharp";
   mood: "challenged" | "neutral" | "inspired";
@@ -65,7 +65,7 @@ interface FlowIdentity {
 export default function FlowDashboard() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [flowState, setFlowState] = useState<FlowState>({
+  const [flowState, setFlowState] = useState<FlowStateLocal>({
     energy: "medium",
     focus: "calm",
     mood: "neutral",
@@ -134,6 +134,14 @@ export default function FlowDashboard() {
   const [isFirstTime, setIsFirstTime] = useState(false);
   const [visionBoard, setVisionBoard] = useState<string | null>(null);
 
+  // Load vision board from localStorage on mount
+  useEffect(() => {
+    const savedVisionBoard = localStorage.getItem("flow-vision-board");
+    if (savedVisionBoard) {
+      setVisionBoard(savedVisionBoard);
+    }
+  }, []);
+
   // Load flow data on mount
   useEffect(() => {
     const loadData = async () => {
@@ -181,8 +189,13 @@ export default function FlowDashboard() {
           // Load today's session if it exists
           const todaySession = await getTodayFlowSession();
           if (todaySession) {
-            setFlowState(todaySession.flowState);
-            setMorningIntention(todaySession.intention);
+            setFlowState({
+              energy: todaySession.flowState.energy,
+              focus: todaySession.flowState.focus,
+              mood: todaySession.flowState.mood,
+              environment: todaySession.flowState.environment,
+            });
+            setMorningIntention(todaySession.intention || "");
             setRituals((prev) =>
               prev.map((ritual) => {
                 const todayRitual = todaySession.rituals.find(
@@ -238,7 +251,10 @@ export default function FlowDashboard() {
               isCore: r.isCore,
             })),
             flowState: {
-              ...flowState,
+              energy: flowState.energy,
+              focus: flowState.focus,
+              mood: flowState.mood,
+              environment: flowState.environment,
               assessedAt: new Date(),
             },
             intention: morningIntention,
