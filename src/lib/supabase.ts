@@ -1,19 +1,38 @@
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = "https://iqxkrkzdvepjufmvjdaf.supabase.co";
-const supabaseAnonKey =
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+// Fallback to hardcoded values if env vars are not set
+const finalSupabaseUrl =
+  supabaseUrl || "https://iqxkrkzdvepjufmvjdaf.supabase.co";
+const finalSupabaseAnonKey =
+  supabaseAnonKey ||
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlxeGtya3pkdmVwanVmbXZqZGFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA5MzgxNjYsImV4cCI6MjA2NjUxNDE2Nn0.Z-PvKRMu1RNS3R5_DC-IkfYjbEf_27fhkcx9A4l4O7k";
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+export const supabase = createClient(finalSupabaseUrl, finalSupabaseAnonKey, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
+    redirectTo:
+      typeof window !== "undefined" ? `${window.location.origin}` : undefined,
   },
 });
 
 // Helper to check if Supabase is properly configured
-export const isSupabaseConfigured = !!(supabaseUrl && supabaseAnonKey);
+export const isSupabaseConfigured = !!(
+  finalSupabaseUrl && finalSupabaseAnonKey
+);
+
+// Admin configuration
+export const adminEmail =
+  import.meta.env.VITE_ADMIN_EMAIL || "robert.curlette@gmail.com";
+
+// Helper to check if current user is admin
+export const isAdminUser = (userEmail: string | undefined) => {
+  return userEmail === adminEmail;
+};
 
 // Database Types
 export interface Database {
