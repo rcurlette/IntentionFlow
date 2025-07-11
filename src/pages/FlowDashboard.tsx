@@ -1,5 +1,9 @@
+
+import React, { useState, useEffect } from "react";
+
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+
 import { Navigation } from "@/components/app/Navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,14 +12,24 @@ import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-import { format, differenceInDays } from "date-fns";
+import { format } from "date-fns";
 import {
-  getFlowProgress,
   getTodayFlowSession,
-  saveFlowSession,
-  initializeFlowJourney,
-  getFlowInsights,
-} from "@/lib/flow-storage";
+  upsertTodayFlowSession,
+  getUserFlowStats,
+} from "@/lib/api/flow-sessions";
+import { getCurrentProfile, initializeUserFlow } from "@/lib/api/profiles";
+import { useAuth } from "@/lib/auth-context";
+
+type FlowRitualLocal = {
+  id: string;
+  name: string;
+  icon: React.ComponentType<{ className?: string }>;
+  duration: number;
+  description: string;
+  completed: boolean;
+  isCore: boolean;
+};
 import { FlowActions } from "@/components/app/FlowActions";
 import { MorningSection } from "@/components/app/MorningSection";
 import { EveningSection } from "@/components/app/EveningSection";
@@ -37,6 +51,7 @@ import {
   Clock,
   Calendar,
   Activity,
+  Loader2,
   Moon,
 } from "lucide-react";
 
@@ -45,16 +60,6 @@ interface FlowState {
   focus: "scattered" | "calm" | "sharp";
   mood: "challenged" | "neutral" | "inspired";
   environment: "chaotic" | "okay" | "optimal";
-}
-
-interface FlowRitual {
-  id: string;
-  name: string;
-  icon: any;
-  duration: number;
-  description: string;
-  completed: boolean;
-  isCore: boolean;
 }
 
 interface FlowIdentity {
@@ -66,6 +71,8 @@ interface FlowIdentity {
 }
 
 export default function FlowDashboard() {
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
   const [flowState, setFlowState] = useState<FlowState>({
     energy: "medium",
     focus: "calm",
@@ -81,7 +88,7 @@ export default function FlowDashboard() {
     startDate: new Date(),
   });
 
-  const [rituals, setRituals] = useState<FlowRitual[]>([
+  const [rituals, setRituals] = useState<FlowRitualLocal[]>([
     {
       id: "meditation",
       name: "Mindful Presence",
@@ -137,92 +144,137 @@ export default function FlowDashboard() {
 
   // Load flow data on mount
   useEffect(() => {
-    const flowData = getFlowProgress();
+    const loadData = async () => {
+      try {
+        setLoading(true);
 
-    if (!flowData) {
-      // First time user - initialize with default archetype
-      setIsFirstTime(true);
-      const identity = initializeFlowJourney("Deep Worker");
-      setFlowIdentity({
-        archetype: identity.archetype,
-        daysLiving: 1,
-        currentPhase: identity.currentPhase,
-        streak: identity.currentStreak,
-        startDate: identity.startDate,
-      });
-    } else {
-      // Load existing data
-      const daysSinceStart =
-        Math.floor(
-          (new Date().getTime() - flowData.identity.startDate.getTime()) /
-            (1000 * 60 * 60 * 24),
-        ) + 1;
+        // Get user profile
+        const profile = await getCurrentProfile();
 
-      setFlowIdentity({
-        archetype: flowData.identity.archetype,
-        daysLiving: daysSinceStart,
-        currentPhase: flowData.identity.currentPhase,
-        streak: flowData.identity.currentStreak,
-        startDate: flowData.identity.startDate,
-      });
+        if (!profile || !profile.flowStartDate) {
+          // First time user - initialize with default archetype
+          setIsFirstTime(true);
+          await initializeUserFlow("Deep Worker");
 
-      // Load today's session if it exists
-      const todaySession = getTodayFlowSession();
-      if (todaySession) {
-        setFlowState(todaySession.flowState);
-        setMorningIntention(todaySession.intention);
-        setRituals((prev) =>
-          prev.map((ritual) => {
-            const todayRitual = todaySession.rituals.find(
-              (r) => r.id === ritual.id,
+          setFlowIdentity({
+            archetype: "Deep Worker",
+            daysLiving: 1,
+            currentPhase: "foundation",
+            streak: 0,
+            startDate: new Date(),
+          });
+        } else {
+          // Load existing data
+          const startDate = new Date(profile.flowStartDate);
+          const daysSinceStart =
+            Math.floor(
+              (new Date().getTime() - startDate.getTime()) /
+                (1000 * 60 * 60 * 24),
+            ) + 1;
+
+          // Get flow stats
+          const stats = await getUserFlowStats();
+
+          setFlowIdentity({
+            archetype: profile.flowArchetype || "Deep Worker",
+            daysLiving: daysSinceStart,
+            currentPhase: stats.currentPhase as
+              | "foundation"
+              | "building"
+              | "mastery",
+            streak: stats.currentStreak,
+            startDate: startDate,
+          });
+
+          // Load today's session if it exists
+          const todaySession = await getTodayFlowSession();
+          if (todaySession) {
+            setFlowState(todaySession.flowState);
+            setMorningIntention(todaySession.intention);
+            setRituals((prev) =>
+              prev.map((ritual) => {
+                const todayRitual = todaySession.rituals.find(
+                  (r: any) => r.id === ritual.id,
+                );
+                return todayRitual
+                  ? { ...ritual, completed: todayRitual.completed }
+                  : ritual;
+              }),
             );
-            return todayRitual
-              ? { ...ritual, completed: todayRitual.completed }
-              : ritual;
-          }),
-        );
+          }
+        }
+      } catch (error) {
+        console.error("Error loading flow data:", error);
+      } finally {
+        setLoading(false);
       }
+    };
 
-      // Load vision board
-      const savedVisionBoard = localStorage.getItem("flow-vision-board");
-      if (savedVisionBoard) {
-        setVisionBoard(savedVisionBoard);
-      }
+    if (user) {
+      loadData();
     }
-  }, []);
+  }, [user]);
 
   // Save session when data changes
   useEffect(() => {
-    if (flowIdentity.daysLiving > 0) {
-      const saveSession = () => {
-        const today = new Date().toISOString().split("T")[0];
-        saveFlowSession({
-          date: today,
-          rituals: rituals.map((r) => ({
-            id: r.id,
-            name: r.name,
-            duration: r.duration,
-            description: r.description,
-            completed: r.completed,
-            completedAt: r.completed ? new Date() : undefined,
-            isCore: r.isCore,
-          })),
-          flowState: {
-            ...flowState,
-            assessedAt: new Date(),
-          },
-          intention: morningIntention,
-          completedAt: rituals.filter((r) => r.isCore).every((r) => r.completed)
-            ? new Date()
-            : undefined,
-        });
+    if (flowIdentity.daysLiving > 0 && !loading) {
+      const saveSession = async () => {
+        try {
+          const today = new Date().toISOString().split("T")[0];
+          const daysSinceStart =
+            Math.floor(
+              (new Date().getTime() - flowIdentity.startDate.getTime()) /
+                (1000 * 60 * 60 * 24),
+            ) + 1;
+
+          let phase: "foundation" | "building" | "mastery" = "foundation";
+          if (daysSinceStart > 66) {
+            phase = "mastery";
+          } else if (daysSinceStart > 21) {
+            phase = "building";
+          }
+
+          await upsertTodayFlowSession({
+            date: today,
+            rituals: rituals.map((r) => ({
+              id: r.id,
+              name: r.name,
+              duration: r.duration,
+              description: r.description,
+              completed: r.completed,
+              completedAt: r.completed ? new Date() : undefined,
+              isCore: r.isCore,
+            })),
+            flowState: {
+              ...flowState,
+              assessedAt: new Date(),
+            },
+            intention: morningIntention,
+            completedAt: rituals
+              .filter((r) => r.isCore)
+              .every((r) => r.completed)
+              ? new Date()
+              : undefined,
+            phase,
+            dayNumber: daysSinceStart,
+          });
+        } catch (error) {
+          console.error("Error saving flow session:", error);
+        }
       };
 
       // Debounce saves
       const timeoutId = setTimeout(saveSession, 1000);
       return () => clearTimeout(timeoutId);
     }
-  }, [rituals, flowState, morningIntention, flowIdentity.daysLiving]);
+  }, [
+    rituals,
+    flowState,
+    morningIntention,
+    flowIdentity.daysLiving,
+    flowIdentity.startDate,
+    loading,
+  ]);
 
   const completedRituals = rituals.filter((r) => r.completed).length;
   const totalRituals = rituals.length;
@@ -340,6 +392,17 @@ export default function FlowDashboard() {
 
   const phaseInfo = getPhaseMessage();
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+        <div className="flex items-center space-x-2 text-slate-300">
+          <Loader2 className="h-6 w-6 animate-spin" />
+          <span>Loading your flow journey...</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <Navigation />
@@ -393,6 +456,54 @@ export default function FlowDashboard() {
             )}
           </div>
         </div>
+
+
+        {/* Flow Coaching */}
+        <div className="mb-6">
+          <FlowCoaching
+            currentDay={flowIdentity.daysLiving}
+            currentPhase={flowIdentity.currentPhase}
+            completedRituals={completedRituals}
+            totalRituals={totalRituals}
+            streak={flowIdentity.streak}
+          />
+        </div>
+
+        <div className="grid lg:grid-cols-3 gap-6">
+          {/* Flow State Assessment */}
+          <Card className="bg-slate-800/50 border-slate-700">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2 text-slate-100">
+                <Heart className="h-5 w-5 text-pink-400" />
+                <span>Current Flow State</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Energy Level */}
+              <div>
+                <label className="text-sm font-medium text-slate-300 mb-2 block">
+                  Energy Level
+                </label>
+                <div className="flex space-x-2">
+                  {["low", "medium", "high"].map((level) => (
+                    <Button
+                      key={level}
+                      size="sm"
+                      variant={
+                        flowState.energy === level ? "default" : "outline"
+                      }
+                      onClick={() =>
+                        setFlowState((prev) => ({
+                          ...prev,
+                          energy: level as any,
+                        }))
+                      }
+                      className="flex-1 h-8"
+                    >
+                      {getEnergyIcon(level)}
+                      <span className="ml-1 capitalize">{level}</span>
+                    </Button>
+                  ))}
 
         {/* Quick Coach Access */}
         <Card className="mb-6 bg-gradient-to-r from-purple-500/10 to-blue-500/10 border-purple-500/30">

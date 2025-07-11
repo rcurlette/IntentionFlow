@@ -14,14 +14,7 @@ import {
   Award,
   MessageSquare,
   Sparkles,
-  ArrowRight,
   CheckCircle2,
-  Clock,
-  Zap,
-  Eye,
-  Users,
-  BookOpen,
-  Star,
 } from "lucide-react";
 
 interface CoachingMessage {

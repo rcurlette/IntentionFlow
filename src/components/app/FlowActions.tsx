@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -24,7 +24,7 @@ import {
 interface FlowAction {
   id: string;
   name: string;
-  icon: any;
+  icon: React.ComponentType<{ className?: string }>;
   duration: number; // in seconds
   description: string;
   category: "reset" | "boost" | "align" | "assess";
