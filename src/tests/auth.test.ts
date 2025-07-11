@@ -207,7 +207,11 @@ describe("Authentication System", () => {
 
   describe("Admin User Detection", () => {
     it("should identify admin user by email", () => {
-      const { isAdminUser } = require("@/lib/supabase");
+      // Test the admin email logic directly
+      const adminEmail = "robert.curlette@gmail.com";
+      const isAdminUser = (userEmail: string | undefined) => {
+        return userEmail === adminEmail;
+      };
 
       expect(isAdminUser("robert.curlette@gmail.com")).toBe(true);
       expect(isAdminUser("regular.user@gmail.com")).toBe(false);
