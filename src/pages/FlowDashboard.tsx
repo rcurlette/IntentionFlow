@@ -1,7 +1,4 @@
-
 import React, { useState, useEffect } from "react";
-
-import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 import { Navigation } from "@/components/app/Navigation";
@@ -19,7 +16,7 @@ import {
   getUserFlowStats,
 } from "@/lib/api/flow-sessions";
 import { getCurrentProfile, initializeUserFlow } from "@/lib/api/profiles";
-import { useAuth } from "@/lib/auth-context";
+import { useAuth } from "@/contexts/AuthContext";
 import { FlowActions } from "@/components/app/FlowActions";
 import { MorningSection } from "@/components/app/MorningSection";
 import { EveningSection } from "@/components/app/EveningSection";
