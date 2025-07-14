@@ -81,7 +81,7 @@ const navItems = [
 
 export function Navigation() {
   const location = useLocation();
-  const { user, userProfile, signOut } = useAuth();
+  const { user, userProfile, signOut } = useAdminAuth();
 
   const handleSignOut = async () => {
     try {
