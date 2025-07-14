@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAdminAuth } from "@/contexts/AdminAuthContext";
 import { FlowActions } from "@/components/app/FlowActions";
 import { MorningSection } from "@/components/app/MorningSection";
 import { EveningSection } from "@/components/app/EveningSection";
@@ -58,7 +58,7 @@ interface FlowIdentity {
 }
 
 export default function FlowDashboard() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAdminAuth();
   const [loading, setLoading] = useState(true);
   const [activeSection, setActiveSection] = useState<"morning" | "evening">(
     "morning",
