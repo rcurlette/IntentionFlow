@@ -1,4 +1,5 @@
-import { Context } from "https://edge.netlify.com/";
+// @ts-ignore
+import type { Context } from "https://edge.netlify.com/";
 
 // Types
 interface Task {
