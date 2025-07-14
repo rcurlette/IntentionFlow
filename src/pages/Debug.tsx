@@ -1,4 +1,5 @@
 import { ConnectionTest } from "@/components/debug/ConnectionTest";
+import { SupabaseTestPanel } from "@/components/debug/SupabaseTestPanel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -136,7 +137,7 @@ export default function Debug() {
                   <li>• Network connectivity issues</li>
                   <li>• Incorrect Supabase URL or API key</li>
                   <li>• CORS configuration problems</li>
-                  <li>• Supabase service temporarily unavailable</li>
+                  <li>��� Supabase service temporarily unavailable</li>
                   <li>• Environment variables not loaded correctly</li>
                 </ul>
               </div>
@@ -146,6 +147,11 @@ export default function Debug() {
           {/* Connection Test */}
           <div className="lg:col-span-2">
             <ConnectionTest />
+          </div>
+
+          {/* Supabase Database Testing */}
+          <div className="lg:col-span-2">
+            <SupabaseTestPanel />
           </div>
 
           {/* Quick Fixes */}
