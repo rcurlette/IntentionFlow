@@ -32,7 +32,19 @@ export function SupabaseTestPanel() {
     {},
   );
   const [isRunning, setIsRunning] = useState(false);
-  const [testUserId] = useState(`test-user-${Date.now()}`);
+  // Generate proper UUID for testing
+  const generateUUID = () => {
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
+      /[xy]/g,
+      function (c) {
+        const r = (Math.random() * 16) | 0;
+        const v = c === "x" ? r : (r & 0x3) | 0x8;
+        return v.toString(16);
+      },
+    );
+  };
+
+  const [testUserId] = useState(generateUUID());
   const [customQuery, setCustomQuery] = useState("");
   const [queryResult, setQueryResult] = useState<any>(null);
 

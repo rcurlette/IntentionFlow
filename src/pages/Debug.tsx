@@ -1,5 +1,6 @@
 import { ConnectionTest } from "@/components/debug/ConnectionTest";
 import { SupabaseTestPanel } from "@/components/debug/SupabaseTestPanel";
+import { DatabaseSetupChecker } from "@/components/debug/DatabaseSetupChecker";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -143,6 +144,11 @@ export default function Debug() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Database Setup Check */}
+          <div className="lg:col-span-2">
+            <DatabaseSetupChecker />
+          </div>
 
           {/* Connection Test */}
           <div className="lg:col-span-2">
