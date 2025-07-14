@@ -262,7 +262,17 @@ export default function FlowDashboard() {
         </div>
 
         {/* Dynamic Content Based on Active Section */}
-        {activeSection === "morning" ? <MorningSection /> : <EveningSection />}
+        {activeSection === "morning" ? (
+          <MorningSection
+            rituals={rituals}
+            onToggleRitual={toggleRitual}
+            onStartMeditationTimer={startMeditationTimer}
+            meditationTimer={meditationTimer}
+            isTimerActive={isTimerActive}
+          />
+        ) : (
+          <EveningSection />
+        )}
 
         {/* Flow Actions - Always Available */}
         <div className="mt-8">
