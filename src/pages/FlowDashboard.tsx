@@ -78,11 +78,61 @@ export default function FlowDashboard() {
     startDate: new Date(),
   });
 
-  // Simplified loading logic for now
+  // Load admin data from localStorage
   useEffect(() => {
     if (user) {
-      // Initialize with basic data
-      setLoading(false);
+      const loadData = async () => {
+        try {
+          // Get admin profile
+          const profile = adminStorage.getCurrentProfile();
+
+          if (!profile.flowStartDate) {
+            // First time setup
+            adminStorage.initializeUserFlow("Deep Worker");
+          }
+
+          // Calculate days since start
+          const startDate = new Date(profile.flowStartDate);
+          const daysSinceStart =
+            Math.floor(
+              (new Date().getTime() - startDate.getTime()) /
+                (1000 * 60 * 60 * 24),
+            ) + 1;
+
+          // Get flow stats
+          const stats = adminStorage.getUserFlowStats();
+
+          setFlowIdentity({
+            archetype: profile.flowArchetype || "Deep Worker",
+            daysLiving: daysSinceStart,
+            currentPhase: stats.currentPhase as
+              | "foundation"
+              | "building"
+              | "mastery",
+            streak: stats.currentStreak,
+            startDate: startDate,
+          });
+
+          // Load today's session if it exists
+          const todaySession = adminStorage.getTodayFlowSession();
+          if (todaySession) {
+            setFlowState({
+              energy: todaySession.flowState.energy,
+              focus: todaySession.flowState.focus,
+              mood: todaySession.flowState.mood,
+              environment: todaySession.flowState.environment,
+            });
+            // Add more session data loading as needed
+          }
+
+          setLoading(false);
+        } catch (error) {
+          console.error("Error loading admin flow data:", error);
+          setLoading(false);
+        }
+      };
+
+      loadData();
     }
   }, [user]);
 
@@ -141,6 +191,15 @@ export default function FlowDashboard() {
           <h1 className="text-4xl font-bold bg-gradient-to-r from-amber-300 via-orange-400 to-amber-500 bg-clip-text text-transparent mb-2">
             Welcome, Flow Practitioner
           </h1>
+
+          <div className="mb-4">
+            <Badge
+              variant="outline"
+              className="bg-green-500/10 border-green-500/30 text-green-400"
+            >
+              ✨ Admin Mode - Personal Use
+            </Badge>
+          </div>
 
           <p className="text-slate-300 text-lg mb-4">
             Day{" "}
