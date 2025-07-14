@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { getTodayFlowSession, saveFlowSession } from "@/lib/flow-storage";
+import { adminStorage } from "@/lib/admin-storage";
 import {
   Sunrise,
   Play,
