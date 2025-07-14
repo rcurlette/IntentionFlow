@@ -71,6 +71,57 @@ export default function FlowDashboard() {
     environment: "okay",
   });
 
+  const [rituals, setRituals] = useState<FlowRitualLocal[]>([
+    {
+      id: "meditation",
+      name: "Mindful Presence",
+      icon: Brain,
+      duration: 5,
+      description: "Center your mind and body",
+      completed: false,
+      isCore: true,
+    },
+    {
+      id: "intention",
+      name: "Flow Intention",
+      icon: Target,
+      duration: 3,
+      description: "Set your flow intention for today",
+      completed: false,
+      isCore: true,
+    },
+    {
+      id: "energy",
+      name: "Energy Assessment",
+      icon: Zap,
+      duration: 2,
+      description: "Tune into your current state",
+      completed: false,
+      isCore: true,
+    },
+    {
+      id: "environment",
+      name: "Space Optimization",
+      icon: Eye,
+      duration: 3,
+      description: "Prepare your flow environment",
+      completed: false,
+      isCore: false,
+    },
+    {
+      id: "vision",
+      name: "Vision Alignment",
+      icon: Heart,
+      duration: 2,
+      description: "Connect with your deeper purpose",
+      completed: false,
+      isCore: false,
+    },
+  ]);
+
+  const [meditationTimer, setMeditationTimer] = useState(0);
+  const [isTimerActive, setIsTimerActive] = useState(false);
+
   const [flowIdentity, setFlowIdentity] = useState<FlowIdentity>({
     archetype: "Deep Worker",
     daysLiving: 1,
@@ -161,6 +212,33 @@ export default function FlowDashboard() {
       };
     }
   };
+
+  const toggleRitual = (id: string) => {
+    setRituals((prev) =>
+      prev.map((ritual) =>
+        ritual.id === id ? { ...ritual, completed: !ritual.completed } : ritual,
+      ),
+    );
+  };
+
+  const startMeditationTimer = (minutes: number) => {
+    setMeditationTimer(minutes * 60);
+    setIsTimerActive(true);
+  };
+
+  // Timer effect
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isTimerActive && meditationTimer > 0) {
+      interval = setInterval(() => {
+        setMeditationTimer((prev) => prev - 1);
+      }, 1000);
+    } else if (meditationTimer === 0 && isTimerActive) {
+      setIsTimerActive(false);
+      toggleRitual("meditation");
+    }
+    return () => clearInterval(interval);
+  }, [isTimerActive, meditationTimer]);
 
   const phaseInfo = getPhaseMessage();
 
