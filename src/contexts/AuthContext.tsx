@@ -131,6 +131,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await authHelpers.signUpWithEmail(email, password);
     } catch (error) {
       console.error("Email sign up error:", error);
+
+      // Provide more user-friendly error messages
+      if (error instanceof Error) {
+        if (error.message.includes("fetch")) {
+          throw new Error(
+            "Unable to connect to authentication service. Please check the debug page for more information.",
+          );
+        }
+        if (error.message.includes("User already registered")) {
+          throw new Error(
+            "An account with this email already exists. Please try signing in instead.",
+          );
+        }
+      }
+
       throw error;
     } finally {
       setLoading(false);

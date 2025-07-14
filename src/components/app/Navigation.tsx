@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAdminAuth } from "@/contexts/AdminAuthContext";
 import {
   Home,
   Target,
@@ -81,7 +81,7 @@ const navItems = [
 
 export function Navigation() {
   const location = useLocation();
-  const { user, userProfile, signOut } = useAuth();
+  const { user, userProfile, signOut } = useAdminAuth();
 
   const handleSignOut = async () => {
     try {

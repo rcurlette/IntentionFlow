@@ -50,13 +50,40 @@ export const authHelpers = {
       throw new Error("Supabase not configured");
     }
 
-    const { data, error } = await supabase.auth.signInWithPassword({
+    console.log("Attempting sign in with:", {
       email,
-      password,
+      supabaseUrl: import.meta.env.VITE_SUPABASE_URL,
+      hasKey: !!import.meta.env.VITE_SUPABASE_ANON_KEY,
     });
 
-    if (error) throw error;
-    return data;
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        console.error("Supabase signin error:", error);
+        throw error;
+      }
+
+      console.log("Sign in successful:", data);
+      return data;
+    } catch (fetchError) {
+      console.error("Network/fetch error during signin:", fetchError);
+
+      // Check if it's a network error
+      if (
+        fetchError instanceof TypeError &&
+        fetchError.message.includes("fetch")
+      ) {
+        throw new Error(
+          "Unable to connect to authentication service. Please check your internet connection and try again.",
+        );
+      }
+
+      throw fetchError;
+    }
   },
 
   // Sign up with email/password
@@ -65,16 +92,44 @@ export const authHelpers = {
       throw new Error("Supabase not configured");
     }
 
-    const { data, error } = await supabase.auth.signUp({
+    console.log("Attempting signup with:", {
       email,
-      password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/`,
-      },
+      supabaseUrl: import.meta.env.VITE_SUPABASE_URL,
+      hasKey: !!import.meta.env.VITE_SUPABASE_ANON_KEY,
+      origin: window.location.origin,
     });
 
-    if (error) throw error;
-    return data;
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+        },
+      });
+
+      if (error) {
+        console.error("Supabase signup error:", error);
+        throw error;
+      }
+
+      console.log("Signup successful:", data);
+      return data;
+    } catch (fetchError) {
+      console.error("Network/fetch error during signup:", fetchError);
+
+      // Check if it's a network error
+      if (
+        fetchError instanceof TypeError &&
+        fetchError.message.includes("fetch")
+      ) {
+        throw new Error(
+          "Unable to connect to authentication service. Please check your internet connection and try again.",
+        );
+      }
+
+      throw fetchError;
+    }
   },
 
   // Sign out
