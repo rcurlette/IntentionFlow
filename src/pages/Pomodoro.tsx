@@ -211,28 +211,28 @@ export default function Pomodoro() {
             <Button
               onClick={() => switchSession("focus")}
               variant={sessionType === "focus" ? "default" : "outline"}
-              className="flex flex-col space-y-1 h-16"
+              className="flex flex-col items-center justify-center space-y-1 h-16 px-2"
             >
-              <Zap className="h-4 w-4" />
-              <span className="text-xs">Focus</span>
+              <Zap className="h-4 w-4 flex-shrink-0" />
+              <span className="text-xs font-medium">Focus</span>
               <span className="text-xs text-muted-foreground">25m</span>
             </Button>
             <Button
               onClick={() => switchSession("shortBreak")}
               variant={sessionType === "shortBreak" ? "default" : "outline"}
-              className="flex flex-col space-y-1 h-16"
+              className="flex flex-col items-center justify-center space-y-1 h-16 px-2"
             >
-              <Coffee className="h-4 w-4" />
-              <span className="text-xs">Short Break</span>
+              <Coffee className="h-4 w-4 flex-shrink-0" />
+              <span className="text-xs font-medium">Short Break</span>
               <span className="text-xs text-muted-foreground">5m</span>
             </Button>
             <Button
               onClick={() => switchSession("longBreak")}
               variant={sessionType === "longBreak" ? "default" : "outline"}
-              className="flex flex-col space-y-1 h-16"
+              className="flex flex-col items-center justify-center space-y-1 h-16 px-2"
             >
-              <Clock className="h-4 w-4" />
-              <span className="text-xs">Long Break</span>
+              <Clock className="h-4 w-4 flex-shrink-0" />
+              <span className="text-xs font-medium">Long Break</span>
               <span className="text-xs text-muted-foreground">15m</span>
             </Button>
           </div>
