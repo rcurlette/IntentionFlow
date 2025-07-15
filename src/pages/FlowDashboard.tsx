@@ -244,21 +244,12 @@ export default function FlowDashboard() {
   const phaseInfo = getPhaseMessage();
 
   if (authLoading || loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
-        <div className="flex items-center space-x-2 text-slate-300">
-          <Loader2 className="h-6 w-6 animate-spin" />
-          <span>Loading your flow journey...</span>
-        </div>
-      </div>
-    );
+    return <PageLoading message="Loading your flow journey..." />;
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      <Navigation />
-
-      <main className="pt-20 pb-8 px-4 container mx-auto max-w-6xl">
+    <AppLayout title="Flow Dashboard" description="Your personal flow tracking dashboard">
+      <div className="pt-4 pb-8 px-4 container mx-auto max-w-6xl">
         {/* Header - Flow Identity */}
         <div className="mb-8 text-center">
           <div className="flex items-center justify-center mb-4">
