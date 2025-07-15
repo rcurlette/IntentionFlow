@@ -517,19 +517,54 @@ export const settingsApi = {
   },
 
   async create(settings: UserSettings): Promise<UserSettings> {
+    if (!isSupabaseConfigured) {
+      throw new Error("Supabase not configured, falling back to localStorage");
+    }
+
     const dbSettings = {
       user_id: TEMP_USER_ID,
+      // Appearance & Theme
       theme: settings.theme,
       color_theme: settings.colorTheme,
+      reduced_motion: settings.reducedMotion,
+      high_contrast: settings.highContrast,
+      animations: settings.animations,
+
+      // Pomodoro & Focus Settings
       focus_duration: settings.focusDuration,
       short_break_duration: settings.shortBreakDuration,
       long_break_duration: settings.longBreakDuration,
       sessions_before_long_break: settings.sessionsBeforeLongBreak,
       auto_start_breaks: settings.autoStartBreaks,
       auto_start_pomodoros: settings.autoStartPomodoros,
+
+      // Notifications & Alerts
       notifications_enabled: settings.notificationsEnabled,
       sound_enabled: settings.soundEnabled,
+      task_reminders: settings.taskReminders,
+      break_notifications: settings.breakNotifications,
+      daily_summary: settings.dailySummary,
+      achievement_alerts: settings.achievementAlerts,
+
+      // Productivity & Goals
       daily_goal: settings.dailyGoal,
+      working_hours_start: settings.workingHours.start,
+      working_hours_end: settings.workingHours.end,
+
+      // Music & Media
+      youtube_url: settings.youtubeUrl,
+      auto_play_music: settings.autoPlayMusic,
+      loop_music: settings.loopMusic,
+      music_volume: settings.musicVolume,
+
+      // Profile & Personal
+      display_name: settings.displayName,
+      timezone: settings.timezone,
+      motivational_messages: settings.motivationalMessages,
+
+      // Advanced Features
+      vision_board_url: settings.visionBoardUrl,
+      flow_tracking_enabled: settings.flowTrackingEnabled,
     };
 
     const { data, error } = await supabase
@@ -539,8 +574,10 @@ export const settingsApi = {
       .single();
 
     if (error) {
-      console.error("Error creating settings:", error);
-      throw error;
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      console.error("Error creating settings:", errorMessage, error);
+      throw new Error(`Failed to create settings: ${errorMessage}`);
     }
 
     return settings;
