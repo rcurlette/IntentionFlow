@@ -460,21 +460,45 @@ export default function Settings() {
 
               <div className="flex items-center justify-between">
                 <Label htmlFor="animations">Animations</Label>
-                <Switch id="animations" defaultChecked />
+                <Switch
+                  id="animations"
+                  checked={themeSettings?.animations || false}
+                  onCheckedChange={(checked) =>
+                    updateTheme({ animations: checked })
+                  }
+                />
               </div>
               <div className="flex items-center justify-between">
                 <Label htmlFor="motivational-messages">
                   Motivational Messages
                 </Label>
-                <Switch id="motivational-messages" defaultChecked />
+                <Switch
+                  id="motivational-messages"
+                  checked={settings.motivationalMessages || false}
+                  onCheckedChange={(checked) =>
+                    updateSettings({ motivationalMessages: checked })
+                  }
+                />
               </div>
               <div className="flex items-center justify-between">
                 <Label htmlFor="reduced-motion">Reduced Motion</Label>
-                <Switch id="reduced-motion" />
+                <Switch
+                  id="reduced-motion"
+                  checked={themeSettings?.reducedMotion || false}
+                  onCheckedChange={(checked) =>
+                    updateTheme({ reducedMotion: checked })
+                  }
+                />
               </div>
               <div className="flex items-center justify-between">
                 <Label htmlFor="high-contrast">High Contrast Mode</Label>
-                <Switch id="high-contrast" />
+                <Switch
+                  id="high-contrast"
+                  checked={themeSettings?.highContrast || false}
+                  onCheckedChange={(checked) =>
+                    updateTheme({ highContrast: checked })
+                  }
+                />
               </div>
             </CardContent>
           </Card>
