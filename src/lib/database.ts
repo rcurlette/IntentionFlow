@@ -618,8 +618,10 @@ export const streaksApi = {
           longestStreak: 0,
         };
       }
-      console.error("Error fetching streak data:", error);
-      throw error;
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      console.error("Error fetching streak data:", errorMessage, error);
+      throw new Error(`Failed to fetch streak data: ${errorMessage}`);
     }
 
     return {
