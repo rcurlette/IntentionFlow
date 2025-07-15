@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Navigation } from "@/components/app/Navigation";
+import { AppLayout } from "@/components/layout/AppLayout";
+import { PageLoading } from "@/components/ui/loading";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
