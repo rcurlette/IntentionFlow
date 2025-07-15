@@ -248,7 +248,10 @@ export default function FlowDashboard() {
   }
 
   return (
-    <AppLayout title="Flow Dashboard" description="Your personal flow tracking dashboard">
+    <AppLayout
+      title="Flow Dashboard"
+      description="Your personal flow tracking dashboard"
+    >
       <div className="pt-4 pb-8 px-4 container mx-auto max-w-6xl">
         {/* Header - Flow Identity */}
         <div className="mb-8 text-center">
@@ -348,7 +351,7 @@ export default function FlowDashboard() {
         <div className="mt-8">
           <FlowActions />
         </div>
-      </main>
-    </div>
+      </div>
+    </AppLayout>
   );
 }
