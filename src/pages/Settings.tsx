@@ -229,15 +229,46 @@ export default function Settings() {
             <CardContent className="space-y-4">
               <div>
                 <Label htmlFor="focus-duration">Focus Duration (minutes)</Label>
-                <Input id="focus-duration" type="number" defaultValue="25" />
+                <Input
+                  id="focus-duration"
+                  type="number"
+                  min="5"
+                  max="90"
+                  value={pomodoroSettings?.focusDuration || 25}
+                  onChange={(e) =>
+                    updatePomodoro({ focusDuration: parseInt(e.target.value) })
+                  }
+                />
               </div>
               <div>
                 <Label htmlFor="short-break">Short Break (minutes)</Label>
-                <Input id="short-break" type="number" defaultValue="5" />
+                <Input
+                  id="short-break"
+                  type="number"
+                  min="1"
+                  max="15"
+                  value={pomodoroSettings?.shortBreakDuration || 5}
+                  onChange={(e) =>
+                    updatePomodoro({
+                      shortBreakDuration: parseInt(e.target.value),
+                    })
+                  }
+                />
               </div>
               <div>
                 <Label htmlFor="long-break">Long Break (minutes)</Label>
-                <Input id="long-break" type="number" defaultValue="15" />
+                <Input
+                  id="long-break"
+                  type="number"
+                  min="10"
+                  max="60"
+                  value={pomodoroSettings?.longBreakDuration || 15}
+                  onChange={(e) =>
+                    updatePomodoro({
+                      longBreakDuration: parseInt(e.target.value),
+                    })
+                  }
+                />
               </div>
               <div>
                 <Label htmlFor="sessions-before-long">
@@ -246,7 +277,36 @@ export default function Settings() {
                 <Input
                   id="sessions-before-long"
                   type="number"
-                  defaultValue="4"
+                  min="2"
+                  max="8"
+                  value={pomodoroSettings?.sessionsBeforeLongBreak || 4}
+                  onChange={(e) =>
+                    updatePomodoro({
+                      sessionsBeforeLongBreak: parseInt(e.target.value),
+                    })
+                  }
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="auto-start-breaks">Auto-start breaks</Label>
+                <Switch
+                  id="auto-start-breaks"
+                  checked={pomodoroSettings?.autoStartBreaks || false}
+                  onCheckedChange={(checked) =>
+                    updatePomodoro({ autoStartBreaks: checked })
+                  }
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="auto-start-pomodoros">
+                  Auto-start focus sessions
+                </Label>
+                <Switch
+                  id="auto-start-pomodoros"
+                  checked={pomodoroSettings?.autoStartPomodoros || false}
+                  onCheckedChange={(checked) =>
+                    updatePomodoro({ autoStartPomodoros: checked })
+                  }
                 />
               </div>
             </CardContent>
