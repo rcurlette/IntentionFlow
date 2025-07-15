@@ -332,7 +332,7 @@ export const pomodoroApi = {
       .select("*")
       .eq("user_id", ADMIN_USER_ID)
       .gte("started_at", startDate)
-      .lte("started_at", endDate);
+      .lte("started_at", endDate)
       .order("started_at", { ascending: false });
 
     if (error) {
