@@ -397,7 +397,16 @@ export async function getUserSettings(): Promise<UserSettings> {
   try {
     return await settingsApi.get();
   } catch (error) {
-    console.error("Database error, falling back to localStorage:", error);
+    // Extract meaningful error message for logging
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : error && typeof error === "object" && error.message
+          ? error.message
+          : JSON.stringify(error);
+
+    console.log("Database error, falling back to localStorage:", errorMessage);
+
     return getFromStorage<UserSettings>(
       STORAGE_KEYS.USER_SETTINGS,
       getDefaultUserSettings(),
