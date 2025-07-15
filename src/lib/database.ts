@@ -820,7 +820,7 @@ export const streaksApi = {
         const { data: newData, error: createError } = await supabase
           .from("user_streaks")
           .insert({
-            user_id: TEMP_USER_ID,
+            user_id: ADMIN_USER_ID,
             current_streak: 0,
             longest_streak: 0,
           })
