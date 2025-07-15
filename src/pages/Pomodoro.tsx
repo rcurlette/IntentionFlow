@@ -132,7 +132,7 @@ export default function Pomodoro() {
       title="Pomodoro Timer"
       description="Flow-optimized focus sessions"
     >
-      <div className="pt-4 pb-8 px-4 container mx-auto max-w-4xl">
+      <div className="pt-4 pb-8 px-4 container mx-auto max-w-lg">
         {/* Header */}
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold text-white mb-2">Pomodoro Timer</h1>
