@@ -527,7 +527,7 @@ export const settingsApi = {
     // Let the actual database call handle connection issues
 
     const dbSettings = {
-      user_id: TEMP_USER_ID,
+      user_id: ADMIN_USER_ID,
       // Appearance & Theme
       theme: settings.theme,
       color_theme: settings.colorTheme,
