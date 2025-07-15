@@ -745,7 +745,7 @@ export const achievementsApi = {
     const { data, error } = await supabase
       .from("achievements")
       .select("*")
-      .eq("user_id", TEMP_USER_ID)
+      .eq("user_id", ADMIN_USER_ID)
       .order("earned_at", { ascending: false });
 
     if (error) {
