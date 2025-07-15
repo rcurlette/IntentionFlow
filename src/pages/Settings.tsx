@@ -360,21 +360,83 @@ export default function Settings() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
+                <div>
+                  <Label htmlFor="notifications-enabled">
+                    Enable Notifications
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    Master toggle for all notifications
+                  </p>
+                </div>
+                <Switch
+                  id="notifications-enabled"
+                  checked={notificationSettings?.notificationsEnabled || false}
+                  onCheckedChange={(checked) => {
+                    updateNotifications({ notificationsEnabled: checked });
+                    if (checked) {
+                      requestNotificationPermission();
+                    }
+                  }}
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="sound-enabled">Sound Effects</Label>
+                <Switch
+                  id="sound-enabled"
+                  checked={notificationSettings?.soundEnabled || false}
+                  onCheckedChange={(checked) =>
+                    updateNotifications({ soundEnabled: checked })
+                  }
+                />
+              </div>
+              <div className="flex items-center justify-between">
                 <Label htmlFor="task-reminders">Task Reminders</Label>
-                <Switch id="task-reminders" />
+                <Switch
+                  id="task-reminders"
+                  checked={notificationSettings?.taskReminders || false}
+                  onCheckedChange={(checked) =>
+                    updateNotifications({ taskReminders: checked })
+                  }
+                />
               </div>
               <div className="flex items-center justify-between">
                 <Label htmlFor="break-notifications">Break Notifications</Label>
-                <Switch id="break-notifications" />
+                <Switch
+                  id="break-notifications"
+                  checked={notificationSettings?.breakNotifications || false}
+                  onCheckedChange={(checked) =>
+                    updateNotifications({ breakNotifications: checked })
+                  }
+                />
               </div>
               <div className="flex items-center justify-between">
                 <Label htmlFor="daily-summary">Daily Summary</Label>
-                <Switch id="daily-summary" />
+                <Switch
+                  id="daily-summary"
+                  checked={notificationSettings?.dailySummary || false}
+                  onCheckedChange={(checked) =>
+                    updateNotifications({ dailySummary: checked })
+                  }
+                />
               </div>
               <div className="flex items-center justify-between">
                 <Label htmlFor="achievement-alerts">Achievement Alerts</Label>
-                <Switch id="achievement-alerts" />
+                <Switch
+                  id="achievement-alerts"
+                  checked={notificationSettings?.achievementAlerts || false}
+                  onCheckedChange={(checked) =>
+                    updateNotifications({ achievementAlerts: checked })
+                  }
+                />
               </div>
+              {!hasNotificationPermission() && (
+                <div className="mt-4 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+                  <p className="text-sm text-amber-400">
+                    Browser notifications are not enabled. Click "Enable
+                    Notifications" to allow notifications.
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
 
