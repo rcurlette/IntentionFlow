@@ -516,6 +516,10 @@ export default function Settings() {
                 <Input
                   id="youtube-url"
                   placeholder="https://www.youtube.com/watch?v=..."
+                  value={settings.youtubeUrl || ""}
+                  onChange={(e) =>
+                    updateSettings({ youtubeUrl: e.target.value })
+                  }
                 />
                 <p className="text-xs text-muted-foreground">
                   Paste any YouTube video URL for background music during focus
@@ -524,20 +528,37 @@ export default function Settings() {
               </div>
               <div className="flex items-center justify-between">
                 <Label htmlFor="autoplay-music">Auto-play on Focus Start</Label>
-                <Switch id="autoplay-music" />
+                <Switch
+                  id="autoplay-music"
+                  checked={settings.autoPlayMusic || false}
+                  onCheckedChange={(checked) =>
+                    updateSettings({ autoPlayMusic: checked })
+                  }
+                />
               </div>
               <div className="flex items-center justify-between">
                 <Label htmlFor="loop-music">Loop Current Track</Label>
-                <Switch id="loop-music" defaultChecked />
+                <Switch
+                  id="loop-music"
+                  checked={settings.loopMusic !== false}
+                  onCheckedChange={(checked) =>
+                    updateSettings({ loopMusic: checked })
+                  }
+                />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="music-volume">Default Volume</Label>
-                <Input
+                <Label htmlFor="music-volume">
+                  Default Volume: {settings.musicVolume || 50}%
+                </Label>
+                <Slider
                   id="music-volume"
-                  type="range"
-                  min="0"
-                  max="100"
-                  defaultValue="50"
+                  min={0}
+                  max={100}
+                  step={5}
+                  value={[settings.musicVolume || 50]}
+                  onValueChange={([value]) =>
+                    updateSettings({ musicVolume: value })
+                  }
                   className="w-full"
                 />
               </div>
