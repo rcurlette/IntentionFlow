@@ -811,7 +811,7 @@ export const streaksApi = {
     const { data, error } = await supabase
       .from("user_streaks")
       .select("*")
-      .eq("user_id", TEMP_USER_ID)
+      .eq("user_id", ADMIN_USER_ID)
       .single();
 
     if (error) {
