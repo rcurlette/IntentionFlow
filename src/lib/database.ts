@@ -870,7 +870,7 @@ export const streaksApi = {
     const { error } = await supabase
       .from("user_streaks")
       .update(updates)
-      .eq("user_id", TEMP_USER_ID);
+      .eq("user_id", ADMIN_USER_ID);
 
     if (error) {
       console.error("Error updating streak:", error);
