@@ -386,33 +386,87 @@ export async function updateDayPlanStats(): Promise<void> {
 
 // Settings Management - Database-backed
 export async function getUserSettings(): Promise<UserSettings> {
+  if (!isSupabaseConfigured) {
+    console.log("Supabase not configured, using localStorage");
+    return getFromStorage<UserSettings>(
+      STORAGE_KEYS.USER_SETTINGS,
+      getDefaultUserSettings(),
+    );
+  }
+
   try {
     return await settingsApi.get();
   } catch (error) {
     console.error("Database error, falling back to localStorage:", error);
-    return getFromStorage<UserSettings>(STORAGE_KEYS.USER_SETTINGS, {
-      theme: "dark",
-      colorTheme: "vibrant",
-      focusDuration: 25,
-      shortBreakDuration: 5,
-      longBreakDuration: 15,
-      sessionsBeforeLongBreak: 4,
-      autoStartBreaks: false,
-      autoStartPomodoros: false,
-      notificationsEnabled: true,
-      soundEnabled: true,
-      dailyGoal: 5,
-    });
+    return getFromStorage<UserSettings>(
+      STORAGE_KEYS.USER_SETTINGS,
+      getDefaultUserSettings(),
+    );
   }
 }
 
 export async function saveUserSettings(settings: UserSettings): Promise<void> {
+  if (!isSupabaseConfigured) {
+    console.log("Supabase not configured, saving to localStorage");
+    setToStorage(STORAGE_KEYS.USER_SETTINGS, settings);
+    return;
+  }
+
   try {
     await settingsApi.update(settings);
+    // Also cache in localStorage for offline access
+    setToStorage(STORAGE_KEYS.USER_SETTINGS, settings);
   } catch (error) {
     console.error("Database error, falling back to localStorage:", error);
     setToStorage(STORAGE_KEYS.USER_SETTINGS, settings);
   }
+}
+
+// Helper function to get default user settings
+function getDefaultUserSettings(): UserSettings {
+  return {
+    // Appearance & Theme
+    theme: "dark",
+    colorTheme: "vibrant",
+    reducedMotion: false,
+    highContrast: false,
+    animations: true,
+
+    // Pomodoro & Focus Settings
+    focusDuration: 25,
+    shortBreakDuration: 5,
+    longBreakDuration: 15,
+    sessionsBeforeLongBreak: 4,
+    autoStartBreaks: false,
+    autoStartPomodoros: false,
+
+    // Notifications & Alerts
+    notificationsEnabled: true,
+    soundEnabled: true,
+    taskReminders: true,
+    breakNotifications: true,
+    dailySummary: true,
+    achievementAlerts: true,
+
+    // Productivity & Goals
+    dailyGoal: 5,
+    workingHours: {
+      start: "09:00",
+      end: "17:00",
+    },
+
+    // Music & Media
+    autoPlayMusic: false,
+    loopMusic: true,
+    musicVolume: 50,
+
+    // Profile & Personal
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    motivationalMessages: true,
+
+    // Advanced Features
+    flowTrackingEnabled: true,
+  };
 }
 
 // Achievement Management - Database-backed
