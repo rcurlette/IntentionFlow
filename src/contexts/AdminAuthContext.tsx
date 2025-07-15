@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { User, Session } from "@supabase/supabase-js";
 
-// Mock admin user for Robert Curlette
+// Mock admin user for Robert Curlette (using UUID format for database compatibility)
 const ADMIN_USER: User = {
-  id: "admin-robert-curlette",
+  id: "00000000-0000-0000-0000-000000000001",
   aud: "authenticated",
   role: "authenticated",
   email: "robert.curlette@gmail.com",
