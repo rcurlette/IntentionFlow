@@ -61,7 +61,7 @@ interface FlowIdentity {
 
 export default function FlowDashboard() {
   const { user, loading: authLoading } = useAdminAuth();
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [activeSection, setActiveSection] = useState<"morning" | "evening">(
     "morning",
   );
