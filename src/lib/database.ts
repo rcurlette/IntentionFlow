@@ -380,8 +380,10 @@ export const pomodoroApi = {
       .lt("started_at", tomorrow);
 
     if (error) {
-      console.error("Error fetching today stats:", error);
-      throw error;
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      console.error("Error fetching today stats:", errorMessage, error);
+      throw new Error(`Failed to fetch today stats: ${errorMessage}`);
     }
 
     const sessions = data || [];
