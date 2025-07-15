@@ -426,7 +426,15 @@ export async function saveUserSettings(settings: UserSettings): Promise<void> {
     // Also cache in localStorage for offline access
     setToStorage(STORAGE_KEYS.USER_SETTINGS, settings);
   } catch (error) {
-    console.error("Database error, falling back to localStorage:", error);
+    // Extract meaningful error message for logging
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : error && typeof error === "object" && error.message
+          ? error.message
+          : JSON.stringify(error);
+
+    console.log("Database error, falling back to localStorage:", errorMessage);
     setToStorage(STORAGE_KEYS.USER_SETTINGS, settings);
   }
 }
