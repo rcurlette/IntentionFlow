@@ -330,9 +330,9 @@ export const pomodoroApi = {
     const { data, error } = await supabase
       .from("pomodoro_sessions")
       .select("*")
-      .eq("user_id", TEMP_USER_ID)
+      .eq("user_id", ADMIN_USER_ID)
       .gte("started_at", startDate)
-      .lte("started_at", endDate)
+      .lte("started_at", endDate);
       .order("started_at", { ascending: false });
 
     if (error) {
