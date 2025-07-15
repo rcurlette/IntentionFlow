@@ -461,8 +461,12 @@ export const settingsApi = {
         return this.create(defaultSettings);
       }
       const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      console.error("Error fetching settings:", errorMessage, error);
+        error instanceof Error
+          ? error.message
+          : error && typeof error === "object" && error.message
+            ? error.message
+            : JSON.stringify(error);
+      console.error("Error fetching settings:", errorMessage);
       throw new Error(`Failed to fetch settings: ${errorMessage}`);
     }
 
