@@ -164,7 +164,7 @@ export const tasksApi = {
       .from("tasks")
       .update(dbUpdates)
       .eq("id", id)
-      .eq("user_id", TEMP_USER_ID)
+      .eq("user_id", ADMIN_USER_ID)
       .select("*")
       .single();
 
