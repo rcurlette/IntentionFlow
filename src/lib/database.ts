@@ -60,7 +60,7 @@ const dbTaskToTask = (dbTask: DatabaseTask): Task => ({
 // Helper function to convert app task to database task
 const taskToDbTask = (
   task: Partial<Task>,
-  userId: string = TEMP_USER_ID,
+  userId: string = ADMIN_USER_ID,
 ): Partial<DatabaseTask> => {
   // Determine status from either status or completed field
   let status = task.status;
