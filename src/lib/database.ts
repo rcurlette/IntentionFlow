@@ -278,7 +278,7 @@ export const pomodoroApi = {
       throw new Error("Supabase not configured, falling back to localStorage");
     }
     const dbSession = {
-      user_id: TEMP_USER_ID,
+      user_id: ADMIN_USER_ID,
       task_id: session.taskId || null,
       duration: session.duration,
       session_type:
