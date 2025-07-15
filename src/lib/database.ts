@@ -381,8 +381,12 @@ export const pomodoroApi = {
 
     if (error) {
       const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      console.error("Error fetching today stats:", errorMessage, error);
+        error instanceof Error
+          ? error.message
+          : error && typeof error === "object" && error.message
+            ? error.message
+            : JSON.stringify(error);
+      console.error("Error fetching today stats:", errorMessage);
       throw new Error(`Failed to fetch today stats: ${errorMessage}`);
     }
 
