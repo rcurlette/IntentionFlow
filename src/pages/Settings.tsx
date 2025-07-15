@@ -575,15 +575,76 @@ export default function Settings() {
             <CardContent className="space-y-4">
               <div>
                 <Label htmlFor="display-name">Display Name</Label>
-                <Input id="display-name" placeholder="Your name" />
+                <Input
+                  id="display-name"
+                  placeholder="Your name"
+                  value={settings.displayName || ""}
+                  onChange={(e) =>
+                    updateSettings({ displayName: e.target.value })
+                  }
+                />
               </div>
               <div>
                 <Label htmlFor="daily-goal">Daily Task Goal</Label>
-                <Input id="daily-goal" type="number" defaultValue="5" />
+                <Input
+                  id="daily-goal"
+                  type="number"
+                  min="1"
+                  max="20"
+                  value={settings.dailyGoal || 5}
+                  onChange={(e) =>
+                    updateSettings({ dailyGoal: parseInt(e.target.value) })
+                  }
+                />
               </div>
               <div>
                 <Label htmlFor="timezone">Timezone</Label>
-                <Input id="timezone" value="Auto-detected" disabled />
+                <Input
+                  id="timezone"
+                  value={settings.timezone || "Auto-detected"}
+                  onChange={(e) => updateSettings({ timezone: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Working Hours</Label>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="work-start" className="text-sm">
+                      Start
+                    </Label>
+                    <Input
+                      id="work-start"
+                      type="time"
+                      value={settings.workingHours.start || "09:00"}
+                      onChange={(e) =>
+                        updateSettings({
+                          workingHours: {
+                            ...settings.workingHours,
+                            start: e.target.value,
+                          },
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="work-end" className="text-sm">
+                      End
+                    </Label>
+                    <Input
+                      id="work-end"
+                      type="time"
+                      value={settings.workingHours.end || "17:00"}
+                      onChange={(e) =>
+                        updateSettings({
+                          workingHours: {
+                            ...settings.workingHours,
+                            end: e.target.value,
+                          },
+                        })
+                      }
+                    />
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
