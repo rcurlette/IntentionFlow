@@ -15,8 +15,8 @@ import type {
   DayPlan,
 } from "../types";
 
-// Temporary fallback for old code (will be replaced by proper auth)
-const TEMP_USER_ID = "temp-user-id";
+// Admin user ID in proper UUID format for database compatibility
+const ADMIN_USER_ID = "00000000-0000-0000-0000-000000000001";
 
 // Helper function to get current user ID
 const getCurrentUserId = async (): Promise<string> => {
