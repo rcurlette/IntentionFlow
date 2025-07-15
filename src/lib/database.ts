@@ -1,5 +1,6 @@
 import {
   supabase,
+  isSupabaseConfigured,
   type DatabaseTask,
   type DatabasePomodoroSession,
   type DatabaseUserSettings,
