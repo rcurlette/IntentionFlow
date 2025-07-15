@@ -236,7 +236,7 @@ export const tasksApi = {
         .from("tasks")
         .update(dbUpdates)
         .in("id", ids)
-        .eq("user_id", TEMP_USER_ID);
+        .eq("user_id", ADMIN_USER_ID);
 
       if (error) {
         console.error("Error bulk updating tasks:", error);
