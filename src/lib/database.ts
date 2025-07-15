@@ -584,25 +584,84 @@ export const settingsApi = {
   },
 
   async update(updates: Partial<UserSettings>): Promise<UserSettings> {
+    if (!isSupabaseConfigured) {
+      throw new Error("Supabase not configured, falling back to localStorage");
+    }
+
     const dbUpdates: any = {};
-    if (updates.theme) dbUpdates.theme = updates.theme;
-    if (updates.colorTheme) dbUpdates.color_theme = updates.colorTheme;
-    if (updates.focusDuration) dbUpdates.focus_duration = updates.focusDuration;
-    if (updates.shortBreakDuration)
+
+    // Appearance & Theme
+    if (updates.theme !== undefined) dbUpdates.theme = updates.theme;
+    if (updates.colorTheme !== undefined)
+      dbUpdates.color_theme = updates.colorTheme;
+    if (updates.reducedMotion !== undefined)
+      dbUpdates.reduced_motion = updates.reducedMotion;
+    if (updates.highContrast !== undefined)
+      dbUpdates.high_contrast = updates.highContrast;
+    if (updates.animations !== undefined)
+      dbUpdates.animations = updates.animations;
+
+    // Pomodoro & Focus Settings
+    if (updates.focusDuration !== undefined)
+      dbUpdates.focus_duration = updates.focusDuration;
+    if (updates.shortBreakDuration !== undefined)
       dbUpdates.short_break_duration = updates.shortBreakDuration;
-    if (updates.longBreakDuration)
+    if (updates.longBreakDuration !== undefined)
       dbUpdates.long_break_duration = updates.longBreakDuration;
-    if (updates.sessionsBeforeLongBreak)
+    if (updates.sessionsBeforeLongBreak !== undefined)
       dbUpdates.sessions_before_long_break = updates.sessionsBeforeLongBreak;
     if (updates.autoStartBreaks !== undefined)
       dbUpdates.auto_start_breaks = updates.autoStartBreaks;
     if (updates.autoStartPomodoros !== undefined)
       dbUpdates.auto_start_pomodoros = updates.autoStartPomodoros;
+
+    // Notifications & Alerts
     if (updates.notificationsEnabled !== undefined)
       dbUpdates.notifications_enabled = updates.notificationsEnabled;
     if (updates.soundEnabled !== undefined)
       dbUpdates.sound_enabled = updates.soundEnabled;
-    if (updates.dailyGoal) dbUpdates.daily_goal = updates.dailyGoal;
+    if (updates.taskReminders !== undefined)
+      dbUpdates.task_reminders = updates.taskReminders;
+    if (updates.breakNotifications !== undefined)
+      dbUpdates.break_notifications = updates.breakNotifications;
+    if (updates.dailySummary !== undefined)
+      dbUpdates.daily_summary = updates.dailySummary;
+    if (updates.achievementAlerts !== undefined)
+      dbUpdates.achievement_alerts = updates.achievementAlerts;
+
+    // Productivity & Goals
+    if (updates.dailyGoal !== undefined)
+      dbUpdates.daily_goal = updates.dailyGoal;
+    if (updates.workingHours?.start !== undefined)
+      dbUpdates.working_hours_start = updates.workingHours.start;
+    if (updates.workingHours?.end !== undefined)
+      dbUpdates.working_hours_end = updates.workingHours.end;
+
+    // Music & Media
+    if (updates.youtubeUrl !== undefined)
+      dbUpdates.youtube_url = updates.youtubeUrl;
+    if (updates.autoPlayMusic !== undefined)
+      dbUpdates.auto_play_music = updates.autoPlayMusic;
+    if (updates.loopMusic !== undefined)
+      dbUpdates.loop_music = updates.loopMusic;
+    if (updates.musicVolume !== undefined)
+      dbUpdates.music_volume = updates.musicVolume;
+
+    // Profile & Personal
+    if (updates.displayName !== undefined)
+      dbUpdates.display_name = updates.displayName;
+    if (updates.timezone !== undefined) dbUpdates.timezone = updates.timezone;
+    if (updates.motivationalMessages !== undefined)
+      dbUpdates.motivational_messages = updates.motivationalMessages;
+
+    // Advanced Features
+    if (updates.visionBoardUrl !== undefined)
+      dbUpdates.vision_board_url = updates.visionBoardUrl;
+    if (updates.flowTrackingEnabled !== undefined)
+      dbUpdates.flow_tracking_enabled = updates.flowTrackingEnabled;
+
+    // Add updated_at timestamp
+    dbUpdates.updated_at = new Date().toISOString();
 
     const { data, error } = await supabase
       .from("user_settings")
@@ -612,8 +671,10 @@ export const settingsApi = {
       .single();
 
     if (error) {
-      console.error("Error updating settings:", error);
-      throw error;
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      console.error("Error updating settings:", errorMessage, error);
+      throw new Error(`Failed to update settings: ${errorMessage}`);
     }
 
     return {
