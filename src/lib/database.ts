@@ -373,7 +373,7 @@ export const pomodoroApi = {
     const { data, error } = await supabase
       .from("pomodoro_sessions")
       .select("duration, flow_score")
-      .eq("user_id", TEMP_USER_ID)
+      .eq("user_id", ADMIN_USER_ID)
       .eq("session_type", "focus")
       .eq("completed", true)
       .gte("started_at", today)
