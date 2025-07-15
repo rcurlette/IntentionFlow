@@ -1,4 +1,6 @@
-import { Navigation } from "@/components/app/Navigation";
+import React, { useRef } from "react";
+import { AppLayout } from "@/components/layout/AppLayout";
+import { Loading } from "@/components/ui/loading";
 import { ThemeSwitcher } from "@/components/app/ThemeSwitcher";
 import { FlowTrackingSettings } from "@/components/app/FlowTrackingSettings";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,6 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
+import { useToast } from "@/hooks/use-toast";
+import {
+  useSettings,
+  usePomodoroSettings,
+  useNotificationSettings,
+  useThemeSettings,
+} from "@/hooks/use-settings";
 import { useFlowTracking } from "@/hooks/use-flow-tracking";
 import {
   Settings as SettingsIcon,
@@ -21,9 +31,30 @@ import {
   Brain,
   Music,
   Activity,
+  RotateCcw,
+  Save,
+  FileJson,
 } from "lucide-react";
 
 export default function Settings() {
+  const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const {
+    settings,
+    loading,
+    error,
+    updateSettings,
+    resetSettings,
+    exportSettings,
+    importSettings,
+  } = useSettings();
+
+  const { settings: pomodoroSettings, updatePomodoro } = usePomodoroSettings();
+  const { settings: notificationSettings, updateNotifications } =
+    useNotificationSettings();
+  const { settings: themeSettings, updateTheme } = useThemeSettings();
+
   const {
     settings: flowSettings,
     updateSettings: updateFlowSettings,
@@ -31,6 +62,128 @@ export default function Settings() {
     requestNotificationPermission,
     hasNotificationPermission,
   } = useFlowTracking();
+
+  // Handle export
+  const handleExport = () => {
+    try {
+      const data = exportSettings();
+      const blob = new Blob([data], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `flowtracker-settings-${new Date().toISOString().split("T")[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: "Settings Exported",
+        description: "Your settings have been exported successfully.",
+      });
+    } catch (err) {
+      toast({
+        title: "Export Failed",
+        description: "Failed to export settings. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Handle import
+  const handleImport = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const text = await file.text();
+      await importSettings(text);
+
+      toast({
+        title: "Settings Imported",
+        description: "Your settings have been imported successfully.",
+      });
+    } catch (err) {
+      toast({
+        title: "Import Failed",
+        description:
+          err instanceof Error ? err.message : "Failed to import settings.",
+        variant: "destructive",
+      });
+    }
+
+    // Reset the file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  // Handle reset
+  const handleReset = async () => {
+    try {
+      await resetSettings();
+      toast({
+        title: "Settings Reset",
+        description: "All settings have been reset to defaults.",
+      });
+    } catch (err) {
+      toast({
+        title: "Reset Failed",
+        description: "Failed to reset settings. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  if (loading) {
+    return (
+      <AppLayout
+        title="Settings"
+        description="Customize your productivity experience"
+      >
+        <Loading message="Loading your settings..." />
+      </AppLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <AppLayout
+        title="Settings"
+        description="Customize your productivity experience"
+      >
+        <div className="pt-4 pb-8 px-4 container mx-auto max-w-4xl">
+          <div className="text-center py-8">
+            <p className="text-red-400">Error loading settings: {error}</p>
+            <Button onClick={() => window.location.reload()} className="mt-4">
+              Retry
+            </Button>
+          </div>
+        </div>
+      </AppLayout>
+    );
+  }
+
+  if (!settings) {
+    return (
+      <AppLayout
+        title="Settings"
+        description="Customize your productivity experience"
+      >
+        <div className="pt-4 pb-8 px-4 container mx-auto max-w-4xl">
+          <div className="text-center py-8">
+            <p className="text-slate-400">No settings found.</p>
+          </div>
+        </div>
+      </AppLayout>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
