@@ -76,18 +76,50 @@ export interface Analytics {
 }
 
 export interface UserSettings {
+  // Appearance & Theme
   theme: "light" | "dark" | "system";
+  colorTheme: "vibrant" | "accessible";
+  reducedMotion: boolean;
+  highContrast: boolean;
+  animations: boolean;
+
+  // Pomodoro & Focus Settings
   focusDuration: number; // in minutes
   shortBreakDuration: number;
   longBreakDuration: number;
+  sessionsBeforeLongBreak: number;
+  autoStartBreaks: boolean;
+  autoStartPomodoros: boolean;
+
+  // Notifications & Alerts
   notificationsEnabled: boolean;
   soundEnabled: boolean;
-  autoStartBreaks: boolean;
+  taskReminders: boolean;
+  breakNotifications: boolean;
+  dailySummary: boolean;
+  achievementAlerts: boolean;
+
+  // Productivity & Goals
   dailyGoal: number; // number of pomodoros
   workingHours: {
     start: string;
     end: string;
   };
+
+  // Music & Media
+  youtubeUrl?: string;
+  autoPlayMusic: boolean;
+  loopMusic: boolean;
+  musicVolume: number; // 0-100
+
+  // Profile & Personal
+  displayName?: string;
+  timezone: string;
+  motivationalMessages: boolean;
+
+  // Advanced Features
+  visionBoardUrl?: string;
+  flowTrackingEnabled: boolean;
 }
 
 // UI State Types
