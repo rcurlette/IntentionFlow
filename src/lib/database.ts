@@ -524,9 +524,7 @@ export const settingsApi = {
   },
 
   async create(settings: UserSettings): Promise<UserSettings> {
-    if (!isSupabaseConfigured) {
-      throw new Error("Supabase not configured, falling back to localStorage");
-    }
+    // Let the actual database call handle connection issues
 
     const dbSettings = {
       user_id: TEMP_USER_ID,
