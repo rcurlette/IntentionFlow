@@ -405,9 +405,8 @@ export const pomodoroApi = {
 // User Settings API
 export const settingsApi = {
   async get(): Promise<UserSettings> {
-    if (!isSupabaseConfigured) {
-      throw new Error("Supabase not configured, falling back to localStorage");
-    }
+    // Let the actual database call handle connection issues
+    // This allows for better error handling and fallback behavior
 
     const { data, error } = await supabase
       .from("user_settings")
