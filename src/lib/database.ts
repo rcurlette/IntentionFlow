@@ -95,7 +95,7 @@ export const tasksApi = {
     const { data, error } = await supabase
       .from("tasks")
       .select("*")
-      .eq("user_id", TEMP_USER_ID)
+      .eq("user_id", ADMIN_USER_ID)
       .order("created_at", { ascending: false });
 
     if (error) {
