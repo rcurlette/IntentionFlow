@@ -662,11 +662,39 @@ export const streaksApi = {
 export const dayPlanApi = {
   async getToday(): Promise<DayPlan> {
     const today = new Date().toISOString().split("T")[0];
-    const [tasks, pomodoroStats, streak] = await Promise.all([
-      tasksApi.getByDate(today),
-      pomodoroApi.getTodayStats(),
-      streaksApi.get(),
-    ]);
+
+    // Handle each API call separately to prevent one failure from breaking everything
+    let tasks: Task[] = [];
+    let pomodoroStats = { count: 0, totalTime: 0, avgFlowScore: 0 };
+    let streak = { currentStreak: 0, longestStreak: 0 };
+
+    try {
+      tasks = await tasksApi.getByDate(today);
+    } catch (error) {
+      console.error(
+        "Failed to fetch tasks for today:",
+        error instanceof Error ? error.message : String(error),
+      );
+      tasks = [];
+    }
+
+    try {
+      pomodoroStats = await pomodoroApi.getTodayStats();
+    } catch (error) {
+      console.error(
+        "Failed to fetch pomodoro stats:",
+        error instanceof Error ? error.message : String(error),
+      );
+    }
+
+    try {
+      streak = await streaksApi.get();
+    } catch (error) {
+      console.error(
+        "Failed to fetch streak data:",
+        error instanceof Error ? error.message : String(error),
+      );
+    }
 
     const morningTasks = tasks.filter((t) => t.period === "morning");
     const afternoonTasks = tasks.filter((t) => t.period === "afternoon");
