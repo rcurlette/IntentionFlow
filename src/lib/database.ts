@@ -843,8 +843,12 @@ export const streaksApi = {
         };
       }
       const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      console.error("Error fetching streak data:", errorMessage, error);
+        error instanceof Error
+          ? error.message
+          : error && typeof error === "object" && error.message
+            ? error.message
+            : JSON.stringify(error);
+      console.error("Error fetching streak data:", errorMessage);
       throw new Error(`Failed to fetch streak data: ${errorMessage}`);
     }
 
