@@ -10,12 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
-import {
-  useSettings,
-  usePomodoroSettings,
-  useNotificationSettings,
-  useThemeSettings,
-} from "@/hooks/use-settings";
+import { useSettings, usePomodoroSettings, useNotificationSettings, useThemeSettings } from "@/hooks/use-settings";
 import { useFlowTracking } from "@/hooks/use-flow-tracking";
 import {
   Settings as SettingsIcon,
@@ -51,8 +46,7 @@ export default function Settings() {
   } = useSettings();
 
   const { settings: pomodoroSettings, updatePomodoro } = usePomodoroSettings();
-  const { settings: notificationSettings, updateNotifications } =
-    useNotificationSettings();
+  const { settings: notificationSettings, updateNotifications } = useNotificationSettings();
   const { settings: themeSettings, updateTheme } = useThemeSettings();
 
   const {
@@ -95,9 +89,7 @@ export default function Settings() {
     fileInputRef.current?.click();
   };
 
-  const handleFileChange = async (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -112,8 +104,7 @@ export default function Settings() {
     } catch (err) {
       toast({
         title: "Import Failed",
-        description:
-          err instanceof Error ? err.message : "Failed to import settings.",
+        description: err instanceof Error ? err.message : "Failed to import settings.",
         variant: "destructive",
       });
     }
@@ -143,10 +134,7 @@ export default function Settings() {
 
   if (loading) {
     return (
-      <AppLayout
-        title="Settings"
-        description="Customize your productivity experience"
-      >
+      <AppLayout title="Settings" description="Customize your productivity experience">
         <Loading message="Loading your settings..." />
       </AppLayout>
     );
@@ -154,10 +142,7 @@ export default function Settings() {
 
   if (error) {
     return (
-      <AppLayout
-        title="Settings"
-        description="Customize your productivity experience"
-      >
+      <AppLayout title="Settings" description="Customize your productivity experience">
         <div className="pt-4 pb-8 px-4 container mx-auto max-w-4xl">
           <div className="text-center py-8">
             <p className="text-red-400">Error loading settings: {error}</p>
@@ -172,10 +157,7 @@ export default function Settings() {
 
   if (!settings) {
     return (
-      <AppLayout
-        title="Settings"
-        description="Customize your productivity experience"
-      >
+      <AppLayout title="Settings" description="Customize your productivity experience">
         <div className="pt-4 pb-8 px-4 container mx-auto max-w-4xl">
           <div className="text-center py-8">
             <p className="text-slate-400">No settings found.</p>
@@ -186,10 +168,16 @@ export default function Settings() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
-
-      <main className="pt-20 pb-8 px-4 container mx-auto max-w-4xl">
+    <AppLayout title="Settings" description="Customize your productivity experience">
+      <div className="pt-4 pb-8 px-4 container mx-auto max-w-4xl">
+        {/* Hidden file input for import */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".json"
+          onChange={handleFileChange}
+          className="hidden"
+        />
         <div className="mb-8">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-primary via-focus to-energy bg-clip-text text-transparent mb-2">
             Settings
