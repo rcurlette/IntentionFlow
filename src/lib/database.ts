@@ -770,7 +770,7 @@ export const achievementsApi = {
     achievement: Omit<Achievement, "id" | "earnedAt">,
   ): Promise<Achievement> {
     const dbAchievement = {
-      user_id: TEMP_USER_ID,
+      user_id: ADMIN_USER_ID,
       type: achievement.type,
       title: achievement.title,
       description: achievement.description,
