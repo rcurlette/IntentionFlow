@@ -680,8 +680,12 @@ export const settingsApi = {
 
     if (error) {
       const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      console.error("Error updating settings:", errorMessage, error);
+        error instanceof Error
+          ? error.message
+          : error && typeof error === "object" && error.message
+            ? error.message
+            : JSON.stringify(error);
+      console.error("Error updating settings:", errorMessage);
       throw new Error(`Failed to update settings: ${errorMessage}`);
     }
 
