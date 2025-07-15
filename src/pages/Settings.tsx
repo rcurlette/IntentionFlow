@@ -658,22 +658,60 @@ export default function Settings() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Button variant="outline" className="flex items-center space-x-2">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <Button
+                variant="outline"
+                onClick={handleExport}
+                className="flex items-center space-x-2"
+              >
                 <Download className="h-4 w-4" />
-                <span>Export Data</span>
-              </Button>
-              <Button variant="outline" className="flex items-center space-x-2">
-                <Upload className="h-4 w-4" />
-                <span>Import Data</span>
+                <span>Export Settings</span>
               </Button>
               <Button
                 variant="outline"
-                className="flex items-center space-x-2 text-destructive hover:text-destructive"
+                onClick={handleImport}
+                className="flex items-center space-x-2"
               >
-                <Trash2 className="h-4 w-4" />
-                <span>Clear All Data</span>
+                <Upload className="h-4 w-4" />
+                <span>Import Settings</span>
               </Button>
+              <Button
+                variant="outline"
+                onClick={handleReset}
+                className="flex items-center space-x-2 text-amber-400 hover:text-amber-300"
+              >
+                <RotateCcw className="h-4 w-4" />
+                <span>Reset to Defaults</span>
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  const data = JSON.stringify(settings, null, 2);
+                  navigator.clipboard.writeText(data);
+                  toast({
+                    title: "Settings Copied",
+                    description: "Settings JSON copied to clipboard.",
+                  });
+                }}
+                className="flex items-center space-x-2"
+              >
+                <FileJson className="h-4 w-4" />
+                <span>Copy JSON</span>
+              </Button>
+            </div>
+            <div className="mt-4 text-sm text-muted-foreground">
+              <p>
+                <strong>Export:</strong> Download your settings as a JSON file
+                for backup or transfer.
+              </p>
+              <p>
+                <strong>Import:</strong> Restore settings from a previously
+                exported JSON file.
+              </p>
+              <p>
+                <strong>Reset:</strong> Restore all settings to their default
+                values.
+              </p>
             </div>
           </CardContent>
         </Card>
