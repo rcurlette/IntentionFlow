@@ -116,7 +116,7 @@ export const tasksApi = {
         .from("tasks")
         .select("*")
         .eq("id", id)
-        .eq("user_id", TEMP_USER_ID)
+        .eq("user_id", ADMIN_USER_ID)
         .single();
 
       if (error) {
