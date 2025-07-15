@@ -593,9 +593,7 @@ export const settingsApi = {
   },
 
   async update(updates: Partial<UserSettings>): Promise<UserSettings> {
-    if (!isSupabaseConfigured) {
-      throw new Error("Supabase not configured, falling back to localStorage");
-    }
+    // Let the actual database call handle connection issues
 
     const dbUpdates: any = {};
 
