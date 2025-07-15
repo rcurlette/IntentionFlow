@@ -401,6 +401,10 @@ export const pomodoroApi = {
 // User Settings API
 export const settingsApi = {
   async get(): Promise<UserSettings> {
+    if (!isSupabaseConfigured) {
+      throw new Error("Supabase not configured, falling back to localStorage");
+    }
+
     const { data, error } = await supabase
       .from("user_settings")
       .select("*")
@@ -410,36 +414,105 @@ export const settingsApi = {
     if (error) {
       if (error.code === "PGRST116") {
         // No settings found, create default
-        return this.create({
+        const defaultSettings: UserSettings = {
+          // Appearance & Theme
           theme: "dark",
           colorTheme: "vibrant",
+          reducedMotion: false,
+          highContrast: false,
+          animations: true,
+
+          // Pomodoro & Focus Settings
           focusDuration: 25,
           shortBreakDuration: 5,
           longBreakDuration: 15,
           sessionsBeforeLongBreak: 4,
           autoStartBreaks: false,
           autoStartPomodoros: false,
+
+          // Notifications & Alerts
           notificationsEnabled: true,
           soundEnabled: true,
+          taskReminders: true,
+          breakNotifications: true,
+          dailySummary: true,
+          achievementAlerts: true,
+
+          // Productivity & Goals
           dailyGoal: 5,
-        });
+          workingHours: {
+            start: "09:00",
+            end: "17:00",
+          },
+
+          // Music & Media
+          autoPlayMusic: false,
+          loopMusic: true,
+          musicVolume: 50,
+
+          // Profile & Personal
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          motivationalMessages: true,
+
+          // Advanced Features
+          flowTrackingEnabled: true,
+        };
+
+        return this.create(defaultSettings);
       }
-      console.error("Error fetching settings:", error);
-      throw error;
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      console.error("Error fetching settings:", errorMessage, error);
+      throw new Error(`Failed to fetch settings: ${errorMessage}`);
     }
 
+    // Map database fields to UserSettings interface with safe defaults
     return {
-      theme: data.theme,
-      colorTheme: data.color_theme,
-      focusDuration: data.focus_duration,
-      shortBreakDuration: data.short_break_duration,
-      longBreakDuration: data.long_break_duration,
-      sessionsBeforeLongBreak: data.sessions_before_long_break,
-      autoStartBreaks: data.auto_start_breaks,
-      autoStartPomodoros: data.auto_start_pomodoros,
-      notificationsEnabled: data.notifications_enabled,
-      soundEnabled: data.sound_enabled,
-      dailyGoal: data.daily_goal,
+      // Appearance & Theme
+      theme: data.theme || "dark",
+      colorTheme: data.color_theme || "vibrant",
+      reducedMotion: data.reduced_motion || false,
+      highContrast: data.high_contrast || false,
+      animations: data.animations !== false,
+
+      // Pomodoro & Focus Settings
+      focusDuration: data.focus_duration || 25,
+      shortBreakDuration: data.short_break_duration || 5,
+      longBreakDuration: data.long_break_duration || 15,
+      sessionsBeforeLongBreak: data.sessions_before_long_break || 4,
+      autoStartBreaks: data.auto_start_breaks || false,
+      autoStartPomodoros: data.auto_start_pomodoros || false,
+
+      // Notifications & Alerts
+      notificationsEnabled: data.notifications_enabled !== false,
+      soundEnabled: data.sound_enabled !== false,
+      taskReminders: data.task_reminders !== false,
+      breakNotifications: data.break_notifications !== false,
+      dailySummary: data.daily_summary !== false,
+      achievementAlerts: data.achievement_alerts !== false,
+
+      // Productivity & Goals
+      dailyGoal: data.daily_goal || 5,
+      workingHours: {
+        start: data.working_hours_start || "09:00",
+        end: data.working_hours_end || "17:00",
+      },
+
+      // Music & Media
+      youtubeUrl: data.youtube_url || undefined,
+      autoPlayMusic: data.auto_play_music || false,
+      loopMusic: data.loop_music !== false,
+      musicVolume: data.music_volume || 50,
+
+      // Profile & Personal
+      displayName: data.display_name || undefined,
+      timezone:
+        data.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
+      motivationalMessages: data.motivational_messages !== false,
+
+      // Advanced Features
+      visionBoardUrl: data.vision_board_url || undefined,
+      flowTrackingEnabled: data.flow_tracking_enabled !== false,
     };
   },
 
