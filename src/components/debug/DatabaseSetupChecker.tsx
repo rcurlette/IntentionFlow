@@ -234,7 +234,17 @@ CREATE POLICY "Users can update own settings" ON user_settings FOR UPDATE USING 
 -- Create indexes
 CREATE INDEX IF NOT EXISTS idx_tasks_user_id ON tasks(user_id);
 CREATE INDEX IF NOT EXISTS idx_flow_sessions_user_id ON flow_sessions(user_id);
-CREATE INDEX IF NOT EXISTS idx_flow_actions_user_id ON flow_actions(user_id);`;
+CREATE INDEX IF NOT EXISTS idx_flow_actions_user_id ON flow_actions(user_id);
+
+-- Seed admin_test user for debug testing
+INSERT INTO profiles (id, email, name, flow_archetype, flow_start_date)
+VALUES (
+  'admin_test',
+  'admin_test@flowtracker.test',
+  'Admin Test User',
+  'Deep Worker',
+  CURRENT_DATE
+) ON CONFLICT (id) DO NOTHING;`;
 
     navigator.clipboard.writeText(sqlContent).then(() => {
       alert("Setup SQL copied to clipboard!");
