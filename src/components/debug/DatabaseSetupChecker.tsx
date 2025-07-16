@@ -28,10 +28,15 @@ export function DatabaseSetupChecker() {
 
   const requiredTables = [
     "profiles",
+    "user_settings",
     "tasks",
     "flow_sessions",
+    "pomodoro_sessions",
     "flow_actions",
-    "user_settings",
+    "achievements",
+    "user_streaks",
+    "flow_entries",
+    "flow_tracking_settings",
   ];
 
   const checkDatabaseSetup = async () => {
@@ -116,7 +121,7 @@ CREATE TABLE IF NOT EXISTS profiles (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
 );
 
--- Create tasks table  
+-- Create tasks table
 CREATE TABLE IF NOT EXISTS tasks (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
