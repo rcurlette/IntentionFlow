@@ -32,19 +32,8 @@ export function SupabaseTestPanel() {
     {},
   );
   const [isRunning, setIsRunning] = useState(false);
-  // Generate proper UUID for testing
-  const generateUUID = () => {
-    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
-      /[xy]/g,
-      function (c) {
-        const r = (Math.random() * 16) | 0;
-        const v = c === "x" ? r : (r & 0x3) | 0x8;
-        return v.toString(16);
-      },
-    );
-  };
-
-  const [testUserId] = useState(generateUUID());
+  // Fixed admin test user ID for consistent testing
+  const testUserId = "admin_test";
   const [customQuery, setCustomQuery] = useState("");
   const [queryResult, setQueryResult] = useState<any>(null);
 
@@ -93,21 +82,19 @@ export function SupabaseTestPanel() {
   const testCreateProfile = async () => {
     if (!supabase) throw new Error("Supabase not configured");
 
-    const profileData = {
-      id: testUserId,
-      email: `test-${Date.now()}@flowtracker.test`,
-      name: "Test User",
-      flow_archetype: "Deep Worker",
-      flow_start_date: new Date().toISOString().split("T")[0],
-    };
-
+    // Verify admin_test user exists
     const { data, error } = await supabase
       .from("profiles")
-      .insert(profileData)
-      .select()
+      .select("*")
+      .eq("id", testUserId)
       .single();
 
-    if (error) throw error;
+    if (error) {
+      throw new Error(
+        "admin_test user not found. Please run the database setup SQL first.",
+      );
+    }
+
     return data;
   };
 
@@ -367,7 +354,7 @@ export function SupabaseTestPanel() {
               <AlertDescription>
                 Test User ID: <code className="text-xs">{testUserId}</code>
                 <br />
-                This will create test data in your Supabase database.
+                Using pre-seeded admin test user for database operations.
               </AlertDescription>
             </Alert>
 

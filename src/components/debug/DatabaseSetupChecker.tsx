@@ -28,10 +28,15 @@ export function DatabaseSetupChecker() {
 
   const requiredTables = [
     "profiles",
+    "user_settings",
     "tasks",
     "flow_sessions",
+    "pomodoro_sessions",
     "flow_actions",
-    "user_settings",
+    "achievements",
+    "user_streaks",
+    "flow_entries",
+    "flow_tracking_settings",
   ];
 
   const checkDatabaseSetup = async () => {
@@ -116,7 +121,7 @@ CREATE TABLE IF NOT EXISTS profiles (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
 );
 
--- Create tasks table  
+-- Create tasks table
 CREATE TABLE IF NOT EXISTS tasks (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
@@ -229,7 +234,17 @@ CREATE POLICY "Users can update own settings" ON user_settings FOR UPDATE USING 
 -- Create indexes
 CREATE INDEX IF NOT EXISTS idx_tasks_user_id ON tasks(user_id);
 CREATE INDEX IF NOT EXISTS idx_flow_sessions_user_id ON flow_sessions(user_id);
-CREATE INDEX IF NOT EXISTS idx_flow_actions_user_id ON flow_actions(user_id);`;
+CREATE INDEX IF NOT EXISTS idx_flow_actions_user_id ON flow_actions(user_id);
+
+-- Seed admin_test user for debug testing
+INSERT INTO profiles (id, email, name, flow_archetype, flow_start_date)
+VALUES (
+  'admin_test',
+  'admin_test@flowtracker.test',
+  'Admin Test User',
+  'Deep Worker',
+  CURRENT_DATE
+) ON CONFLICT (id) DO NOTHING;`;
 
     navigator.clipboard.writeText(sqlContent).then(() => {
       alert("Setup SQL copied to clipboard!");
