@@ -1,11 +1,27 @@
 import { ConnectionTest } from "@/components/debug/ConnectionTest";
 import { SupabaseTestPanel } from "@/components/debug/SupabaseTestPanel";
 import { DatabaseSetupChecker } from "@/components/debug/DatabaseSetupChecker";
+import { StorageManager } from "@/components/admin/StorageManager";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Bug, Shield, Database, Network } from "lucide-react";
+import { config, getConfigStatus } from "@/lib/config";
+import { getCurrentStorageMode } from "@/lib/storage-manager";
+import {
+  ArrowLeft,
+  Bug,
+  Shield,
+  Database,
+  Network,
+  Settings,
+  Activity,
+  HardDrive,
+  Zap,
+  TestTube,
+  AlertTriangle,
+} from "lucide-react";
 
 export default function Debug() {
   const envInfo = {
