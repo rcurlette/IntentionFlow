@@ -30,6 +30,8 @@ export default function Debug() {
     hasSupabaseKey: !!import.meta.env.VITE_SUPABASE_ANON_KEY,
     adminEmail: import.meta.env.VITE_ADMIN_EMAIL,
     appUrl: import.meta.env.VITE_APP_URL,
+    storageMode: getCurrentStorageMode(),
+    configStatus: getConfigStatus(),
   };
 
   return (
