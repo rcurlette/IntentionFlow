@@ -90,9 +90,21 @@ export function SupabaseTestPanel() {
     return { connection: "OK", tables: profiles ? "Accessible" : "RLS Active" };
   };
 
-  const testCreateProfile = async () => {
+  const ensureTestProfile = async () => {
     if (!supabase) throw new Error("Supabase not configured");
 
+    // Check if profile already exists
+    const { data: existing } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("id", testUserId)
+      .single();
+
+    if (existing) {
+      return existing;
+    }
+
+    // Create new profile if it doesn't exist
     const profileData = {
       id: testUserId,
       email: `test-${Date.now()}@flowtracker.test`,
@@ -111,8 +123,15 @@ export function SupabaseTestPanel() {
     return data;
   };
 
+  const testCreateProfile = async () => {
+    return await ensureTestProfile();
+  };
+
   const testCreateTask = async () => {
     if (!supabase) throw new Error("Supabase not configured");
+
+    // Ensure test profile exists first
+    await ensureTestProfile();
 
     const taskData = {
       user_id: testUserId,
@@ -136,6 +155,9 @@ export function SupabaseTestPanel() {
 
   const testCreateFlowSession = async () => {
     if (!supabase) throw new Error("Supabase not configured");
+
+    // Ensure test profile exists first
+    await ensureTestProfile();
 
     const sessionData = {
       user_id: testUserId,
@@ -181,6 +203,9 @@ export function SupabaseTestPanel() {
   const testCreateFlowAction = async () => {
     if (!supabase) throw new Error("Supabase not configured");
 
+    // Ensure test profile exists first
+    await ensureTestProfile();
+
     const actionData = {
       user_id: testUserId,
       action_id: "breath-reset",
@@ -200,6 +225,9 @@ export function SupabaseTestPanel() {
 
   const testCreateUserSettings = async () => {
     if (!supabase) throw new Error("Supabase not configured");
+
+    // Ensure test profile exists first
+    await ensureTestProfile();
 
     const settingsData = {
       user_id: testUserId,
