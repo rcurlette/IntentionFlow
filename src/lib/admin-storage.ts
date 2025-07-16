@@ -1,7 +1,7 @@
 // Admin storage layer that uses localStorage for Robert's personal data
 // This bypasses Supabase for now while keeping the same data structure
 
-const ADMIN_USER_ID = "admin-robert-curlette";
+const ADMIN_USER_ID = "00000000-0000-0000-0000-000000000001";
 const STORAGE_PREFIX = "flowtracker_admin_";
 
 // Helper to get data from localStorage

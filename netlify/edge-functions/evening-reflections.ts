@@ -1,4 +1,5 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+// @ts-ignore
+import type { Context } from "https://edge.netlify.com/";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.2";
 
 const corsHeaders = {
@@ -20,7 +21,7 @@ interface EveningReflection {
   completed_at?: string;
 }
 
-serve(async (req) => {
+export default async function handler(req: Request, context: Context) {
   // Handle CORS
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -224,4 +225,8 @@ serve(async (req) => {
       },
     );
   }
-});
+}
+
+export const config = {
+  path: "/evening-reflections/*",
+};

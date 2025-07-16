@@ -1,5 +1,6 @@
 import {
   supabase,
+  isSupabaseConfigured,
   type DatabaseTask,
   type DatabasePomodoroSession,
   type DatabaseUserSettings,
@@ -14,8 +15,8 @@ import type {
   DayPlan,
 } from "../types";
 
-// Temporary fallback for old code (will be replaced by proper auth)
-const TEMP_USER_ID = "temp-user-id";
+// Admin user ID in proper UUID format for database compatibility
+const ADMIN_USER_ID = "00000000-0000-0000-0000-000000000001";
 
 // Helper function to get current user ID
 const getCurrentUserId = async (): Promise<string> => {
@@ -59,7 +60,7 @@ const dbTaskToTask = (dbTask: DatabaseTask): Task => ({
 // Helper function to convert app task to database task
 const taskToDbTask = (
   task: Partial<Task>,
-  userId: string = TEMP_USER_ID,
+  userId: string = ADMIN_USER_ID,
 ): Partial<DatabaseTask> => {
   // Determine status from either status or completed field
   let status = task.status;
@@ -94,7 +95,7 @@ export const tasksApi = {
     const { data, error } = await supabase
       .from("tasks")
       .select("*")
-      .eq("user_id", TEMP_USER_ID)
+      .eq("user_id", ADMIN_USER_ID)
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -115,7 +116,7 @@ export const tasksApi = {
         .from("tasks")
         .select("*")
         .eq("id", id)
-        .eq("user_id", TEMP_USER_ID)
+        .eq("user_id", ADMIN_USER_ID)
         .single();
 
       if (error) {
@@ -163,7 +164,7 @@ export const tasksApi = {
       .from("tasks")
       .update(dbUpdates)
       .eq("id", id)
-      .eq("user_id", TEMP_USER_ID)
+      .eq("user_id", ADMIN_USER_ID)
       .select("*")
       .single();
 
@@ -185,7 +186,7 @@ export const tasksApi = {
         .from("tasks")
         .delete()
         .eq("id", id)
-        .eq("user_id", TEMP_USER_ID);
+        .eq("user_id", ADMIN_USER_ID);
 
       if (error) {
         console.error("Error deleting task:", error);
@@ -205,7 +206,7 @@ export const tasksApi = {
     const { data, error } = await supabase
       .from("tasks")
       .select("*")
-      .eq("user_id", TEMP_USER_ID)
+      .eq("user_id", ADMIN_USER_ID)
       .eq("scheduled_for", date)
       .order("created_at", { ascending: false });
 
@@ -235,7 +236,7 @@ export const tasksApi = {
         .from("tasks")
         .update(dbUpdates)
         .in("id", ids)
-        .eq("user_id", TEMP_USER_ID);
+        .eq("user_id", ADMIN_USER_ID);
 
       if (error) {
         console.error("Error bulk updating tasks:", error);
@@ -257,7 +258,7 @@ export const tasksApi = {
         .from("tasks")
         .delete()
         .in("id", ids)
-        .eq("user_id", TEMP_USER_ID);
+        .eq("user_id", ADMIN_USER_ID);
 
       if (error) {
         console.error("Error bulk deleting tasks:", error);
@@ -277,7 +278,7 @@ export const pomodoroApi = {
       throw new Error("Supabase not configured, falling back to localStorage");
     }
     const dbSession = {
-      user_id: TEMP_USER_ID,
+      user_id: ADMIN_USER_ID,
       task_id: session.taskId || null,
       duration: session.duration,
       session_type:
@@ -329,7 +330,7 @@ export const pomodoroApi = {
     const { data, error } = await supabase
       .from("pomodoro_sessions")
       .select("*")
-      .eq("user_id", TEMP_USER_ID)
+      .eq("user_id", ADMIN_USER_ID)
       .gte("started_at", startDate)
       .lte("started_at", endDate)
       .order("started_at", { ascending: false });
@@ -372,15 +373,21 @@ export const pomodoroApi = {
     const { data, error } = await supabase
       .from("pomodoro_sessions")
       .select("duration, flow_score")
-      .eq("user_id", TEMP_USER_ID)
+      .eq("user_id", ADMIN_USER_ID)
       .eq("session_type", "focus")
       .eq("completed", true)
       .gte("started_at", today)
       .lt("started_at", tomorrow);
 
     if (error) {
-      console.error("Error fetching today stats:", error);
-      throw error;
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : error && typeof error === "object" && error.message
+            ? error.message
+            : JSON.stringify(error);
+      console.error("Error fetching today stats:", errorMessage);
+      throw new Error(`Failed to fetch today stats: ${errorMessage}`);
     }
 
     const sessions = data || [];
@@ -398,62 +405,171 @@ export const pomodoroApi = {
 // User Settings API
 export const settingsApi = {
   async get(): Promise<UserSettings> {
+    // Let the actual database call handle connection issues
+    // This allows for better error handling and fallback behavior
+
     const { data, error } = await supabase
       .from("user_settings")
       .select("*")
-      .eq("user_id", TEMP_USER_ID)
+      .eq("user_id", ADMIN_USER_ID)
       .single();
 
     if (error) {
       if (error.code === "PGRST116") {
         // No settings found, create default
-        return this.create({
+        const defaultSettings: UserSettings = {
+          // Appearance & Theme
           theme: "dark",
           colorTheme: "vibrant",
+          reducedMotion: false,
+          highContrast: false,
+          animations: true,
+
+          // Pomodoro & Focus Settings
           focusDuration: 25,
           shortBreakDuration: 5,
           longBreakDuration: 15,
           sessionsBeforeLongBreak: 4,
           autoStartBreaks: false,
           autoStartPomodoros: false,
+
+          // Notifications & Alerts
           notificationsEnabled: true,
           soundEnabled: true,
+          taskReminders: true,
+          breakNotifications: true,
+          dailySummary: true,
+          achievementAlerts: true,
+
+          // Productivity & Goals
           dailyGoal: 5,
-        });
+          workingHours: {
+            start: "09:00",
+            end: "17:00",
+          },
+
+          // Music & Media
+          autoPlayMusic: false,
+          loopMusic: true,
+          musicVolume: 50,
+
+          // Profile & Personal
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          motivationalMessages: true,
+
+          // Advanced Features
+          flowTrackingEnabled: true,
+        };
+
+        return this.create(defaultSettings);
       }
-      console.error("Error fetching settings:", error);
-      throw error;
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : error && typeof error === "object" && error.message
+            ? error.message
+            : JSON.stringify(error);
+      console.error("Error fetching settings:", errorMessage);
+      throw new Error(`Failed to fetch settings: ${errorMessage}`);
     }
 
+    // Map database fields to UserSettings interface with safe defaults
     return {
-      theme: data.theme,
-      colorTheme: data.color_theme,
-      focusDuration: data.focus_duration,
-      shortBreakDuration: data.short_break_duration,
-      longBreakDuration: data.long_break_duration,
-      sessionsBeforeLongBreak: data.sessions_before_long_break,
-      autoStartBreaks: data.auto_start_breaks,
-      autoStartPomodoros: data.auto_start_pomodoros,
-      notificationsEnabled: data.notifications_enabled,
-      soundEnabled: data.sound_enabled,
-      dailyGoal: data.daily_goal,
+      // Appearance & Theme
+      theme: data.theme || "dark",
+      colorTheme: data.color_theme || "vibrant",
+      reducedMotion: data.reduced_motion || false,
+      highContrast: data.high_contrast || false,
+      animations: data.animations !== false,
+
+      // Pomodoro & Focus Settings
+      focusDuration: data.focus_duration || 25,
+      shortBreakDuration: data.short_break_duration || 5,
+      longBreakDuration: data.long_break_duration || 15,
+      sessionsBeforeLongBreak: data.sessions_before_long_break || 4,
+      autoStartBreaks: data.auto_start_breaks || false,
+      autoStartPomodoros: data.auto_start_pomodoros || false,
+
+      // Notifications & Alerts
+      notificationsEnabled: data.notifications_enabled !== false,
+      soundEnabled: data.sound_enabled !== false,
+      taskReminders: data.task_reminders !== false,
+      breakNotifications: data.break_notifications !== false,
+      dailySummary: data.daily_summary !== false,
+      achievementAlerts: data.achievement_alerts !== false,
+
+      // Productivity & Goals
+      dailyGoal: data.daily_goal || 5,
+      workingHours: {
+        start: data.working_hours_start || "09:00",
+        end: data.working_hours_end || "17:00",
+      },
+
+      // Music & Media
+      youtubeUrl: data.youtube_url || undefined,
+      autoPlayMusic: data.auto_play_music || false,
+      loopMusic: data.loop_music !== false,
+      musicVolume: data.music_volume || 50,
+
+      // Profile & Personal
+      displayName: data.display_name || undefined,
+      timezone:
+        data.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
+      motivationalMessages: data.motivational_messages !== false,
+
+      // Advanced Features
+      visionBoardUrl: data.vision_board_url || undefined,
+      flowTrackingEnabled: data.flow_tracking_enabled !== false,
     };
   },
 
   async create(settings: UserSettings): Promise<UserSettings> {
+    // Let the actual database call handle connection issues
+
     const dbSettings = {
-      user_id: TEMP_USER_ID,
+      user_id: ADMIN_USER_ID,
+      // Appearance & Theme
       theme: settings.theme,
       color_theme: settings.colorTheme,
+      reduced_motion: settings.reducedMotion,
+      high_contrast: settings.highContrast,
+      animations: settings.animations,
+
+      // Pomodoro & Focus Settings
       focus_duration: settings.focusDuration,
       short_break_duration: settings.shortBreakDuration,
       long_break_duration: settings.longBreakDuration,
       sessions_before_long_break: settings.sessionsBeforeLongBreak,
       auto_start_breaks: settings.autoStartBreaks,
       auto_start_pomodoros: settings.autoStartPomodoros,
+
+      // Notifications & Alerts
       notifications_enabled: settings.notificationsEnabled,
       sound_enabled: settings.soundEnabled,
+      task_reminders: settings.taskReminders,
+      break_notifications: settings.breakNotifications,
+      daily_summary: settings.dailySummary,
+      achievement_alerts: settings.achievementAlerts,
+
+      // Productivity & Goals
       daily_goal: settings.dailyGoal,
+      working_hours_start: settings.workingHours.start,
+      working_hours_end: settings.workingHours.end,
+
+      // Music & Media
+      youtube_url: settings.youtubeUrl,
+      auto_play_music: settings.autoPlayMusic,
+      loop_music: settings.loopMusic,
+      music_volume: settings.musicVolume,
+
+      // Profile & Personal
+      display_name: settings.displayName,
+      timezone: settings.timezone,
+      motivational_messages: settings.motivationalMessages,
+
+      // Advanced Features
+      vision_board_url: settings.visionBoardUrl,
+      flow_tracking_enabled: settings.flowTrackingEnabled,
     };
 
     const { data, error } = await supabase
@@ -463,58 +579,162 @@ export const settingsApi = {
       .single();
 
     if (error) {
-      console.error("Error creating settings:", error);
-      throw error;
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : error && typeof error === "object" && error.message
+            ? error.message
+            : JSON.stringify(error);
+      console.error("Error creating settings:", errorMessage);
+      throw new Error(`Failed to create settings: ${errorMessage}`);
     }
 
     return settings;
   },
 
   async update(updates: Partial<UserSettings>): Promise<UserSettings> {
+    // Let the actual database call handle connection issues
+
     const dbUpdates: any = {};
-    if (updates.theme) dbUpdates.theme = updates.theme;
-    if (updates.colorTheme) dbUpdates.color_theme = updates.colorTheme;
-    if (updates.focusDuration) dbUpdates.focus_duration = updates.focusDuration;
-    if (updates.shortBreakDuration)
+
+    // Appearance & Theme
+    if (updates.theme !== undefined) dbUpdates.theme = updates.theme;
+    if (updates.colorTheme !== undefined)
+      dbUpdates.color_theme = updates.colorTheme;
+    if (updates.reducedMotion !== undefined)
+      dbUpdates.reduced_motion = updates.reducedMotion;
+    if (updates.highContrast !== undefined)
+      dbUpdates.high_contrast = updates.highContrast;
+    if (updates.animations !== undefined)
+      dbUpdates.animations = updates.animations;
+
+    // Pomodoro & Focus Settings
+    if (updates.focusDuration !== undefined)
+      dbUpdates.focus_duration = updates.focusDuration;
+    if (updates.shortBreakDuration !== undefined)
       dbUpdates.short_break_duration = updates.shortBreakDuration;
-    if (updates.longBreakDuration)
+    if (updates.longBreakDuration !== undefined)
       dbUpdates.long_break_duration = updates.longBreakDuration;
-    if (updates.sessionsBeforeLongBreak)
+    if (updates.sessionsBeforeLongBreak !== undefined)
       dbUpdates.sessions_before_long_break = updates.sessionsBeforeLongBreak;
     if (updates.autoStartBreaks !== undefined)
       dbUpdates.auto_start_breaks = updates.autoStartBreaks;
     if (updates.autoStartPomodoros !== undefined)
       dbUpdates.auto_start_pomodoros = updates.autoStartPomodoros;
+
+    // Notifications & Alerts
     if (updates.notificationsEnabled !== undefined)
       dbUpdates.notifications_enabled = updates.notificationsEnabled;
     if (updates.soundEnabled !== undefined)
       dbUpdates.sound_enabled = updates.soundEnabled;
-    if (updates.dailyGoal) dbUpdates.daily_goal = updates.dailyGoal;
+    if (updates.taskReminders !== undefined)
+      dbUpdates.task_reminders = updates.taskReminders;
+    if (updates.breakNotifications !== undefined)
+      dbUpdates.break_notifications = updates.breakNotifications;
+    if (updates.dailySummary !== undefined)
+      dbUpdates.daily_summary = updates.dailySummary;
+    if (updates.achievementAlerts !== undefined)
+      dbUpdates.achievement_alerts = updates.achievementAlerts;
+
+    // Productivity & Goals
+    if (updates.dailyGoal !== undefined)
+      dbUpdates.daily_goal = updates.dailyGoal;
+    if (updates.workingHours?.start !== undefined)
+      dbUpdates.working_hours_start = updates.workingHours.start;
+    if (updates.workingHours?.end !== undefined)
+      dbUpdates.working_hours_end = updates.workingHours.end;
+
+    // Music & Media
+    if (updates.youtubeUrl !== undefined)
+      dbUpdates.youtube_url = updates.youtubeUrl;
+    if (updates.autoPlayMusic !== undefined)
+      dbUpdates.auto_play_music = updates.autoPlayMusic;
+    if (updates.loopMusic !== undefined)
+      dbUpdates.loop_music = updates.loopMusic;
+    if (updates.musicVolume !== undefined)
+      dbUpdates.music_volume = updates.musicVolume;
+
+    // Profile & Personal
+    if (updates.displayName !== undefined)
+      dbUpdates.display_name = updates.displayName;
+    if (updates.timezone !== undefined) dbUpdates.timezone = updates.timezone;
+    if (updates.motivationalMessages !== undefined)
+      dbUpdates.motivational_messages = updates.motivationalMessages;
+
+    // Advanced Features
+    if (updates.visionBoardUrl !== undefined)
+      dbUpdates.vision_board_url = updates.visionBoardUrl;
+    if (updates.flowTrackingEnabled !== undefined)
+      dbUpdates.flow_tracking_enabled = updates.flowTrackingEnabled;
+
+    // Add updated_at timestamp
+    dbUpdates.updated_at = new Date().toISOString();
 
     const { data, error } = await supabase
       .from("user_settings")
       .update(dbUpdates)
-      .eq("user_id", TEMP_USER_ID)
+      .eq("user_id", ADMIN_USER_ID)
       .select("*")
       .single();
 
     if (error) {
-      console.error("Error updating settings:", error);
-      throw error;
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : error && typeof error === "object" && error.message
+            ? error.message
+            : JSON.stringify(error);
+      console.error("Error updating settings:", errorMessage);
+      throw new Error(`Failed to update settings: ${errorMessage}`);
     }
 
+    // Return the updated settings using the same mapping as the get method
     return {
-      theme: data.theme,
-      colorTheme: data.color_theme,
-      focusDuration: data.focus_duration,
-      shortBreakDuration: data.short_break_duration,
-      longBreakDuration: data.long_break_duration,
-      sessionsBeforeLongBreak: data.sessions_before_long_break,
-      autoStartBreaks: data.auto_start_breaks,
-      autoStartPomodoros: data.auto_start_pomodoros,
-      notificationsEnabled: data.notifications_enabled,
-      soundEnabled: data.sound_enabled,
-      dailyGoal: data.daily_goal,
+      // Appearance & Theme
+      theme: data.theme || "dark",
+      colorTheme: data.color_theme || "vibrant",
+      reducedMotion: data.reduced_motion || false,
+      highContrast: data.high_contrast || false,
+      animations: data.animations !== false,
+
+      // Pomodoro & Focus Settings
+      focusDuration: data.focus_duration || 25,
+      shortBreakDuration: data.short_break_duration || 5,
+      longBreakDuration: data.long_break_duration || 15,
+      sessionsBeforeLongBreak: data.sessions_before_long_break || 4,
+      autoStartBreaks: data.auto_start_breaks || false,
+      autoStartPomodoros: data.auto_start_pomodoros || false,
+
+      // Notifications & Alerts
+      notificationsEnabled: data.notifications_enabled !== false,
+      soundEnabled: data.sound_enabled !== false,
+      taskReminders: data.task_reminders !== false,
+      breakNotifications: data.break_notifications !== false,
+      dailySummary: data.daily_summary !== false,
+      achievementAlerts: data.achievement_alerts !== false,
+
+      // Productivity & Goals
+      dailyGoal: data.daily_goal || 5,
+      workingHours: {
+        start: data.working_hours_start || "09:00",
+        end: data.working_hours_end || "17:00",
+      },
+
+      // Music & Media
+      youtubeUrl: data.youtube_url || undefined,
+      autoPlayMusic: data.auto_play_music || false,
+      loopMusic: data.loop_music !== false,
+      musicVolume: data.music_volume || 50,
+
+      // Profile & Personal
+      displayName: data.display_name || undefined,
+      timezone:
+        data.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
+      motivationalMessages: data.motivational_messages !== false,
+
+      // Advanced Features
+      visionBoardUrl: data.vision_board_url || undefined,
+      flowTrackingEnabled: data.flow_tracking_enabled !== false,
     };
   },
 };
@@ -525,7 +745,7 @@ export const achievementsApi = {
     const { data, error } = await supabase
       .from("achievements")
       .select("*")
-      .eq("user_id", TEMP_USER_ID)
+      .eq("user_id", ADMIN_USER_ID)
       .order("earned_at", { ascending: false });
 
     if (error) {
@@ -550,7 +770,7 @@ export const achievementsApi = {
     achievement: Omit<Achievement, "id" | "earnedAt">,
   ): Promise<Achievement> {
     const dbAchievement = {
-      user_id: TEMP_USER_ID,
+      user_id: ADMIN_USER_ID,
       type: achievement.type,
       title: achievement.title,
       description: achievement.description,
@@ -591,7 +811,7 @@ export const streaksApi = {
     const { data, error } = await supabase
       .from("user_streaks")
       .select("*")
-      .eq("user_id", TEMP_USER_ID)
+      .eq("user_id", ADMIN_USER_ID)
       .single();
 
     if (error) {
@@ -600,7 +820,7 @@ export const streaksApi = {
         const { data: newData, error: createError } = await supabase
           .from("user_streaks")
           .insert({
-            user_id: TEMP_USER_ID,
+            user_id: ADMIN_USER_ID,
             current_streak: 0,
             longest_streak: 0,
           })
@@ -617,8 +837,14 @@ export const streaksApi = {
           longestStreak: 0,
         };
       }
-      console.error("Error fetching streak data:", error);
-      throw error;
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : error && typeof error === "object" && error.message
+            ? error.message
+            : JSON.stringify(error);
+      console.error("Error fetching streak data:", errorMessage);
+      throw new Error(`Failed to fetch streak data: ${errorMessage}`);
     }
 
     return {
@@ -644,7 +870,7 @@ export const streaksApi = {
     const { error } = await supabase
       .from("user_streaks")
       .update(updates)
-      .eq("user_id", TEMP_USER_ID);
+      .eq("user_id", ADMIN_USER_ID);
 
     if (error) {
       console.error("Error updating streak:", error);
@@ -657,11 +883,39 @@ export const streaksApi = {
 export const dayPlanApi = {
   async getToday(): Promise<DayPlan> {
     const today = new Date().toISOString().split("T")[0];
-    const [tasks, pomodoroStats, streak] = await Promise.all([
-      tasksApi.getByDate(today),
-      pomodoroApi.getTodayStats(),
-      streaksApi.get(),
-    ]);
+
+    // Handle each API call separately to prevent one failure from breaking everything
+    let tasks: Task[] = [];
+    let pomodoroStats = { count: 0, totalTime: 0, avgFlowScore: 0 };
+    let streak = { currentStreak: 0, longestStreak: 0 };
+
+    try {
+      tasks = await tasksApi.getByDate(today);
+    } catch (error) {
+      console.error(
+        "Failed to fetch tasks for today:",
+        error instanceof Error ? error.message : String(error),
+      );
+      tasks = [];
+    }
+
+    try {
+      pomodoroStats = await pomodoroApi.getTodayStats();
+    } catch (error) {
+      console.error(
+        "Failed to fetch pomodoro stats:",
+        error instanceof Error ? error.message : String(error),
+      );
+    }
+
+    try {
+      streak = await streaksApi.get();
+    } catch (error) {
+      console.error(
+        "Failed to fetch streak data:",
+        error instanceof Error ? error.message : String(error),
+      );
+    }
 
     const morningTasks = tasks.filter((t) => t.period === "morning");
     const afternoonTasks = tasks.filter((t) => t.period === "afternoon");

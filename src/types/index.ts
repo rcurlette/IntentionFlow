@@ -1,164 +1,202 @@
+// Core FlowTracker Types
+export interface User {
+  id: string;
+  email: string;
+  fullName?: string;
+  avatarUrl?: string;
+  planType: "free" | "pro" | "enterprise";
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Task {
   id: string;
   title: string;
   description?: string;
   type: "brain" | "admin";
   period: "morning" | "afternoon";
-  status: "todo" | "in-progress" | "completed";
-  completed: boolean; // Computed from status for backward compatibility
-  timeBlock?: number; // in minutes
-  timeEstimate?: number; // in minutes
-  timeSpent?: number; // in minutes
-  pomodoroCount?: number;
+  completed: boolean;
   priority: "low" | "medium" | "high";
+  estimatedTime?: number;
+  actualTime?: number;
   tags?: string[];
-
-  // GTD Date/Time Management
-  createdAt: Date; // When task was created
-  updatedAt: Date; // When task was last modified
-  scheduledFor?: string; // YYYY-MM-DD - when task is planned to be done
-  dueDate?: Date; // Hard deadline (different from scheduled)
-  dueTime?: string; // HH:MM format for specific time
-  startedAt?: Date; // When work on task actually began
-  completedAt?: Date; // When task was actually finished
-
-  // Task Organization & Ordering
-  sortOrder?: number; // For custom ordering within periods
-  projectId?: string; // For future project grouping
-  contextTags?: string[]; // GTD contexts (@calls, @computer, etc.)
-
-  // Subtask Support
-  parentTaskId?: string; // Reference to parent task
-  subtasks?: Task[]; // Child tasks (for nested structure)
-  subtaskIds?: string[]; // Array of subtask IDs (for flat structure)
-  depth?: number; // Nesting level (0 = root task, 1 = first level subtask, etc.)
-  isSubtask?: boolean; // Quick check if this is a subtask
-
-  // Enhanced Tracking
-  isRecurring?: boolean;
-  recurringPattern?: {
-    type: "daily" | "weekly" | "monthly";
-    interval: number;
-    endDate?: Date;
-  };
-  delegatedTo?: string; // For delegation tracking
-  waitingFor?: string; // For tracking what you're waiting for
-  energy?: "low" | "medium" | "high"; // Energy level required
-  focus?: "shallow" | "deep"; // Focus level required
+  dueDate?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
-export interface DayPlan {
-  date: string; // YYYY-MM-DD
-  morningTasks: Task[];
-  afternoonTasks: Task[];
-  completedTasks: number;
-  totalTasks: number;
-  pomodoroCompleted: number;
-  totalFocusTime: number;
-  averageFlowScore: number;
-  currentStreak: number;
-  achievements: Achievement[];
+export interface FlowSession {
+  id: string;
+  userId: string;
+  date: string;
+  startTime: string;
+  endTime?: string;
+  type: "focus" | "break" | "deep-work";
+  flowRating: number; // 1-5
+  mood: number; // 1-5
+  energyLevel: number; // 1-5
+  notes?: string;
+  completed: boolean;
+  createdAt: string;
 }
 
 export interface PomodoroSession {
   id: string;
   taskId?: string;
-  startTime: Date;
-  endTime?: Date;
+  type: "focus" | "shortBreak" | "longBreak";
+  duration: number; // in seconds
   completed: boolean;
-  type: "focus" | "break" | "long-break";
+  startTime: string;
+  endTime?: string;
+  flowScore?: number;
+  distractions?: number;
+  createdAt: string;
+}
+
+export interface FlowRitual {
+  id: string;
+  name: string;
+  description: string;
   duration: number; // in minutes
+  category: "morning" | "evening" | "focus" | "break";
+  isCore: boolean;
+  completed: boolean;
+  order: number;
+}
+
+export interface Analytics {
+  totalTasks: number;
+  completedTasks: number;
+  completionRate: number;
+  avgFocusTime: number;
+  totalFocusTime: number;
+  streakDays: number;
+  productivityScore: number;
+  weeklyTrend: "up" | "down" | "stable";
 }
 
 export interface UserSettings {
-  theme: "light" | "dark";
+  // Appearance & Theme
+  theme: "light" | "dark" | "system";
   colorTheme: "vibrant" | "accessible";
-  focusDuration: number;
+  reducedMotion: boolean;
+  highContrast: boolean;
+  animations: boolean;
+
+  // Pomodoro & Focus Settings
+  focusDuration: number; // in minutes
   shortBreakDuration: number;
   longBreakDuration: number;
   sessionsBeforeLongBreak: number;
   autoStartBreaks: boolean;
   autoStartPomodoros: boolean;
+
+  // Notifications & Alerts
   notificationsEnabled: boolean;
   soundEnabled: boolean;
-  dailyGoal: number;
+  taskReminders: boolean;
+  breakNotifications: boolean;
+  dailySummary: boolean;
+  achievementAlerts: boolean;
+
+  // Productivity & Goals
+  dailyGoal: number; // number of pomodoros
+  workingHours: {
+    start: string;
+    end: string;
+  };
+
+  // Music & Media
+  youtubeUrl?: string;
+  autoPlayMusic: boolean;
+  loopMusic: boolean;
+  musicVolume: number; // 0-100
+
+  // Profile & Personal
+  displayName?: string;
+  timezone: string;
+  motivationalMessages: boolean;
+
+  // Advanced Features
+  visionBoardUrl?: string;
+  flowTrackingEnabled: boolean;
 }
 
-export interface Achievement {
-  id: string;
+// UI State Types
+export interface LoadingState {
+  isLoading: boolean;
+  message?: string;
+}
+
+export interface ErrorState {
+  hasError: boolean;
+  message?: string;
+  code?: string;
+}
+
+// API Response Types
+export interface ApiResponse<T> {
+  data: T;
+  success: boolean;
+  message?: string;
+  error?: string;
+}
+
+export interface PaginatedResponse<T> extends ApiResponse<T[]> {
+  total: number;
+  page: number;
+  limit: number;
+  hasNext: boolean;
+  hasPrev: boolean;
+}
+
+// Component Props Types
+export interface PageProps {
+  title?: string;
+  description?: string;
+  className?: string;
+}
+
+export interface NavigationItem {
+  href: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  badge?: string | number;
+  isExternal?: boolean;
+}
+
+// Form Types
+export interface TaskFormData {
   title: string;
-  description: string;
-  icon: string;
-  unlockedAt: Date;
-  type: "streak" | "completion" | "focus" | "milestone";
-}
-
-export interface FlowState {
-  isActive: boolean;
-  startTime?: Date;
-  currentTask?: Task;
-  distractionCount: number;
-  flowScore: number; // 0-100
-}
-
-// Flow Tracking System
-export interface FlowEntry {
-  id: string;
-  userId?: string;
-  timestamp: Date;
-  activity: string;
-  activityType: "brain" | "admin" | "break" | "other";
-  flowRating: number; // 1-5 scale (1=terrible, 5=amazing)
-  mood: number; // 1-5 scale (1=frustrated, 5=joyful)
-  energyLevel: number; // 1-5 scale (1=drained, 5=energized)
-  location?: string;
-  notes?: string;
+  description?: string;
+  type: Task["type"];
+  period: Task["period"];
+  priority: Task["priority"];
+  estimatedTime?: number;
   tags?: string[];
-  duration?: number; // in minutes, if activity completed
-  createdAt: Date;
+  dueDate?: string;
 }
 
-export interface FlowPattern {
-  timeOfDay: string; // "09:00", "14:30", etc.
-  hour: number; // 0-23
-  dayOfWeek: number; // 0-6 (Sunday = 0)
-  averageFlowRating: number;
-  averageMood: number;
-  averageEnergyLevel: number;
-  activityCount: number;
-  commonActivities: { activity: string; count: number; avgRating: number }[];
-  bestActivities: { activity: string; avgRating: number }[];
-  worstActivities: { activity: string; avgRating: number }[];
+export interface FlowSessionFormData {
+  type: FlowSession["type"];
+  flowRating: number;
+  mood: number;
+  energyLevel: number;
+  notes?: string;
 }
 
-export interface FlowInsights {
-  peakFlowHours: number[]; // Hours when flow is highest
-  lowFlowHours: number[]; // Hours when flow is lowest
-  bestActivitiesForMorning: string[];
-  bestActivitiesForAfternoon: string[];
-  activitiesToAvoid: string[];
-  optimalFlowPattern: {
-    morning: { time: string; activity: string; expectedFlow: number }[];
-    afternoon: { time: string; activity: string; expectedFlow: number }[];
-  };
-  weeklyTrends: {
-    [key: string]: { day: string; avgFlow: number; bestActivity: string };
-  };
-  improvementSuggestions: string[];
-  dataQuality: {
-    totalEntries: number;
-    daysTracked: number;
-    entriesNeededForBetterInsights: number;
-  };
+// Event Types
+export interface TaskEvent {
+  type: "created" | "updated" | "completed" | "deleted";
+  taskId: string;
+  timestamp: string;
+  metadata?: Record<string, any>;
 }
 
-export interface FlowTrackingSettings {
-  isEnabled: boolean;
-  interval: number; // minutes between prompts (30, 60, 90, 120)
-  quietHours: { start: string; end: string }; // "09:00" format
-  trackingDays: number[]; // 0-6, days of week to track
-  autoDetectActivity: boolean;
-  showFlowInsights: boolean;
-  minimumEntriesForInsights: number;
-  promptStyle: "gentle" | "persistent" | "minimal";
+export interface FlowEvent {
+  type: "session_started" | "session_completed" | "ritual_completed";
+  sessionId?: string;
+  ritualId?: string;
+  timestamp: string;
+  metadata?: Record<string, any>;
 }

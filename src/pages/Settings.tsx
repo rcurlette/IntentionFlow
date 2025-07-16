@@ -1,4 +1,6 @@
-import { Navigation } from "@/components/app/Navigation";
+import React, { useRef } from "react";
+import { AppLayout } from "@/components/layout/AppLayout";
+import { Loading } from "@/components/ui/loading";
 import { ThemeSwitcher } from "@/components/app/ThemeSwitcher";
 import { FlowTrackingSettings } from "@/components/app/FlowTrackingSettings";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,6 +8,15 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
+
+import { useToast } from "@/hooks/use-toast";
+import {
+  useSettings,
+  usePomodoroSettings,
+  useNotificationSettings,
+  useThemeSettings,
+} from "@/hooks/use-settings";
 import { useFlowTracking } from "@/hooks/use-flow-tracking";
 import {
   Settings as SettingsIcon,
@@ -21,9 +32,30 @@ import {
   Brain,
   Music,
   Activity,
+  RotateCcw,
+  Save,
+  FileJson,
 } from "lucide-react";
 
 export default function Settings() {
+  const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const {
+    settings,
+    loading,
+    error,
+    updateSettings,
+    resetSettings,
+    exportSettings,
+    importSettings,
+  } = useSettings();
+
+  const { settings: pomodoroSettings, updatePomodoro } = usePomodoroSettings();
+  const { settings: notificationSettings, updateNotifications } =
+    useNotificationSettings();
+  const { settings: themeSettings, updateTheme } = useThemeSettings();
+
   const {
     settings: flowSettings,
     updateSettings: updateFlowSettings,
@@ -32,11 +64,142 @@ export default function Settings() {
     hasNotificationPermission,
   } = useFlowTracking();
 
-  return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
+  // Handle export
+  const handleExport = () => {
+    try {
+      const data = exportSettings();
+      const blob = new Blob([data], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `flowtracker-settings-${new Date().toISOString().split("T")[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
 
-      <main className="pt-20 pb-8 px-4 container mx-auto max-w-4xl">
+      toast({
+        title: "Settings Exported",
+        description: "Your settings have been exported successfully.",
+      });
+    } catch (err) {
+      toast({
+        title: "Export Failed",
+        description: "Failed to export settings. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Handle import
+  const handleImport = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const text = await file.text();
+      await importSettings(text);
+
+      toast({
+        title: "Settings Imported",
+        description: "Your settings have been imported successfully.",
+      });
+    } catch (err) {
+      toast({
+        title: "Import Failed",
+        description:
+          err instanceof Error ? err.message : "Failed to import settings.",
+        variant: "destructive",
+      });
+    }
+
+    // Reset the file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  // Handle reset
+  const handleReset = async () => {
+    try {
+      await resetSettings();
+      toast({
+        title: "Settings Reset",
+        description: "All settings have been reset to defaults.",
+      });
+    } catch (err) {
+      toast({
+        title: "Reset Failed",
+        description: "Failed to reset settings. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  if (loading) {
+    return (
+      <AppLayout
+        title="Settings"
+        description="Customize your productivity experience"
+      >
+        <Loading message="Loading your settings..." />
+      </AppLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <AppLayout
+        title="Settings"
+        description="Customize your productivity experience"
+      >
+        <div className="pt-4 pb-8 px-4 container mx-auto max-w-4xl">
+          <div className="text-center py-8">
+            <p className="text-red-400">Error loading settings: {error}</p>
+            <Button onClick={() => window.location.reload()} className="mt-4">
+              Retry
+            </Button>
+          </div>
+        </div>
+      </AppLayout>
+    );
+  }
+
+  if (!settings) {
+    return (
+      <AppLayout
+        title="Settings"
+        description="Customize your productivity experience"
+      >
+        <div className="pt-4 pb-8 px-4 container mx-auto max-w-4xl">
+          <div className="text-center py-8">
+            <p className="text-slate-400">No settings found.</p>
+          </div>
+        </div>
+      </AppLayout>
+    );
+  }
+
+  return (
+    <AppLayout
+      title="Settings"
+      description="Customize your productivity experience"
+    >
+      <div className="pt-4 pb-8 px-4 container mx-auto max-w-4xl">
+        {/* Hidden file input for import */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".json"
+          onChange={handleFileChange}
+          className="hidden"
+        />
         <div className="mb-8">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-primary via-focus to-energy bg-clip-text text-transparent mb-2">
             Settings
@@ -67,15 +230,46 @@ export default function Settings() {
             <CardContent className="space-y-4">
               <div>
                 <Label htmlFor="focus-duration">Focus Duration (minutes)</Label>
-                <Input id="focus-duration" type="number" defaultValue="25" />
+                <Input
+                  id="focus-duration"
+                  type="number"
+                  min="5"
+                  max="90"
+                  value={pomodoroSettings?.focusDuration || 25}
+                  onChange={(e) =>
+                    updatePomodoro({ focusDuration: parseInt(e.target.value) })
+                  }
+                />
               </div>
               <div>
                 <Label htmlFor="short-break">Short Break (minutes)</Label>
-                <Input id="short-break" type="number" defaultValue="5" />
+                <Input
+                  id="short-break"
+                  type="number"
+                  min="1"
+                  max="15"
+                  value={pomodoroSettings?.shortBreakDuration || 5}
+                  onChange={(e) =>
+                    updatePomodoro({
+                      shortBreakDuration: parseInt(e.target.value),
+                    })
+                  }
+                />
               </div>
               <div>
                 <Label htmlFor="long-break">Long Break (minutes)</Label>
-                <Input id="long-break" type="number" defaultValue="15" />
+                <Input
+                  id="long-break"
+                  type="number"
+                  min="10"
+                  max="60"
+                  value={pomodoroSettings?.longBreakDuration || 15}
+                  onChange={(e) =>
+                    updatePomodoro({
+                      longBreakDuration: parseInt(e.target.value),
+                    })
+                  }
+                />
               </div>
               <div>
                 <Label htmlFor="sessions-before-long">
@@ -84,7 +278,36 @@ export default function Settings() {
                 <Input
                   id="sessions-before-long"
                   type="number"
-                  defaultValue="4"
+                  min="2"
+                  max="8"
+                  value={pomodoroSettings?.sessionsBeforeLongBreak || 4}
+                  onChange={(e) =>
+                    updatePomodoro({
+                      sessionsBeforeLongBreak: parseInt(e.target.value),
+                    })
+                  }
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="auto-start-breaks">Auto-start breaks</Label>
+                <Switch
+                  id="auto-start-breaks"
+                  checked={pomodoroSettings?.autoStartBreaks || false}
+                  onCheckedChange={(checked) =>
+                    updatePomodoro({ autoStartBreaks: checked })
+                  }
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="auto-start-pomodoros">
+                  Auto-start focus sessions
+                </Label>
+                <Switch
+                  id="auto-start-pomodoros"
+                  checked={pomodoroSettings?.autoStartPomodoros || false}
+                  onCheckedChange={(checked) =>
+                    updatePomodoro({ autoStartPomodoros: checked })
+                  }
                 />
               </div>
             </CardContent>
@@ -138,21 +361,83 @@ export default function Settings() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
+                <div>
+                  <Label htmlFor="notifications-enabled">
+                    Enable Notifications
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    Master toggle for all notifications
+                  </p>
+                </div>
+                <Switch
+                  id="notifications-enabled"
+                  checked={notificationSettings?.notificationsEnabled || false}
+                  onCheckedChange={(checked) => {
+                    updateNotifications({ notificationsEnabled: checked });
+                    if (checked) {
+                      requestNotificationPermission();
+                    }
+                  }}
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="sound-enabled">Sound Effects</Label>
+                <Switch
+                  id="sound-enabled"
+                  checked={notificationSettings?.soundEnabled || false}
+                  onCheckedChange={(checked) =>
+                    updateNotifications({ soundEnabled: checked })
+                  }
+                />
+              </div>
+              <div className="flex items-center justify-between">
                 <Label htmlFor="task-reminders">Task Reminders</Label>
-                <Switch id="task-reminders" />
+                <Switch
+                  id="task-reminders"
+                  checked={notificationSettings?.taskReminders || false}
+                  onCheckedChange={(checked) =>
+                    updateNotifications({ taskReminders: checked })
+                  }
+                />
               </div>
               <div className="flex items-center justify-between">
                 <Label htmlFor="break-notifications">Break Notifications</Label>
-                <Switch id="break-notifications" />
+                <Switch
+                  id="break-notifications"
+                  checked={notificationSettings?.breakNotifications || false}
+                  onCheckedChange={(checked) =>
+                    updateNotifications({ breakNotifications: checked })
+                  }
+                />
               </div>
               <div className="flex items-center justify-between">
                 <Label htmlFor="daily-summary">Daily Summary</Label>
-                <Switch id="daily-summary" />
+                <Switch
+                  id="daily-summary"
+                  checked={notificationSettings?.dailySummary || false}
+                  onCheckedChange={(checked) =>
+                    updateNotifications({ dailySummary: checked })
+                  }
+                />
               </div>
               <div className="flex items-center justify-between">
                 <Label htmlFor="achievement-alerts">Achievement Alerts</Label>
-                <Switch id="achievement-alerts" />
+                <Switch
+                  id="achievement-alerts"
+                  checked={notificationSettings?.achievementAlerts || false}
+                  onCheckedChange={(checked) =>
+                    updateNotifications({ achievementAlerts: checked })
+                  }
+                />
               </div>
+              {!hasNotificationPermission() && (
+                <div className="mt-4 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+                  <p className="text-sm text-amber-400">
+                    Browser notifications are not enabled. Click "Enable
+                    Notifications" to allow notifications.
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -176,21 +461,45 @@ export default function Settings() {
 
               <div className="flex items-center justify-between">
                 <Label htmlFor="animations">Animations</Label>
-                <Switch id="animations" defaultChecked />
+                <Switch
+                  id="animations"
+                  checked={themeSettings?.animations || false}
+                  onCheckedChange={(checked) =>
+                    updateTheme({ animations: checked })
+                  }
+                />
               </div>
               <div className="flex items-center justify-between">
                 <Label htmlFor="motivational-messages">
                   Motivational Messages
                 </Label>
-                <Switch id="motivational-messages" defaultChecked />
+                <Switch
+                  id="motivational-messages"
+                  checked={settings.motivationalMessages || false}
+                  onCheckedChange={(checked) =>
+                    updateSettings({ motivationalMessages: checked })
+                  }
+                />
               </div>
               <div className="flex items-center justify-between">
                 <Label htmlFor="reduced-motion">Reduced Motion</Label>
-                <Switch id="reduced-motion" />
+                <Switch
+                  id="reduced-motion"
+                  checked={themeSettings?.reducedMotion || false}
+                  onCheckedChange={(checked) =>
+                    updateTheme({ reducedMotion: checked })
+                  }
+                />
               </div>
               <div className="flex items-center justify-between">
                 <Label htmlFor="high-contrast">High Contrast Mode</Label>
-                <Switch id="high-contrast" />
+                <Switch
+                  id="high-contrast"
+                  checked={themeSettings?.highContrast || false}
+                  onCheckedChange={(checked) =>
+                    updateTheme({ highContrast: checked })
+                  }
+                />
               </div>
             </CardContent>
           </Card>
@@ -208,6 +517,10 @@ export default function Settings() {
                 <Input
                   id="youtube-url"
                   placeholder="https://www.youtube.com/watch?v=..."
+                  value={settings.youtubeUrl || ""}
+                  onChange={(e) =>
+                    updateSettings({ youtubeUrl: e.target.value })
+                  }
                 />
                 <p className="text-xs text-muted-foreground">
                   Paste any YouTube video URL for background music during focus
@@ -216,20 +529,37 @@ export default function Settings() {
               </div>
               <div className="flex items-center justify-between">
                 <Label htmlFor="autoplay-music">Auto-play on Focus Start</Label>
-                <Switch id="autoplay-music" />
+                <Switch
+                  id="autoplay-music"
+                  checked={settings.autoPlayMusic || false}
+                  onCheckedChange={(checked) =>
+                    updateSettings({ autoPlayMusic: checked })
+                  }
+                />
               </div>
               <div className="flex items-center justify-between">
                 <Label htmlFor="loop-music">Loop Current Track</Label>
-                <Switch id="loop-music" defaultChecked />
+                <Switch
+                  id="loop-music"
+                  checked={settings.loopMusic !== false}
+                  onCheckedChange={(checked) =>
+                    updateSettings({ loopMusic: checked })
+                  }
+                />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="music-volume">Default Volume</Label>
-                <Input
+                <Label htmlFor="music-volume">
+                  Default Volume: {settings.musicVolume || 50}%
+                </Label>
+                <Slider
                   id="music-volume"
-                  type="range"
-                  min="0"
-                  max="100"
-                  defaultValue="50"
+                  min={0}
+                  max={100}
+                  step={5}
+                  value={[settings.musicVolume || 50]}
+                  onValueChange={([value]) =>
+                    updateSettings({ musicVolume: value })
+                  }
                   className="w-full"
                 />
               </div>
@@ -246,15 +576,76 @@ export default function Settings() {
             <CardContent className="space-y-4">
               <div>
                 <Label htmlFor="display-name">Display Name</Label>
-                <Input id="display-name" placeholder="Your name" />
+                <Input
+                  id="display-name"
+                  placeholder="Your name"
+                  value={settings.displayName || ""}
+                  onChange={(e) =>
+                    updateSettings({ displayName: e.target.value })
+                  }
+                />
               </div>
               <div>
                 <Label htmlFor="daily-goal">Daily Task Goal</Label>
-                <Input id="daily-goal" type="number" defaultValue="5" />
+                <Input
+                  id="daily-goal"
+                  type="number"
+                  min="1"
+                  max="20"
+                  value={settings.dailyGoal || 5}
+                  onChange={(e) =>
+                    updateSettings({ dailyGoal: parseInt(e.target.value) })
+                  }
+                />
               </div>
               <div>
                 <Label htmlFor="timezone">Timezone</Label>
-                <Input id="timezone" value="Auto-detected" disabled />
+                <Input
+                  id="timezone"
+                  value={settings.timezone || "Auto-detected"}
+                  onChange={(e) => updateSettings({ timezone: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Working Hours</Label>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="work-start" className="text-sm">
+                      Start
+                    </Label>
+                    <Input
+                      id="work-start"
+                      type="time"
+                      value={settings.workingHours.start || "09:00"}
+                      onChange={(e) =>
+                        updateSettings({
+                          workingHours: {
+                            ...settings.workingHours,
+                            start: e.target.value,
+                          },
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="work-end" className="text-sm">
+                      End
+                    </Label>
+                    <Input
+                      id="work-end"
+                      type="time"
+                      value={settings.workingHours.end || "17:00"}
+                      onChange={(e) =>
+                        updateSettings({
+                          workingHours: {
+                            ...settings.workingHours,
+                            end: e.target.value,
+                          },
+                        })
+                      }
+                    />
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -268,22 +659,60 @@ export default function Settings() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Button variant="outline" className="flex items-center space-x-2">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <Button
+                variant="outline"
+                onClick={handleExport}
+                className="flex items-center space-x-2"
+              >
                 <Download className="h-4 w-4" />
-                <span>Export Data</span>
-              </Button>
-              <Button variant="outline" className="flex items-center space-x-2">
-                <Upload className="h-4 w-4" />
-                <span>Import Data</span>
+                <span>Export Settings</span>
               </Button>
               <Button
                 variant="outline"
-                className="flex items-center space-x-2 text-destructive hover:text-destructive"
+                onClick={handleImport}
+                className="flex items-center space-x-2"
               >
-                <Trash2 className="h-4 w-4" />
-                <span>Clear All Data</span>
+                <Upload className="h-4 w-4" />
+                <span>Import Settings</span>
               </Button>
+              <Button
+                variant="outline"
+                onClick={handleReset}
+                className="flex items-center space-x-2 text-amber-400 hover:text-amber-300"
+              >
+                <RotateCcw className="h-4 w-4" />
+                <span>Reset to Defaults</span>
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  const data = JSON.stringify(settings, null, 2);
+                  navigator.clipboard.writeText(data);
+                  toast({
+                    title: "Settings Copied",
+                    description: "Settings JSON copied to clipboard.",
+                  });
+                }}
+                className="flex items-center space-x-2"
+              >
+                <FileJson className="h-4 w-4" />
+                <span>Copy JSON</span>
+              </Button>
+            </div>
+            <div className="mt-4 text-sm text-muted-foreground">
+              <p>
+                <strong>Export:</strong> Download your settings as a JSON file
+                for backup or transfer.
+              </p>
+              <p>
+                <strong>Import:</strong> Restore settings from a previously
+                exported JSON file.
+              </p>
+              <p>
+                <strong>Reset:</strong> Restore all settings to their default
+                values.
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -291,17 +720,18 @@ export default function Settings() {
         <div className="mt-8 text-center py-12 text-muted-foreground">
           <SettingsIcon className="h-16 w-16 mx-auto mb-4 opacity-50" />
           <h3 className="text-lg font-medium mb-2">
-            Advanced Settings Coming Soon!
+            Settings System Active! 🎉
           </h3>
           <p>
-            This page will include OAuth integration, cloud sync, and advanced
-            customization options.
+            Your settings are now fully integrated with database storage and
+            localStorage fallback.
           </p>
           <p className="text-sm mt-2">
-            Features: Google auth, Supabase integration, and backup settings! ⚙️
+            Features: Per-user settings, comprehensive preferences, data
+            export/import! ⚙️
           </p>
         </div>
-      </main>
-    </div>
+      </div>
+    </AppLayout>
   );
 }

@@ -1,121 +1,121 @@
-import { useState, useEffect } from "react";
-import { Task } from "@/types";
-import { getAllTasks, addTask, updateTask, deleteTask } from "@/lib/storage";
-import { CalendarView } from "@/components/app/CalendarView";
-import { Navigation } from "@/components/app/Navigation";
-import { generateId } from "@/lib/productivity-utils";
+import React from "react";
+import { AppLayout } from "@/components/layout/AppLayout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Calendar as CalendarIcon, Clock, Target } from "lucide-react";
 
 export default function Calendar() {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Load all tasks
-  useEffect(() => {
-    const loadTasks = async () => {
-      try {
-        const allTasks = await getAllTasks();
-        setTasks(allTasks);
-      } catch (error) {
-        console.error("Error loading tasks:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadTasks();
-  }, []);
-
-  const handleCreateTask = async (
-    taskData: Partial<Task> & { scheduledFor: string; dueTime?: string },
-  ) => {
-    try {
-      const newTask = {
-        ...taskData,
-        id: generateId(),
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        tags: taskData.tags || [],
-        contextTags: taskData.contextTags || [],
-      };
-
-      await addTask(newTask);
-
-      // Update local state
-      setTasks((prev) => [...prev, newTask as Task]);
-    } catch (error) {
-      console.error("Error creating task:", error);
-    }
-  };
-
-  const handleUpdateTask = async (taskId: string, updates: Partial<Task>) => {
-    try {
-      await updateTask(taskId, {
-        ...updates,
-        updatedAt: new Date(),
-      });
-
-      // Update local state
-      setTasks((prev) =>
-        prev.map((task) =>
-          task.id === taskId
-            ? { ...task, ...updates, updatedAt: new Date() }
-            : task,
-        ),
-      );
-    } catch (error) {
-      console.error("Error updating task:", error);
-    }
-  };
-
-  const handleDeleteTask = async (taskId: string) => {
-    try {
-      await deleteTask(taskId);
-
-      // Update local state
-      setTasks((prev) => prev.filter((task) => task.id !== taskId));
-    } catch (error) {
-      console.error("Error deleting task:", error);
-    }
-  };
-
-  const handleEditTask = (task: Task) => {
-    // For now, we'll implement a simple prompt-based edit
-    // In a real app, you'd open a proper edit modal
-    const newTitle = window.prompt("Edit task title:", task.title);
-    if (newTitle && newTitle !== task.title) {
-      handleUpdateTask(task.id, { title: newTitle });
-    }
-  };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Navigation />
-        <main className="pt-20 pb-8 px-4 container mx-auto">
-          <div className="flex items-center justify-center h-64">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-              <p className="text-muted-foreground">Loading calendar...</p>
-            </div>
-          </div>
-        </main>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
-      <main className="pt-16 h-screen">
-        <CalendarView
-          tasks={tasks}
-          onCreateTask={handleCreateTask}
-          onUpdateTask={handleUpdateTask}
-          onDeleteTask={handleDeleteTask}
-          onEditTask={handleEditTask}
-          className="h-full"
-        />
-      </main>
-    </div>
+    <AppLayout title="Calendar" description="Plan your flow sessions">
+      <div className="pt-4 pb-8 px-4 container mx-auto max-w-6xl">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-white mb-2">Flow Calendar</h1>
+          <p className="text-slate-400">
+            Schedule and track your optimal flow sessions
+          </p>
+        </div>
+
+        {/* Calendar Grid Placeholder */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Main Calendar */}
+          <Card className="lg:col-span-2 bg-slate-800 border-slate-700">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <CalendarIcon className="h-5 w-5" />
+                <span>December 2024</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-7 gap-2 mb-4">
+                {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
+                  (day) => (
+                    <div
+                      key={day}
+                      className="text-center text-sm font-medium text-slate-400 p-2"
+                    >
+                      {day}
+                    </div>
+                  ),
+                )}
+              </div>
+              <div className="grid grid-cols-7 gap-2">
+                {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
+                  <div
+                    key={day}
+                    className="aspect-square flex items-center justify-center text-sm border border-slate-700 rounded hover:bg-slate-700 cursor-pointer relative"
+                  >
+                    {day}
+                    {day === 15 && (
+                      <div className="absolute bottom-1 left-1 right-1">
+                        <div className="h-1 bg-blue-500 rounded"></div>
+                      </div>
+                    )}
+                    {day === 20 && (
+                      <div className="absolute bottom-1 left-1 right-1">
+                        <div className="h-1 bg-green-500 rounded"></div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Today's Schedule */}
+            <Card className="bg-slate-800 border-slate-700">
+              <CardHeader>
+                <CardTitle className="text-lg">Today's Flow</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-3 p-3 rounded-lg bg-slate-700">
+                    <Clock className="h-4 w-4 text-blue-400" />
+                    <div className="flex-1">
+                      <div className="text-sm font-medium">Morning Focus</div>
+                      <div className="text-xs text-slate-400">9:00 - 11:00</div>
+                    </div>
+                    <Badge variant="secondary">Brain</Badge>
+                  </div>
+                  <div className="flex items-center space-x-3 p-3 rounded-lg bg-slate-700">
+                    <Target className="h-4 w-4 text-green-400" />
+                    <div className="flex-1">
+                      <div className="text-sm font-medium">Admin Tasks</div>
+                      <div className="text-xs text-slate-400">2:00 - 3:30</div>
+                    </div>
+                    <Badge variant="outline">Admin</Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Upcoming Events */}
+            <Card className="bg-slate-800 border-slate-700">
+              <CardHeader>
+                <CardTitle className="text-lg">Upcoming</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span>Deep Work Session</span>
+                    <span className="text-slate-400">Tomorrow 9:00</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Weekly Review</span>
+                    <span className="text-slate-400">Friday 4:00</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Flow Reflection</span>
+                    <span className="text-slate-400">Sunday 6:00</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    </AppLayout>
   );
 }
