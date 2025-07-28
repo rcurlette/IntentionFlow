@@ -253,7 +253,7 @@ export function MorningSection({
                     className="bg-blue-600 hover:bg-blue-700 text-white shadow-md"
                     asChild
                   >
-                    <Link to="/pomodoro?duration=60&focus=true">
+                    <Link to={`/pomodoro?duration=${FIRST_HOUR_DURATION}&focus=true`}>
                       <Play className="h-4 w-4 mr-2" />
                       60min Focus
                     </Link>
