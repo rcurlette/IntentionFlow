@@ -28,6 +28,15 @@ import {
   Coffee,
 } from "lucide-react";
 
+// Constants
+const FIRST_HOUR_DURATION = 60;
+const DEFAULT_MORNING_RITUALS = [
+  { id: "meditation", name: "Mindful Presence", duration: 5, completed: false, isCore: true },
+  { id: "intention", name: "Flow Intention", duration: 3, completed: false, isCore: true },
+  { id: "movement", name: "Physical Activation", duration: 7, completed: false, isCore: false },
+];
+
+// Types
 interface Task {
   id: string;
   title: string;

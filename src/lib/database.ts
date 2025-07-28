@@ -15,23 +15,43 @@ import type {
   DayPlan,
 } from "../types";
 
-// Admin user ID in proper UUID format for database compatibility
+/**
+ * Admin user ID in proper UUID format for database compatibility
+ * Used for admin operations and testing
+ */
 const ADMIN_USER_ID = "00000000-0000-0000-0000-000000000001";
 
-// Helper function to get current user ID
+/**
+ * Gets the current authenticated user ID
+ * @throws {Error} When user is not authenticated
+ */
 const getCurrentUserId = async (): Promise<string> => {
+  if (!supabase) {
+    throw new Error("Supabase not configured");
+  }
+
   const {
     data: { user },
+    error,
   } = await supabase.auth.getUser();
-  if (!user) throw new Error("User not authenticated");
+
+  if (error) {
+    throw new Error(`Authentication error: ${error.message}`);
+  }
+
+  if (!user) {
+    throw new Error("User not authenticated");
+  }
+
   return user.id;
 };
 
-// Helper function to check if Supabase is configured
-const requireSupabase = () => {
-  try {
-    return !!supabase;
-  } catch {
+/**
+ * Validates that Supabase is properly configured
+ * @throws {Error} When Supabase is not available
+ */
+const requireSupabase = (): void => {
+  if (!supabase || !isSupabaseConfigured()) {
     throw new Error("Supabase not configured, falling back to localStorage");
   }
 };

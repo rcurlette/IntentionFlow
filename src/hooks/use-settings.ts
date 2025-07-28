@@ -12,6 +12,9 @@ interface UseSettingsReturn {
   importSettings: (data: string) => Promise<void>;
 }
 
+/**
+ * Hook for managing user settings with optimistic updates and error recovery
+ */
 export function useSettings(): UseSettingsReturn {
   const [settings, setSettings] = useState<UserSettings | null>(null);
   const [loading, setLoading] = useState(true);
@@ -19,7 +22,7 @@ export function useSettings(): UseSettingsReturn {
 
   // Load settings on mount
   useEffect(() => {
-    const loadSettings = async () => {
+    const loadSettings = async (): Promise<void> => {
       try {
         setLoading(true);
         setError(null);
