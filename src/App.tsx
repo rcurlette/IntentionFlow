@@ -11,7 +11,6 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import FlowDashboard from "./pages/FlowDashboard";
 import FlowCoach from "./pages/FlowCoach";
 import Tasks from "./pages/Tasks";
-import Calendar from "./pages/Calendar";
 import Pomodoro from "./pages/Pomodoro";
 import Dashboard from "./pages/Dashboard";
 import Analytics from "./pages/Analytics";
@@ -43,7 +42,6 @@ const App = () => (
                 <Route path="/" element={<FlowDashboard />} />
                 <Route path="/flow-coach" element={<FlowCoach />} />
                 <Route path="/tasks" element={<Tasks />} />
-                <Route path="/calendar" element={<Calendar />} />
                 <Route path="/pomodoro" element={<Pomodoro />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/analytics" element={<Analytics />} />
