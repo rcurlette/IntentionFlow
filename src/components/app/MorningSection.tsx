@@ -255,7 +255,7 @@ export function MorningSection({
                   >
                     <Link to={`/pomodoro?duration=${FIRST_HOUR_DURATION}&focus=true`}>
                       <Play className="h-4 w-4 mr-2" />
-                      60min Focus
+                      {FIRST_HOUR_DURATION}min Focus
                     </Link>
                   </Button>
                 </div>
