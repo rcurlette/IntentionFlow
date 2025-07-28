@@ -214,24 +214,24 @@ export function MorningSection({
               {firstHourTasks.map((task) => (
                 <div
                   key={task.id}
-                  className="flex items-center justify-between p-3 bg-amber-500/10 rounded-lg border border-amber-500/30"
+                  className="flex items-center justify-between p-4 bg-slate-700/30 rounded-lg border border-slate-600/50 hover:border-slate-500/70 transition-colors"
                 >
                   <div className="flex items-center space-x-3">
                     <Button
                       size="sm"
                       variant="ghost"
                       onClick={() => toggleTask(task.id)}
-                      className="h-8 w-8 p-0"
+                      className="h-8 w-8 p-0 hover:bg-slate-600/50"
                     >
                       {task.completed ? (
                         <CheckCircle2 className="h-4 w-4 text-green-400" />
                       ) : (
-                        <Circle className="h-4 w-4 text-slate-400" />
+                        <Circle className="h-4 w-4 text-slate-300" />
                       )}
                     </Button>
                     <span
                       className={cn(
-                        "text-slate-200",
+                        "text-slate-100 font-medium",
                         task.completed && "line-through text-slate-400",
                       )}
                     >
@@ -241,7 +241,7 @@ export function MorningSection({
                   <Button
                     size="sm"
                     onClick={startFirstHourPomodoro}
-                    className="bg-amber-500 hover:bg-amber-600"
+                    className="bg-blue-600 hover:bg-blue-700 text-white shadow-md"
                     asChild
                   >
                     <Link to="/pomodoro?duration=60&focus=true">
